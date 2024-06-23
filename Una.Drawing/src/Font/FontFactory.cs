@@ -34,4 +34,9 @@ internal class FontFactory
     {
         return new DynamicFont(SKTypeface.FromFile(file.FullName), FontRegistry.Glyphs, sizeOffset);
     }
+
+    internal static IFont CreateFromFontStream(Stream stream, float sizeOffset)
+    {
+        return new DynamicFont(SKTypeface.FromStream(stream), FontRegistry.Glyphs, sizeOffset);
+    }
 }

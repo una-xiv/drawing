@@ -77,6 +77,28 @@ public static class FontRegistry
         FontChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Creates a font from the given font file stream and registers it with the
+    /// given ID. Existing fonts with the same ID will be disposed of.
+    /// </summary>
+    /// <example>
+    /// Register: <code>FontRegistry.SetNativeFontFamily(1, stream);</code>
+    /// Usage: <code>new Style() { Font = 1 }</code>
+    /// </example>
+    /// <param name="id"></param>
+    /// <param name="fontStream"></param>
+    /// <param name="sizeOffset"></param>
+    /// <exception cref="FileNotFoundException"></exception>
+    public static void SetNativeFontFamily(uint id, Stream fontStream, float sizeOffset = 0)
+    {
+        if (!fontStream.CanRead) throw new EndOfStreamException($"The stream for font #{id} is not readable.");
+
+        if (Fonts.TryGetValue(id, out IFont? existingFont)) existingFont.Dispose();
+
+        Fonts[id] = FontFactory.CreateFromFontStream(fontStream, sizeOffset);
+        FontChanged?.Invoke();
+    }
+
     internal static void SetupGlyphFont()
     {
         Glyphs = SKTypeface.FromFile(GameGlyphProvider.GlyphsFile.FullName);
