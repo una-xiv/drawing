@@ -22,14 +22,17 @@ public class DrawingLib
     /// Set up the drawing library. Make sure to call this method in your
     /// plugin before using any of the drawing library's features.
     /// </summary>
-    public static async void Setup(DalamudPluginInterface pluginInterface)
+    public static async void Setup(DalamudPluginInterface pluginInterface, bool downloadGameGlyphs = true)
     {
         pluginInterface.Create<DalamudServices>();
         DalamudServices.PluginInterface = pluginInterface;
         DalamudServices.UiBuilder       = pluginInterface.UiBuilder;
 
-        await GameGlyphProvider.DownloadGameGlyphs();
-        FontRegistry.SetupGlyphFont();
+        if (downloadGameGlyphs)
+        {
+            await GameGlyphProvider.DownloadGameGlyphs();
+            FontRegistry.SetupGlyphFont();
+        }
 
 #if DEBUG
         DebugLogger.Writer = DalamudServices.PluginLog;
