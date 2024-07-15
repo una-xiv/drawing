@@ -5,9 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System.Numerics;
-using System.Runtime.InteropServices;
-
 namespace Una.Drawing;
 
 [StructLayout(LayoutKind.Sequential)]
@@ -185,6 +182,15 @@ public partial struct ComputedStyle
 
     /// <inheritdoc cref="Style.ScrollbarThumbActiveColor"/>
     public Color ScrollbarThumbActiveColor;
+
+    /// <inheritdoc cref="Style.UldResource"/>
+    public string? UldResource;
+
+    /// <inheritdoc cref="Style.UldPartsId"/>
+    public int? UldPartsId { get; set; }
+
+    /// <inheritdoc cref="Style.UldPartId"/>
+    public int? UldPartId { get; set; }
 
     internal PaintStyleSnapshot  PaintStyleSnapshot;
     internal LayoutStyleSnapshot LayoutStyleSnapshot;

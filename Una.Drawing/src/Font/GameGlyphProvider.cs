@@ -5,7 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 

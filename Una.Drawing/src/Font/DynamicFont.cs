@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using SkiaSharp;
-
-namespace Una.Drawing.Font;
+﻿namespace Una.Drawing.Font;
 
 internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphTypeface, float sizeOffset) : IFont
 {

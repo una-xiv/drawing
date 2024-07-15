@@ -7,7 +7,6 @@
 
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using SkiaSharp;
 using Una.Drawing.Font;
 using Una.Drawing.Texture;
 

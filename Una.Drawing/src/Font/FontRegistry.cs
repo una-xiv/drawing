@@ -5,11 +5,7 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using SkiaSharp;
 using Una.Drawing.Font;
 
 namespace Una.Drawing;

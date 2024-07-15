@@ -5,9 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System;
-using System.Text.RegularExpressions;
-using SkiaSharp;
 using Una.Drawing.Font;
 
 namespace Una.Drawing.Generator;

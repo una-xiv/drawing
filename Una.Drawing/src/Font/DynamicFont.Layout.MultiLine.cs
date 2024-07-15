@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using SkiaSharp;
-
-namespace Una.Drawing.Font;
+﻿namespace Una.Drawing.Font;
 
 internal partial class DynamicFont
 {

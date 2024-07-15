@@ -5,7 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System;
 using System.Threading;
 
 namespace Una.Drawing;
@@ -85,6 +84,9 @@ public partial class Node
                 bool isUpdated = result > 0;
 
                 _intermediateStyle = style;
+
+                if (_intermediateStyle.UldPartId.HasValue)
+                    DebugLogger.Log("F U W U N W!!!!!!");
 
                 lock (_childNodes) {
                     foreach (Node child in _childNodes) {

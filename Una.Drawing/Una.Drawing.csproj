@@ -28,7 +28,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="assets\shadow.png" LogicalName="Shadow.png"/>
+        <EmbeddedResource Include="assets\shadow.png" LogicalName="Shadow.png" />
     </ItemGroup>
 
     <ItemGroup>
@@ -48,9 +48,21 @@
             <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="FFXIVClientStructs">
+            <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="SkiaSharp" Version="3.0.0-preview.3.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EditorConfigFiles Remove="D:\source\repos\umbra\drawing\Una.Drawing\.editorconfig" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="D:\source\repos\umbra\drawing\Una.Drawing\.editorconfig" />
     </ItemGroup>
 </Project>

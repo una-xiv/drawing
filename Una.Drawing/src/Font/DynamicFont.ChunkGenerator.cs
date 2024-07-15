@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Una.Drawing.Font;
+﻿namespace Una.Drawing.Font;
 
 internal partial class DynamicFont
 {

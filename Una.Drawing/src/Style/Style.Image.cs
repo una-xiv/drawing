@@ -5,9 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System.Numerics;
-using Dalamud.Game.Text;
-
 namespace Una.Drawing;
 
 public partial class Style
@@ -68,4 +65,19 @@ public partial class Style
     /// with <see cref="ImageColor"/>.
     /// </summary>
     public BlendMode? ImageBlendMode { get; set; }
+
+    /// <summary>
+    /// Defines the resource path of the ULD file to be displayed in the node.
+    /// </summary>
+    public string? UldResource { get; set; }
+
+    /// <summary>
+    /// Defines the ULD parts id to be displayed in the node.
+    /// </summary>
+    public int? UldPartsId { get; set; }
+
+    /// <summary>
+    /// Defines the ULD part id to be displayed in the node.
+    /// </summary>
+    public int? UldPartId { get; set; }
 }

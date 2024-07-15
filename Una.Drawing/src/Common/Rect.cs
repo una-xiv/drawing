@@ -5,9 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System;
-using System.Numerics;
-
 namespace Una.Drawing;
 
 public class Rect(int x1, int y1, int x2, int y2)
@@ -104,4 +101,7 @@ public class Rect(int x1, int y1, int x2, int y2)
     /// <returns>The union of this and the other rectangle.</returns>
     public Rect Union(Rect rect) =>
         new(Math.Min(X1, rect.X1), Math.Min(Y1, rect.Y1), Math.Max(X2, rect.X2), Math.Max(Y2, rect.Y2));
+
+    public static implicit operator SKRectI(Rect rect) => new(rect.X1, rect.Y1, rect.X2, rect.Y2);
+    public static implicit operator Rect(SKRectI rect) => new(rect.Left, rect.Top, rect.Right, rect.Bottom);
 }

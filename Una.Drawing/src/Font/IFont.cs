@@ -1,6 +1,4 @@
-﻿using SkiaSharp;
-
-namespace Una.Drawing.Font;
+﻿namespace Una.Drawing.Font;
 
 public interface IFont
 {

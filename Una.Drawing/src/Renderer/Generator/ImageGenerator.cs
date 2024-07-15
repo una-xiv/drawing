@@ -1,11 +1,10 @@
-﻿/* Una.Drawing                                                 ____ ___
+/* Una.Drawing                                                 ____ ___
  *   A declarative drawing library for FFXIV.                 |    |   \____ _____        ____                _
  *                                                            |    |   /    \\__  \      |    \ ___ ___ _ _ _|_|___ ___
  * By Una. Licensed under AGPL-3.                             |    |  |   |  \/ __ \_    |  |  |  _| .'| | | | |   | . |
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using SkiaSharp;
 using Una.Drawing.Texture;
 
 namespace Una.Drawing.Generator;
@@ -24,6 +23,14 @@ internal class ImageGenerator : IGenerator
             image = TextureLoader.LoadFromBytes(node.ComputedStyle.ImageBytes);
         } else if (node.ComputedStyle.IconId is not null) {
             image = TextureLoader.LoadIcon(node.ComputedStyle.IconId.Value);
+        } else if (!string.IsNullOrWhiteSpace(node.ComputedStyle.UldResource) && node.ComputedStyle is { UldPartsId: not null, UldPartId: not null }) {
+            var uld = TextureLoader.LoadUld(node.ComputedStyle.UldResource, node.ComputedStyle.UldPartsId.Value, node.ComputedStyle.UldPartId.Value);
+
+            if (!uld.HasValue) return;
+
+            var uldVal = uld.Value;
+
+            image = uldVal.Texture.Subset(uldVal.Rect);
         } else {
             return;
         }

@@ -5,10 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
 namespace Una.Drawing;
 
 public partial struct ComputedStyle
@@ -23,7 +19,8 @@ public partial struct ComputedStyle
             || OutlineColor is not null
             || TextShadowColor is not null
             || IconId is not null
-            || ImageBytes is not null;
+            || ImageBytes is not null
+            || (!string.IsNullOrWhiteSpace(UldResource) && UldPartsId.HasValue && UldPartId.HasValue);
     }
 
     internal int Commit(ref ComputedStyle previous)

@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-using SkiaSharp;
-using Una.Drawing.Texture;
+﻿using Una.Drawing.Texture;
 
 namespace Una.Drawing.Generator;
 

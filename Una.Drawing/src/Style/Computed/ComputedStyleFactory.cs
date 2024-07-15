@@ -5,8 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System;
-using System.Numerics;
 using System.Threading.Tasks;
 
 namespace Una.Drawing;
@@ -98,6 +96,9 @@ internal static class ComputedStyleFactory
         cs.ScrollbarThumbColor       = style.ScrollbarThumbColor ?? cs.ScrollbarThumbColor;
         cs.ScrollbarThumbHoverColor  = style.ScrollbarThumbHoverColor ?? cs.ScrollbarThumbHoverColor;
         cs.ScrollbarThumbActiveColor = style.ScrollbarThumbActiveColor ?? cs.ScrollbarThumbActiveColor;
+        cs.UldResource               = style.UldResource ?? cs.UldResource;
+        cs.UldPartsId                = style.UldPartsId ?? cs.UldPartsId;
+        cs.UldPartId                 = style.UldPartId ?? cs.UldPartId;
     }
 
     /// <summary>

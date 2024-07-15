@@ -5,8 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System;
-
 namespace Una.Drawing;
 
 internal class QuerySelectorParseException(string message) : Exception(message);
