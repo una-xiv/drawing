@@ -85,9 +85,6 @@ public partial class Node
 
                 _intermediateStyle = style;
 
-                if (_intermediateStyle.UldPartId.HasValue)
-                    DebugLogger.Log("F U W U N W!!!!!!");
-
                 lock (_childNodes) {
                     foreach (Node child in _childNodes) {
                         if (child.ComputeStyle()) {
