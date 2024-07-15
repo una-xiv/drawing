@@ -5,7 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using FFXIVClientStructs.FFXIV.Client.System.String;
 using Lumina.Misc;
 
 namespace Una.Drawing;
