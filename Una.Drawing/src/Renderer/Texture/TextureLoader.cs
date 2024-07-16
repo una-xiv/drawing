@@ -1,6 +1,7 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Dalamud.Interface.Textures.TextureWraps;
 using Lumina.Data.Files;
+using System.Linq;
 
 namespace Una.Drawing.Texture;
 
@@ -37,19 +38,37 @@ internal static class TextureLoader
     /// <param name="partId">What part to use of parts group</param>
     /// <returns><see cref="UldIcon"/></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    internal static UldIcon? LoadUld(string uldPath, int partsId, int partId)
+    internal static unsafe UldIcon? LoadUld(string uldPath, int partsId, int partId)
     {
-        if (uldPath.EndsWith(".uld") || uldPath.EndsWith(".tex"))
-            uldPath = uldPath[..^4];
+        if (!uldPath.EndsWith(".uld"))
+        {
+            if(uldPath.Contains('.'))
+                throw new ArgumentException("Not a path to uld file.", nameof(uldPath));
+            uldPath += ".uld";
+        }
 
-        var uldFile = LoadUldFile(uldPath + ".uld");
-        var texFile = TextureLoader.LoadTexture(uldPath + "_hr1.tex");
+        var uldFile = LoadUldFile(uldPath);
 
-        if (uldFile == null || texFile == null)
+        if (uldFile == null)
             return null;
 
-        var part = uldFile.Parts[partsId];
+        var part = uldFile.Parts.First(t => t.Id == partsId);
         var subPart = part.Parts[partId];
+        var tex = uldFile.AssetData.First(t => t.Id == subPart.TextureId).Path;
+        string texPath;
+        fixed (char* p = tex)
+            texPath = new string(p);
+        var normalTexPath = texPath;
+        texPath = texPath[..^4] + "_hr1.tex";
+        var texFile = LoadTexture(texPath);
+        // failed to get hr version of texture? Fallback to normal
+        if (texFile == null)
+        {
+            texFile = LoadTexture(normalTexPath);
+            // failed to get normal texture? Something is wrong with uld but ¯\_(ツ)_/¯ can't do much about that one so return null
+            if (texFile == null)
+                return null;
+        }
 
         var uv = new Vector2(subPart.U, subPart.V) * 2;
         var size = new Vector2(subPart.W, subPart.H) * 2;
