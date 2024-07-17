@@ -59,19 +59,21 @@ internal static class TextureLoader
         fixed (char* p = tex)
             texPath = new string(p);
         var normalTexPath = texPath;
+        var scale = 2;
         texPath = texPath[..^4] + "_hr1.tex";
         var texFile = LoadTexture(texPath);
         // failed to get hr version of texture? Fallback to normal
         if (texFile == null)
         {
+            scale = 1;
             texFile = LoadTexture(normalTexPath);
             // failed to get normal texture? Something is wrong with uld but ¯\_(ツ)_/¯ can't do much about that one so return null
             if (texFile == null)
                 return null;
         }
 
-        var uv = new Vector2(subPart.U, subPart.V) * 2;
-        var size = new Vector2(subPart.W, subPart.H) * 2;
+        var uv = new Vector2(subPart.U, subPart.V) * scale;
+        var size = new Vector2(subPart.W, subPart.H) * scale;
 
         return new UldIcon { Size = size, Texture = texFile, Rect = new Rect(uv, uv + size) };
     }
