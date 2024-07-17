@@ -102,6 +102,11 @@ public partial class Node
     private          NodeSnapshot         _snapshot;
     private readonly List<ImDrawListPtr>  _drawLists = [];
 
+    ~Node()
+    {
+        Dispose();
+    }
+
     public void Render(ImDrawListPtr drawList, Point position, bool forceSynchronousStyleComputation = false)
     {
         if (ParentNode is not null)
@@ -135,6 +140,7 @@ public partial class Node
 
         if (Color.ThemeVersion != _colorThemeVersion) {
             _colorThemeVersion = Color.ThemeVersion;
+            _texture?.Dispose();
             _texture           = null;
         }
 
@@ -192,6 +198,7 @@ public partial class Node
         NodeSnapshot snapshot = CreateSnapshot();
 
         if ((_texture is null || !snapshot.Equals(ref _snapshot)) && Width > 0 && Height > 0) {
+            _texture?.Dispose();
             _texture  = Renderer.CreateTexture(this);
             _snapshot = snapshot;
             _consecutiveRedraws++;

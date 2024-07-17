@@ -51,6 +51,7 @@ public partial class Node
             return NodeValueMeasurement?.Size ?? new();
         }
 
+        _texture?.Dispose();
         _texture = null;
 
         _textCachedNodeValue = _nodeValue;

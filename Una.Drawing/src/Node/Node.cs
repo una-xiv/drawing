@@ -79,6 +79,8 @@ public partial class Node : IDisposable
 
             _nodeValue           = value;
             _textCachedNodeValue = null;
+
+            _texture?.Dispose();
             _texture             = null;
 
             OnPropertyChanged?.Invoke("NodeValue", _nodeValue);
@@ -276,6 +278,8 @@ public partial class Node : IDisposable
 
         // TODO: Cancel compute style token.
 
+        _texture?.Dispose();
+
         FontRegistry.FontChanged -= OnFontConfigurationChanged;
 
         GC.SuppressFinalize(this);
@@ -283,6 +287,7 @@ public partial class Node : IDisposable
 
     private void OnFontConfigurationChanged()
     {
+        _texture?.Dispose();
         _texture             = null;
         _textCachedFontId    = null;
         _textCachedFontSize  = null;
@@ -393,9 +398,9 @@ public partial class Node : IDisposable
     /// Removes this node from its parent. Does nothing if this node has no
     /// parent node.
     /// </summary>
-    public void Remove()
+    public void Remove(bool dispose = true)
     {
-        ParentNode?.RemoveChild(this);
+        ParentNode?.RemoveChild(this, dispose);
     }
 
     /// <summary>
@@ -403,12 +408,14 @@ public partial class Node : IDisposable
     /// node is not a child of this node.
     /// </summary>
     /// <param name="node">The node to remove.</param>
-    public void RemoveChild(Node node)
+    public void RemoveChild(Node node, bool dispose = true)
     {
         lock (_childNodes) {
             if (!_childNodes.Contains(node)) return;
 
             _childNodes.Remove(node);
+
+            if (dispose) node?.Dispose();
         }
     }
 
