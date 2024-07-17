@@ -398,7 +398,7 @@ public partial class Node : IDisposable
     /// Removes this node from its parent. Does nothing if this node has no
     /// parent node.
     /// </summary>
-    public void Remove(bool dispose = true)
+    public void Remove(bool dispose = false)
     {
         ParentNode?.RemoveChild(this, dispose);
     }
@@ -408,7 +408,7 @@ public partial class Node : IDisposable
     /// node is not a child of this node.
     /// </summary>
     /// <param name="node">The node to remove.</param>
-    public void RemoveChild(Node node, bool dispose = true)
+    public void RemoveChild(Node node, bool dispose = false)
     {
         lock (_childNodes) {
             if (!_childNodes.Contains(node)) return;
