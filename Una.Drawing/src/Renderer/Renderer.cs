@@ -41,7 +41,7 @@ internal static class Renderer
 
         // Adhere to a minimum of 4k texture to accommodate overflowing container background textures.
         // This only increases in case of 4K displays that have a horizontal resolution of 5120 pixels.
-        int maxTextureSize = Math.Max(maxDisplaySize, 4096);
+        int maxTextureSize = Math.Max(8192, 8192);
 
         // Create the SKSurface and SKCanvas.
         SKImageInfo         info  = new(maxTextureSize, maxTextureSize);
