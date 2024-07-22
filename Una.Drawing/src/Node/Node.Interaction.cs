@@ -47,6 +47,12 @@ public partial class Node
     /// True if one of the mouse buttons in held down while the cursor is over the element.
     /// </summary>
     public bool IsMouseDown { get; private set; }
+    
+    /// <summary>
+    /// True if one of the mouse buttons in held down while the cursor is over a different element.
+    /// </summary>
+    public bool IsMouseDownOverOtherNode { get; private set; }
+        
     public bool IsMiddleMouseDown { get; private set; }
     public bool IsRightMouseDown { get; private set; }
 
@@ -185,33 +191,47 @@ public partial class Node
             if (ImGui.IsMouseDown(ImGuiMouseButton.Left)) {
                 if (!IsMouseDown) {
                     RaiseEvent(OnMouseDown);
-                    RaiseEvent(OnClick);
                     IsMouseDown = true;
                 }
             } else if (ImGui.IsMouseDown(ImGuiMouseButton.Middle)) {
                 if (!IsMiddleMouseDown) {
                     RaiseEvent(OnMouseDown);
-                    RaiseEvent(OnMiddleClick);
                     IsMiddleMouseDown = true;
                 }
             } else if (ImGui.IsMouseDown(ImGuiMouseButton.Right)) {
                 if (!IsRightMouseDown) {
-                    RaiseEvent(OnRightClick);
                     RaiseEvent(OnMouseDown);
                     IsRightMouseDown = true;
                 }
             } else {
-                if (IsMouseDown) {
+                if (IsMouseDown && !IsMouseDownOverOtherNode) {
                     RaiseEvent(OnMouseUp);
+                    RaiseEvent(OnClick);
                     IsMouseDown = false;
                 }
                 if (IsMiddleMouseDown) {
-                    IsMiddleMouseDown = false;
+                    RaiseEvent(OnMiddleClick);
+                    IsMiddleMouseDown = false;                                                                                            
                 }
                 if (IsRightMouseDown) {
+                    RaiseEvent(OnRightClick);
                     IsRightMouseDown = false;
                 }
+
+                if (IsMouseDownOverOtherNode)
+                {
+                    RaiseEvent(OnMouseUp);
+                }
             }
+        } else {
+            if (ImGui.IsMouseDown(ImGuiMouseButton.Left))
+            {
+                IsMouseDownOverOtherNode = true;
+            }
+        }
+
+        if (IsMouseDownOverOtherNode && !ImGui.IsMouseDown(ImGuiMouseButton.Left)) {
+            IsMouseDownOverOtherNode = false;
         }
     }
 
