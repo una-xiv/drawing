@@ -36,9 +36,10 @@ internal static class TextureLoader
     /// <param name="uldPath">The uld path to get for specifically the .uld file in question</param>
     /// <param name="partsId">What parts group to look for</param>
     /// <param name="partId">What part to use of parts group</param>
+    /// <param name="style">The style of the uld</param>
     /// <returns><see cref="UldIcon"/></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    internal static unsafe UldIcon? LoadUld(string uldPath, int partsId, int partId)
+    internal static unsafe UldIcon? LoadUld(string uldPath, int partsId, int partId, UldStyle style = UldStyle.Default)
     {
         if (!uldPath.EndsWith(".uld"))
         {
@@ -61,7 +62,7 @@ internal static class TextureLoader
         var normalTexPath = texPath;
         var scale = 2;
         texPath = texPath[..^4] + "_hr1.tex";
-        var texFile = LoadTexture(texPath);
+        var texFile = LoadTexture(texPath.Replace("uld/", GetUldStyleString(style)));
         // failed to get hr version of texture? Fallback to normal
         if (texFile == null)
         {
@@ -92,6 +93,14 @@ internal static class TextureLoader
 
         return uldFile;
     }
+
+    internal static string GetUldStyleString(UldStyle style) => style switch
+    {
+        UldStyle.Light => "uld/light/",
+        UldStyle.Classic => "uld/third/",
+        UldStyle.TransparentBlue => "uld/fourth/",
+        _ => "uld/"
+    };
 
     internal static SKImage? LoadFromBytes(byte[] bytes)
     {
@@ -195,4 +204,12 @@ internal static class TextureLoader
 
         return iconFile;
     }
+}
+
+public enum UldStyle
+{
+    Default,
+    Light,
+    Classic,
+    TransparentBlue
 }
