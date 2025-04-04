@@ -128,6 +128,9 @@ public sealed class ExamplePlugin : IDalamudPlugin
         foreach (var test in _tests) {
             if (ImGui.Button(test.Key)) {
                 _activeTest = test.Key;
+                if (_tests.TryGetValue(_activeTest, out var t)) {
+                    t.OnActivate();
+                }
             }
 
             if (test.Key != last) {

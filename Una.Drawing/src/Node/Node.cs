@@ -318,7 +318,6 @@ public partial class Node : IDisposable
 
         _tagsList.ItemAdded += t =>
         {
-            DebugLogger.Log($"Tag added: {t}");
             ClearCachedQuerySelectors();
             OnTagAdded?.Invoke(t);
             SignalReflow();
@@ -326,7 +325,6 @@ public partial class Node : IDisposable
 
         _tagsList.ItemRemoved += t =>
         {
-            DebugLogger.Log($"Tag removed: {t}");
             ClearCachedQuerySelectors();
             OnTagRemoved?.Invoke(t);
             SignalReflow();
