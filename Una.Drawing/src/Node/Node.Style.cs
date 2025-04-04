@@ -40,6 +40,9 @@ public partial class Node
         }
     }
 
+    /// <summary>
+    /// The stylesheet that defines the styles for this node and its children.
+    /// </summary>
     public Stylesheet? Stylesheet {
         get => _stylesheet ?? ParentNode?.Stylesheet;
         set {
@@ -47,6 +50,16 @@ public partial class Node
             SignalReflow();
         }
     }
+    
+    /// <summary>
+    /// A lookup table of query selectors of which the match result has been
+    /// performed and cached. This is used to avoid re-evaluating the same
+    /// query selector multiple times.
+    /// </summary>
+    /// <remarks>
+    /// This dictionary should be cleared on reflow to avoid stale results.
+    /// </remarks>
+    internal readonly Dictionary<QuerySelector, bool> CachedQuerySelectors = [];
 
     /// <summary>
     /// Defines the final computed style of this node.
@@ -60,7 +73,7 @@ public partial class Node
     private bool          _hasComputedStyle;
     private int           _computeStyleLock;
 
-    private readonly object _lockObject = new();
+    private readonly Lock _lockObject = new();
 
     public static bool UseThreadedStyleComputation { get; set; }
 
@@ -73,50 +86,49 @@ public partial class Node
 
         _isUpdatingStyle = true;
 
-        if (0 == Interlocked.Exchange(ref _computeStyleLock, 1)) {
-            lock (_lockObject) {
-                if (UseThreadedStyleComputation) {
-                    lock (TagsList) {
-                        InheritTagsFromParent();
-                    }
-                }
-
-                if (IsDisposed) return false;
-
-                var  style     = ComputedStyleFactory.Create(this);
-                int  result    = style.Commit(ref _intermediateStyle);
-                bool isUpdated = result > 0;
-
-                _intermediateStyle = style;
-
-                lock (_childNodes) {
-                    foreach (Node child in _childNodes.ToImmutableArray()) {
-                        if (!child.IsDisposed && child.ComputeStyle()) {
-                            isUpdated = true;
-                        }
-                    }
-                }
-
-                if (isUpdated) {
-                    ReassignAnchorNodes();
-                }
-
-                if (result is 1 or 3) SignalReflowRecursive();
-                if (result is 2 or 3) SignalRepaint();
-
-                ComputedStyle     = _intermediateStyle;
-                _isUpdatingStyle  = false;
-                _hasComputedStyle = true;
-
-
-                // Release lock.
-                Interlocked.Exchange(ref _computeStyleLock, 0);
-
-                return isUpdated;
-            }
+        if (0 != Interlocked.Exchange(ref _computeStyleLock, 1)) {
+            return false;
         }
 
-        return false;
+        lock (_lockObject) {
+            if (UseThreadedStyleComputation) {
+                lock (TagsList) {
+                    InheritTagsFromParent();
+                }
+            }
+
+            if (IsDisposed) return false;
+
+            var  style     = ComputedStyleFactory.Create(this);
+            int  result    = style.Commit(ref _intermediateStyle);
+            bool isUpdated = result > 0;
+
+            _intermediateStyle = style;
+
+            lock (_childNodes) {
+                foreach (Node child in _childNodes.ToImmutableArray()) {
+                    if (!child.IsDisposed && child.ComputeStyle()) {
+                        isUpdated = true;
+                    }
+                }
+            }
+
+            if (isUpdated) {
+                ReassignAnchorNodes();
+            }
+
+            if (result is 1 or 3) SignalReflowRecursive();
+            if (result is 2 or 3) SignalRepaint();
+
+            ComputedStyle     = _intermediateStyle;
+            _isUpdatingStyle  = false;
+            _hasComputedStyle = true;
+
+            // Release lock.
+            Interlocked.Exchange(ref _computeStyleLock, 0);
+
+            return isUpdated;
+        }
     }
 
     /// <summary>
@@ -152,5 +164,17 @@ public partial class Node
     {
         _texture?.Dispose();
         _texture = null;
+    }
+
+    private void ClearCachedQuerySelectors()
+    {
+        CachedQuerySelectors.Clear();
+        SignalReflow();
+        
+        lock (_childNodes) {
+            foreach (var node in _childNodes) {
+                node.ClearCachedQuerySelectors();
+            }
+        }
     }
 }

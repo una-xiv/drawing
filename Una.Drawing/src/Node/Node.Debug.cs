@@ -19,13 +19,17 @@ public partial class Node
     /// </summary>
     public override string ToString()
     {
-        string id      = string.IsNullOrWhiteSpace(Id) ? "" : $"{Id}";
-        string classes = ClassList.Count == 0 ? "" : $".{string.Join(".", ClassList)}";
-        string tags    = TagsList.Count  == 0 ? "" : $":{string.Join(":", TagsList)}";
+        string type        = GetType().Name;
+        string id          = string.IsNullOrWhiteSpace(Id) ? "" : $" Id=\"{Id}\"";
+        string classes     = ClassList.Count == 0 ? "" : $" Class=\".{string.Join(".", ClassList)}\"";
+        string tags        = TagsList.Count == 0 ? "" : $" Tags=\":{string.Join(":", TagsList)}\"";
+        string disabled    = IsDisabled ? " Disabled" : "";
+        string inheritTags = InheritTags ? " InheritTags" : "";
+        string size = Bounds.PaddingSize.IsZero
+            ? ""
+            : $" Size=\"{Bounds.PaddingSize.Width} x {Bounds.PaddingSize.Width}\"";
 
-        var result = $"{id}{classes}{tags}";
-
-        return (result == "" ? "[/]" : result) + $" <{OuterWidth} x {OuterHeight}>";
+        return $"<{type}{id}{classes}{tags}{disabled}{inheritTags}{size}/>";
     }
 
     /// <summary>
@@ -68,19 +72,17 @@ public partial class Node
     /// <summary>
     /// Draws debug information for this node.
     /// </summary>
-    [Conditional("DEBUG")]
+    // [Conditional("DEBUG")]
     private void DrawDebugBounds()
     {
-        if (! DrawDebugInfo) return;
+        if (!DrawDebugInfo) return;
 
         if (Bounds.ContentRect.IsEmpty) return;
         if (Bounds.PaddingRect.IsEmpty) return;
-        if (Bounds.MarginRect.IsEmpty) return;
 
         ImDrawListPtr dl = ImGui.GetForegroundDrawList();
 
         dl.AddRectFilled(Bounds.ContentRect.TopLeft, Bounds.ContentRect.BottomRight, 0x3000FF00);
         dl.AddRect(Bounds.PaddingRect.TopLeft, Bounds.PaddingRect.BottomRight, 0xA0A0A0FF);
-        dl.AddRect(Bounds.MarginRect.TopLeft,  Bounds.MarginRect.BottomRight,  0x60FFFFFF);
     }
 }

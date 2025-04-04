@@ -10,27 +10,23 @@ namespace Una.Drawing;
 [StructLayout(LayoutKind.Sequential)]
 internal struct LayoutStyleSnapshot
 {
-    internal Anchor.AnchorPoint Anchor;
-    internal bool               IsVisible;
-    internal int                Width;
-    internal int                Height;
-    internal Flow               Flow;
-    internal int                Gap;
-    internal bool               Stretch;
-    internal int                PaddingTop;
-    internal int                PaddingRight;
-    internal int                PaddingBottom;
-    internal int                PaddingLeft;
-    internal int                MarginTop;
-    internal int                MarginRight;
-    internal int                MarginBottom;
-    internal int                MarginLeft;
-    internal bool               WordWrap;
-    internal uint               Font;
-    internal int                FontSize;
-    internal float              LineHeight;
-    internal bool               TextOverflow;
-    internal int?               MaxWidth;
+    internal Anchor.AnchorPoint   Anchor;
+    internal bool                 IsVisible;
+    internal int                  Width;
+    internal int                  Height;
+    internal Flow                 Flow;
+    internal int                  Gap;
+    internal int                  PaddingTop;
+    internal int                  PaddingRight;
+    internal int                  PaddingBottom;
+    internal int                  PaddingLeft;
+    internal bool                 WordWrap;
+    internal uint                 Font;
+    internal int                  FontSize;
+    internal float                LineHeight;
+    internal bool                 TextOverflow;
+    internal int?                 MaxWidth;
+    internal (AutoSize, AutoSize) AutoSize;
 
     internal static LayoutStyleSnapshot Create(ref ComputedStyle style)
     {
@@ -41,21 +37,17 @@ internal struct LayoutStyleSnapshot
             Height        = style.Size.Height,
             Flow          = style.Flow,
             Gap           = style.Gap,
-            Stretch       = style.Stretch,
             PaddingTop    = style.Padding.Top,
             PaddingRight  = style.Padding.Right,
             PaddingBottom = style.Padding.Bottom,
             PaddingLeft   = style.Padding.Left,
-            MarginTop     = style.Margin.Top,
-            MarginRight   = style.Margin.Right,
-            MarginBottom  = style.Margin.Bottom,
-            MarginLeft    = style.Margin.Left,
             WordWrap      = style.WordWrap,
             Font          = style.Font,
             FontSize      = style.FontSize,
             LineHeight    = style.LineHeight,
             TextOverflow  = style.TextOverflow,
-            MaxWidth      = style.MaxWidth
+            MaxWidth      = style.MaxWidth,
+            AutoSize      = style.AutoSize,
         };
     }
 }

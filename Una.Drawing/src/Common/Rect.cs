@@ -104,4 +104,9 @@ public class Rect(int x1, int y1, int x2, int y2)
 
     public static implicit operator SKRectI(Rect rect) => new(rect.X1, rect.Y1, rect.X2, rect.Y2);
     public static implicit operator Rect(SKRectI rect) => new(rect.Left, rect.Top, rect.Right, rect.Bottom);
+
+    public override string ToString()
+    {
+        return $"Rect({X1}, {Y1}, {X2}, {Y2})";
+    }
 }

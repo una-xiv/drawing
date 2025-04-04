@@ -59,10 +59,10 @@ internal static class Renderer
     /// </summary>
     internal static unsafe IDalamudTextureWrap? CreateTexture(Node node)
     {
-        if (node.Width == 0 || node.Height == 0) return null;
-        if (node.Width > 8192 || node.Height > 8192) return null;
+        if (node.OuterWidth == 0 || node.OuterHeight == 0) return null;
+        if (node.OuterWidth > 8192 || node.OuterHeight > 8192) return null;
 
-        SKImageInfo info    = new(node.Width, node.Height, SKColorType.Bgra8888, SKAlphaType.Premul, SkColorSpace);
+        SKImageInfo info    = new(node.OuterWidth, node.OuterHeight, SKColorType.Bgra8888, SKAlphaType.Premul, SkColorSpace);
         using var   pixmap  = new SKPixmap(info, _pixelDataPtr);
         using var   surface = SKSurface.Create(pixmap);
 
@@ -81,7 +81,7 @@ internal static class Renderer
         if (!hasDrawn) return null;
 
         return DalamudServices.TextureProvider.CreateFromRaw(
-            RawImageSpecification.Rgba32(node.Width, node.Height),
+            RawImageSpecification.Rgba32(node.OuterWidth, node.OuterHeight),
             pixmap.GetPixelSpan()
         );
     }

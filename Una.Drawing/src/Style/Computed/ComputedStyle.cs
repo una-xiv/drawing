@@ -18,6 +18,9 @@ public partial struct ComputedStyle
 
     /// <inheritdoc cref="Style.Size"/>
     public Size Size;
+    
+    /// <inheritdoc cref="Style.AutoSize"/>
+    public (AutoSize Horizontal, AutoSize Vertical) AutoSize;
 
     /// <inheritdoc cref="Style.Flow"/>
     public Flow Flow;
@@ -27,11 +30,6 @@ public partial struct ComputedStyle
 
     /// <inheritdoc cref="Style.Padding"/>
     public EdgeSize Padding;
-
-    /// <inheritdoc cref="Style.Margin"/>
-    public EdgeSize Margin;
-
-    public bool Stretch;
 
     /// <inheritdoc cref="Style.Color"/>
     public Color Color;

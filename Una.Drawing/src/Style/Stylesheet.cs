@@ -6,6 +6,7 @@
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
 using System.Linq;
+using System.Text;
 
 namespace Una.Drawing;
 
@@ -29,22 +30,27 @@ public class Stylesheet
         List<QuerySelector> results = QuerySelectorParser.Parse(query);
 
         foreach (var qs in results) {
-            // Don't allow nested selectors in a stylesheet. This is a
-            // deliberate design choice to keep performance high.
-            if (qs.DirectChild is not null || qs.NestedChild is not null)
-                throw new InvalidOperationException("A stylesheet rule declaration cannot have nested selectors.");
-
             Rules.Add(new(qs), style);
+        }
+    }
+
+    public void ImportFrom(Stylesheet other)
+    {
+        foreach (var rule in other.Rules) {
+            Rules.Add(rule.Key, rule.Value);
         }
     }
 
     internal class Rule(QuerySelector querySelector)
     {
+        public override string ToString()
+        {
+            return querySelector.ToString();
+        }
+
         public bool Matches(Node node)
         {
-            return (querySelector.Identifier is null || querySelector.Identifier.Equals(node.Id))
-                && querySelector.ClassList.All(className => node.ClassList.Contains(className))
-                && querySelector.TagList.All(className => node.TagsList.Contains(className));
+            return querySelector.Matches(node);
         }
     }
 
@@ -52,5 +58,19 @@ public class Stylesheet
     {
         public string Query => query;
         public Style  Style => style;
+    }
+
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+
+        foreach (var rule in Rules) {
+            sb.AppendLine(rule.Key.ToString());
+            sb.AppendLine("{");
+            sb.AppendLine(rule.Value.ToString());
+            sb.AppendLine("}");
+        }
+
+        return sb.ToString();
     }
 }

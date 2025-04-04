@@ -8,13 +8,18 @@ public class TextTest : ITest
 {
     public string Name => "Text";
 
-    private readonly Node _node = new() {
-        Style = new() {
+    private readonly Node _node = new()
+    {
+        Style = new()
+        {
             Anchor          = Anchor.TopLeft,
             Size            = new(800, 400),
             BackgroundColor = new(0xFF_000000),
+            Padding         = new(10),
+            Gap             = 10,
         },
-        ChildNodes = [
+        ChildNodes =
+        [
             CreateNode(Anchor.TopLeft, Anchor.TopLeft, "Fixed:64.", null, 64),
             CreateNode(Anchor.TopLeft, Anchor.TopLeft, "Top-left."),
 
@@ -27,7 +32,8 @@ public class TextTest : ITest
             CreateNode(Anchor.MiddleLeft, Anchor.MiddleLeft, "Middle-left."),
             CreateNode(Anchor.MiddleLeft, Anchor.MiddleLeft, "Fixed:64.", null, 64),
 
-            CreateNode(Anchor.MiddleCenter, Anchor.MiddleCenter, "Middle-center with some wrapped text here.", 150, 150),
+            CreateNode(Anchor.MiddleCenter, Anchor.MiddleCenter, "Middle-center with some wrapped text here.", 150,
+                150),
             CreateNode(Anchor.MiddleCenter, Anchor.MiddleCenter, "Middle-center with some wrapped text here.", 150, 0),
 
             CreateNode(Anchor.MiddleRight, Anchor.MiddleRight, "Fixed:64.", null, 64),
@@ -44,6 +50,10 @@ public class TextTest : ITest
         ]
     };
 
+    public void OnActivate()
+    {
+    }
+
     public void Render()
     {
         _node.Render(ImGui.GetBackgroundDrawList(), new(100, 100));
@@ -51,9 +61,11 @@ public class TextTest : ITest
 
     private static Node CreateNode(Anchor anchor, Anchor textAlign, string text, int? width = null, int? height = null)
     {
-        return new() {
+        return new()
+        {
             NodeValue = text,
-            Style = new() {
+            Style = new()
+            {
                 Size            = new(width ?? 0, height ?? 0),
                 Anchor          = anchor,
                 TextAlign       = textAlign,

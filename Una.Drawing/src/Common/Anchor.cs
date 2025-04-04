@@ -114,4 +114,9 @@ public class Anchor(Anchor.AnchorPoint point)
         BottomCenter,
         BottomRight
     }
+
+    public override string ToString()
+    {
+        return Point.ToString();
+    }
 }

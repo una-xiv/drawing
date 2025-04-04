@@ -10,6 +10,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using Una.Drawing.Font;
+using Una.Drawing.Script;
 using Una.Drawing.Texture;
 
 namespace Una.Drawing;
@@ -26,6 +27,8 @@ public class DrawingLib
         DalamudServices.PluginInterface = pluginInterface;
         DalamudServices.UiBuilder       = pluginInterface.UiBuilder;
 
+        ElementRegistry.Register<Node>();
+        
         pluginInterface.UiBuilder.Draw += OnDraw;
 
         if (downloadGameGlyphs)
@@ -99,6 +102,9 @@ public class DrawingLib
         GfdIconRepository.Dispose();
         TextureLoader.Dispose();
         MouseCursor.Dispose();
+        ScriptRegistry.Dispose();
+        ElementRegistry.Dispose();
+        QuerySelectorParser.Dispose();
     }
 
     private static void OnDraw()

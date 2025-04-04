@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
-using Lumina.Misc;
 using System.Collections.Immutable;
 using Una.Drawing.Texture;
 
@@ -267,7 +266,7 @@ public partial class Node
         Vector2 pos = ImGui.GetCursorScreenPos();
 
         foreach (var child in _childNodes) {
-            child.ComputeBoundingRects(new((int)pos.X, (int)pos.Y));
+            // child.ComputeBoundingRects(new((int)pos.X, (int)pos.Y));
         }
     }
 
@@ -276,12 +275,12 @@ public partial class Node
     {
         if (Overflow) return;
 
-        var totalSize = GetTotalSizeOfChildren(_childNodes);
-        var maxSize   = GetMaxSizeOfChildren(_childNodes);
+        // var totalSize = GetTotalSizeOfChildren(_childNodes);
+        // var maxSize   = GetMaxSizeOfChildren(_childNodes);
 
         Vector2 size = new(
-            ComputedStyle.Flow == Flow.Horizontal ? totalSize.Width : maxSize.Width,
-            ComputedStyle.Flow == Flow.Vertical ? totalSize.Height : maxSize.Height
+            // ComputedStyle.Flow == Flow.Horizontal ? totalSize.Width : maxSize.Width,
+            // ComputedStyle.Flow == Flow.Vertical ? totalSize.Height : maxSize.Height
         );
 
         ImGui.SetCursorPos(size);
