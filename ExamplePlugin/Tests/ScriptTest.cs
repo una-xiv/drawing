@@ -38,77 +38,105 @@ public class ScriptTest : ITest
 
         ElementRegistry.Register<CustomNode>();
 
-        const string code =
-            """
-                    <Style>
-                    @import "base";
-                    
-                    .menu {
-                        padding: 2 2;
-                        background-color: 0x2AFF0000;
-                    }
-                    
-                    .item {
-                        auto-size: grow fit;
-                        anchor: top-left;
-                        padding: 4 8;
-                        gap: 8;
-                        
-                        .icon {
-                            anchor: middle-left;
-                            size: 16;
-                            background-color: 0xFF00FF00;
-                            border-radius: 10;
-                            rounded-corners: all;
-                        }
-                        
-                        .label {
-                            anchor: middle-left;
-                            auto-size: grow fit;
-                            font-size: 16;
-                            text-align: middle-left;
-                            size: 0 32;
-                        }
-                        
-                        .alt {
-                            anchor: middle-left;
-                            font-size: 12;
-                            text-align: middle-right;
-                            size: 0 32;
-                            padding: 0 0 0 32;
-                        }
-                        
-                        &:hover {
-                            .icon {
-                                background-color: 0xFF00FFFF;
-                                size: 24;
-                            }
-                            .label {
-                                font-size: 20;
-                            }
-                        }
-                    }
-                    </Style>
-                     
-                    <Node Id="Test" class="menu">
-                        <Node class="item">
-                            <Node class="icon"/>
-                            <Node class="label" value="This is a label" />
-                            <Node class="alt" value="alt label 1" />
-                        </Node>
-                        <Node class="item">
-                            <Node class="icon"/>
-                            <Node class="label" value="This is another label" />
-                            <Node class="alt" value="alt label 2" />
-                        </Node>
-                        <Node class="item">
-                            <Node class="icon"/>
-                            <Node class="label" value="This is yet another label" />
-                            <Node class="alt" value="alt label 3" />
-                        </Node>
-                    </Node>
-            """;
+        // const string code =
+        //     """
+        //             <Style>
+        //             @import "base";
+        //             
+        //             .menu {
+        //                 padding: 2 2;
+        //                 background-color: 0x2AFF0000;
+        //             }
+        //             
+        //             .item {
+        //                 auto-size: grow fit;
+        //                 anchor: top-left;
+        //                 padding: 4 8;
+        //                 gap: 8;
+        //                 
+        //                 .icon {
+        //                     anchor: middle-left;
+        //                     size: 16;
+        //                     background-color: 0xFF00FF00;
+        //                     border-radius: 10;
+        //                     rounded-corners: all;
+        //                 }
+        //                 
+        //                 .label {
+        //                     anchor: middle-left;
+        //                     auto-size: grow fit;
+        //                     font-size: 16;
+        //                     text-align: middle-left;
+        //                     size: 0 32;
+        //                 }
+        //                 
+        //                 .alt {
+        //                     anchor: middle-left;
+        //                     font-size: 12;
+        //                     text-align: middle-right;
+        //                     size: 0 32;
+        //                     padding: 0 0 0 32;
+        //                 }
+        //                 
+        //                 &:hover {
+        //                     .icon {
+        //                         background-color: 0xFF00FFFF;
+        //                         size: 24;
+        //                     }
+        //                     .label {
+        //                         font-size: 20;
+        //                     }
+        //                 }
+        //             }
+        //             </Style>
+        //              
+        //             <Node Id="Test" class="menu">
+        //                 <Node class="item">
+        //                     <Node class="icon"/>
+        //                     <Node class="label" value="This is a label" />
+        //                     <Node class="alt" value="alt label 1" />
+        //                 </Node>
+        //                 <Node class="item">
+        //                     <Node class="icon"/>
+        //                     <Node class="label" value="This is another label" />
+        //                     <Node class="alt" value="alt label 2" />
+        //                 </Node>
+        //                 <Node class="item">
+        //                     <Node class="icon"/>
+        //                     <Node class="label" value="This is yet another label" />
+        //                     <Node class="alt" value="alt label 3" />
+        //                 </Node>
+        //             </Node>
+        //     """;
 
+        const string code = 
+            """
+            <style>
+            #main {
+                flow: vertical;
+                anchor: top-left;
+                padding: 10;
+
+                .item {
+                    flow: horizontal; // default
+                    auto-size: grow fit; // grow horizontally, fit vertically
+                    gap: 8;
+                    padding: 4 8; // Vertical, horizontal (follows CSS-spec)
+                    background-color: 0xFF212021;
+
+                    &:hover {
+                        background-color: 0xFF414141;
+                    }
+                }
+            }
+            </style>
+
+            <node id="main">
+                <node class="item" value="The first item 1"/>
+                <node class="item" value="Item 2"/>
+                <node class="item" value="The last item, number 3"/>
+            </node>
+            """;
         try
         {
             var script = ScriptSource.FromCode(code);

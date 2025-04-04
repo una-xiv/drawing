@@ -56,7 +56,9 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
     /// <inheritdoc/>
     public float GetLineHeight(int fontSize)
     {
-        return (96 / 72) * GetTextFont(fontSize).Size;
+        return (96f / 72f) * GetTextFont(fontSize).Size;
+        // var m = GetMetrics(fontSize);
+        // return Math.Abs(m.Ascent + m.Descent + m.Leading);
     }
 
     /// <inheritdoc/>

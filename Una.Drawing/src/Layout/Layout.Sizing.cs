@@ -10,6 +10,13 @@ internal static partial class Layout
     private static void ComputeSizes(Node node)
     {
         ComputeFixedAndFitSizes(node);
+
+        if (!ComputeGrowingSizes(node)) {
+            return; // No need to stabilize.
+        }
+
+        // Second pass to stabilize for text wrapping & overflow.
+        ComputeFixedAndFitSizes(node);
         ComputeGrowingSizes(node);
     }
 
@@ -33,7 +40,7 @@ internal static partial class Layout
         foreach (Node child in node.ChildNodes) {
             if (child.IsDisposed || !child.ComputedStyle.IsVisible) continue;
 
-            visibleChildCount++;     // Count only visible children for gap calculation.
+            visibleChildCount++;            // Count only visible children for gap calculation.
             ComputeFixedAndFitSizes(child); // Recurse reverse-breadth-first.
 
             int childOuterWidth  = child.Bounds.PaddingSize.Width; // Using OuterWidth/Height based on context
@@ -74,17 +81,18 @@ internal static partial class Layout
             Math.Max(0, finalContentWidth),
             Math.Max(0, finalContentHeight)
         );
-        
+
         node.Bounds.PaddingSize = new Size(
             node.Bounds.ContentSize.Width + node.ComputedStyle.Padding.HorizontalSize,
             node.Bounds.ContentSize.Height + node.ComputedStyle.Padding.VerticalSize
         );
     }
 
-    private static void ComputeGrowingSizes(Node node)
+    private static bool ComputeGrowingSizes(Node node)
     {
-        Flow axis      = node.ComputedStyle.Flow;
-        Flow crossAxis = axis == Flow.Horizontal ? Flow.Vertical : Flow.Horizontal;
+        Flow axis          = node.ComputedStyle.Flow;
+        Flow crossAxis     = axis == Flow.Horizontal ? Flow.Vertical : Flow.Horizontal;
+        bool mustStabilize = false;
 
         foreach (List<Node> children in node.AnchorToChildNodes.Values) {
             GrowChildrenAlongAxis(node, axis, children);
@@ -92,8 +100,26 @@ internal static partial class Layout
         }
 
         foreach (Node child in node.ChildNodes) {
-            ComputeGrowingSizes(child);
+            if (ComputeGrowingSizes(child)) {
+                mustStabilize = true;
+            }
         }
+
+        // Reset and recompute text size after layout if necessary.
+        if (node.ComputedStyle.WordWrap || !node.ComputedStyle.TextOverflow) {
+            node.ClearTextCache();
+            Size newTextSize = node.ComputeContentSizeFromText();
+
+            if ((node.ComputedStyle.AutoSize.Horizontal == AutoSize.Fit && node.ComputedStyle.Size.Width == 0 &&
+                 newTextSize.Width != node.Bounds.ContentSize.Width) ||
+                (node.ComputedStyle.AutoSize.Vertical == AutoSize.Fit && node.ComputedStyle.Size.Height == 0 &&
+                 newTextSize.Height != node.Bounds.ContentSize.Height)
+            ) {
+                return true;
+            }
+        }
+
+        return mustStabilize;
     }
 
     private static void GrowChildrenAlongAxis(Node node, Flow axis, List<Node> children)
@@ -106,12 +132,14 @@ internal static partial class Layout
 
         // Configure based on axis.
         if (axis == Flow.Horizontal) {
-            growableChildren  = children.Where(n => n is { IsDisposed: false, ComputedStyle: { AutoSize.Horizontal: AutoSize.Grow, IsVisible: true } }).ToList();
+            growableChildren = children.Where(n => n is
+                { IsDisposed: false, ComputedStyle: { AutoSize.Horizontal: AutoSize.Grow, IsVisible: true } }).ToList();
             getOuterSize      = n => n.OuterWidth;
             getPaddingSize    = cs => cs.Padding.HorizontalSize;
             parentContentSize = node.Bounds.ContentSize.Width;
         } else {
-            growableChildren  = children.Where(n => n is { IsDisposed: false, ComputedStyle: { AutoSize.Vertical: AutoSize.Grow, IsVisible: true } }).ToList();
+            growableChildren = children.Where(n => n is
+                { IsDisposed: false, ComputedStyle: { AutoSize.Vertical: AutoSize.Grow, IsVisible: true } }).ToList();
             getOuterSize      = n => n.OuterHeight;
             getPaddingSize    = cs => cs.Padding.VerticalSize;
             parentContentSize = node.Bounds.ContentSize.Height;
@@ -122,7 +150,8 @@ internal static partial class Layout
 
         // Calculate space used by non-growable items and gaps.
         int nonGrowableSize = children
-                             .Where(n => !growableChildren.Contains(n) && n is { IsDisposed: false, ComputedStyle.IsVisible: true })
+                             .Where(n => !growableChildren.Contains(n) &&
+                                         n is { IsDisposed: false, ComputedStyle.IsVisible: true })
                              .Sum(n => getOuterSize(n));
 
         int visibleChildCount = children.Count(n => n is { IsDisposed: false, ComputedStyle.IsVisible: true });
@@ -138,7 +167,7 @@ internal static partial class Layout
 
         foreach (Node child in growableChildren) {
             if (child.IsDisposed || !child.ComputedStyle.IsVisible) continue;
-            
+
             int targetOuterSize  = baseTargetOuterSize + (remainderSize > 0 ? 1 : 0);
             int childPaddingSize = getPaddingSize(child.ComputedStyle);
             int newContentSize   = targetOuterSize - childPaddingSize;
@@ -165,11 +194,13 @@ internal static partial class Layout
         Func<ComputedStyle, int> getPaddingSize;
 
         if (axisToStretch == Flow.Horizontal) {
-            shouldStretchChild = n => n.ComputedStyle.AutoSize.Horizontal is AutoSize.Grow && n.ComputedStyle.Size.Width <= 0;
-            getPaddingSize     = cs => cs.Padding.HorizontalSize;
+            shouldStretchChild = n =>
+                n.ComputedStyle.AutoSize.Horizontal is AutoSize.Grow && n.ComputedStyle.Size.Width <= 0;
+            getPaddingSize = cs => cs.Padding.HorizontalSize;
         } else {
-            shouldStretchChild = n => n.ComputedStyle.AutoSize.Vertical is AutoSize.Grow && n.ComputedStyle.Size.Height <= 0;
-            getPaddingSize     = cs => cs.Padding.VerticalSize;
+            shouldStretchChild = n =>
+                n.ComputedStyle.AutoSize.Vertical is AutoSize.Grow && n.ComputedStyle.Size.Height <= 0;
+            getPaddingSize = cs => cs.Padding.VerticalSize;
         }
 
         foreach (Node child in children) {

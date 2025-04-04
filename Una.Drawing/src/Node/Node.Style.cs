@@ -160,7 +160,7 @@ public partial class Node
     /// <summary>
     /// Forces a repaint of the texture for this node on the next frame.
     /// </summary>
-    private void SignalRepaint()
+    internal void SignalRepaint()
     {
         _texture?.Dispose();
         _texture = null;

@@ -1,4 +1,6 @@
-﻿namespace Una.Drawing.Font;
+﻿using System.Text;
+
+namespace Una.Drawing.Font;
 
 internal partial class DynamicFont
 {
@@ -13,43 +15,57 @@ internal partial class DynamicFont
         List<Chunk>  chunks = GenerateChunks(text);
         List<string> lines  = [];
 
-        float lineHeight = MathF.Ceiling(GetLineHeight(fontSize) + (outlineSize * 2.0f)) + 1;
-
-        float width      = 0;
-        float height     = 0;
-        float spaceWidth = GetTextFont(fontSize).MeasureText(" ");
-        var   buffer     = string.Empty;
+        float lineHeight       = GetLineHeight(fontSize);
+        float currentLineWidth = 0;
+        float maxLineWidth     = 0;
+        float totalHeight      = 0;
+        var   lineBuffer       = new StringBuilder();
 
         foreach (var chunk in chunks) {
-            string[] words = chunk.Text.Split(' ');
-            SKFont   font  = GetFont(chunk, fontSize);
+            SKFont chunkFont = GetFont(chunk, fontSize);
+            string[] words =
+                chunk.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            float spaceWidth = chunkFont.MeasureText(" ");
 
             foreach (string word in words) {
-                float wordWidth = font.MeasureText(word);
+                float wordWidth         = chunkFont.MeasureText(word);
+                float widthWithNextWord = currentLineWidth;
 
-                if (width + wordWidth + spaceWidth > maxWidth) {
-                    if (buffer.Length > 0) {
-                        lines.Add(buffer.TrimStart());
-                        height += (lineHeight * lineHeightFactor);
-                    }
+                if (lineBuffer.Length > 0) widthWithNextWord += spaceWidth;
 
-                    buffer = word;
-                    width  = wordWidth;
-                } else {
-                    buffer += ' ' + word;
-                    width  += spaceWidth + wordWidth;
+                widthWithNextWord += wordWidth;
+
+                if (lineBuffer.Length > 0 && (widthWithNextWord + spaceWidth) > maxWidth) {
+                    string completedLine = lineBuffer.ToString().TrimStart();
+                    lines.Add(completedLine);
+                    totalHeight  += (lineHeight * lineHeightFactor);
+                    maxLineWidth =  MathF.Max(maxLineWidth, currentLineWidth);
+
+                    lineBuffer.Clear().Append(word);
+                    currentLineWidth = wordWidth;
+                    continue;
                 }
+
+                if (lineBuffer.Length > 0) {
+                    lineBuffer.Append(' ');
+                    currentLineWidth += spaceWidth;
+                }
+
+                lineBuffer.Append(word);
+                currentLineWidth += wordWidth;
             }
         }
 
-        if (buffer.Length > 0) {
-            lines.Add(buffer.TrimStart());
-            height += lines.Count == 1 ? lineHeight : (lineHeight / lineHeightFactor);
+        if (lineBuffer.Length > 0) {
+            string lastLine = lineBuffer.ToString().TrimStart();
+            lines.Add(lastLine);
+            totalHeight  += (lineHeight * lineHeightFactor);
+            maxLineWidth =  MathF.Max(maxLineWidth, currentLineWidth);
         }
 
         return new() {
             Lines     = lines.ToArray(),
-            Size      = new((int)Math.Ceiling(width + (outlineSize * 2.0f)), (int)(height)),
+            Size      = new((int)Math.Ceiling(maxLineWidth + (outlineSize * 2.0f)), (int)MathF.Ceiling(totalHeight)),
             LineCount = (uint)lines.Count,
         };
     }

@@ -20,7 +20,7 @@ public sealed class ExamplePlugin : IDalamudPlugin
     private readonly IDalamudPluginInterface   _plugin;
     private readonly Dictionary<string, ITest> _tests = [];
 
-    private string _activeTest = "Script";
+    private string _activeTest = "Layout";
 
     public static Stylesheet GlobalStylesheet = new(
         [

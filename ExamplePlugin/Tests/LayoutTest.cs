@@ -12,7 +12,7 @@ public class LayoutTest : ITest
         Style = new()
         {
             Flow            = Flow.Horizontal,
-            Size            = new(900, 256),
+            Size            = new(900, 0),
             BackgroundColor = new(0x500000FF),
             BorderColor     = new(new(0xFFFFFFFF)),
             BorderWidth     = new(2),
@@ -25,15 +25,17 @@ public class LayoutTest : ITest
         },
         ChildNodes =
         [
-            CreateNode(Anchor.TopLeft, new(0xFF00FFFF), new(100, 50), null, null, "Fixed size"),
+            CreateNode(Anchor.TopLeft, new(0xFF00FFFF), new(100, 0), null, (AutoSize.Fit, AutoSize.Grow), "Fixed size"),
             CreateNode(Anchor.TopLeft, new(0xFF0000FF), new(0, 64), new Color(0x80FF00FF),
                 (AutoSize.Grow, AutoSize.Fit), "Fill width"),
             CreateNode(Anchor.TopLeft, new(0xFF0000FF), new(0, 0), new Color(0x80FF00FF),
-                (AutoSize.Grow, AutoSize.Grow), "Fill width & height"),
+                (AutoSize.Grow, AutoSize.Fit),
+                "Fill width & height. This text is very long and should wrap to the next line if it no longer fits the width of the container. This text is very long and should wrap to the next line if it no longer fits the width of the container. This text is very long and should wrap to the next line if it no longer fits the width of the container.",
+                true),
             CreateNode(Anchor.TopLeft, new(0xFF00FFFF), new(100, 50), null, null, "Fixed size"),
-            CreateNode(Anchor.TopLeft, new(0xFF00AAFF), new(100, 50), null, null, "Fixed #4"),
+            CreateNode(Anchor.TopLeft, new(0xFF00AAFF), new(100, 0), null, (AutoSize.Fit, AutoSize.Grow), "Fixed #4"),
             CreateNode(Anchor.TopLeft, new(0xFF00EE00), new(100, 50), null, null, "Fixed #5"),
-            CreateNode(Anchor.TopLeft, new(0xFFCCFFAA), new(100, 50), null, null, "Fixed #6"),
+            CreateNode(Anchor.TopLeft, new(0xFFCCFFAA), new(100, 0), null, (AutoSize.Fit, AutoSize.Grow), "Fixed #6"),
         ]
     };
 
@@ -72,15 +74,16 @@ public class LayoutTest : ITest
         }
     }
 
-    private static Node CreateNode(Anchor                    anchor,   Color  color, Size size, Color? bgColor,
-                                   (AutoSize h, AutoSize v)? autoSize, string text = "")
+    private static Node CreateNode(Anchor                    anchor,   Color  color,     Size size, Color? bgColor,
+                                   (AutoSize h, AutoSize v)? autoSize, string text = "", bool textWrap = false)
     {
         return new Node()
         {
             NodeValue = text,
             Style = new Style()
             {
-                TextAlign       = Anchor.MiddleCenter,
+                Padding         = new(5, 10),
+                TextAlign       = textWrap ? Anchor.TopLeft : Anchor.MiddleCenter,
                 Color           = new Color(0xFFFFFFFF),
                 OutlineColor    = new Color(0xFF000000),
                 OutlineSize     = 2,
@@ -93,6 +96,8 @@ public class LayoutTest : ITest
                 Size            = size,
                 IsVisible       = true,
                 AutoSize        = autoSize,
+                TextOverflow    = !textWrap,
+                WordWrap        = textWrap,
             }
         };
     }

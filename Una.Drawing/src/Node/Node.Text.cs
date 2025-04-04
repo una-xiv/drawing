@@ -5,7 +5,6 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
-using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Una.Drawing.Font;
@@ -24,8 +23,9 @@ public partial class Node
 
     internal MeasuredText? NodeValueMeasurement { get; private set; }
 
-    private void ClearTextCache()
+    internal void ClearTextCache()
     {
+        _textCachedPadding   = new();
         _textCachedNodeValue = null;
         _textCachedFontId    = null;
         _textCachedFontSize  = null;
@@ -74,13 +74,18 @@ public partial class Node
         _textCachedNodeSize  = ComputedStyle.Size.Copy();
         _textCachedMaxWidth  = ComputedStyle.MaxWidth;
 
-        var font = FontRegistry.Fonts[ComputedStyle.Font];
+        var font         = FontRegistry.Fonts[ComputedStyle.Font];
+        var maxLineWidth = Math.Max(0, ComputedStyle.Size.Width);
+
+        if (maxLineWidth == 0 && ComputedStyle.AutoSize.Horizontal == AutoSize.Grow) {
+            maxLineWidth = Math.Max(0, Bounds.ContentSize.Width);
+        }
 
         NodeValueMeasurement = font.MeasureText(
             str,
             ComputedStyle.FontSize,
             ComputedStyle.OutlineSize,
-            Math.Max(0, ComputedStyle.Size.Width),
+            maxLineWidth,
             ComputedStyle.WordWrap,
             ComputedStyle.TextOverflow,
             ComputedStyle.LineHeight,

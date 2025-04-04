@@ -137,7 +137,7 @@ public partial class Node
         if (Color.ThemeVersion != _colorThemeVersion) {
             _colorThemeVersion = Color.ThemeVersion;
             _texture?.Dispose();
-            _texture           = null;
+            _texture = null;
         }
 
         if (Style.IsVisible is false) return;
@@ -227,19 +227,19 @@ public partial class Node
     {
         if (Overflow) return;
 
-        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding,      new Vector2(0, 0));
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding,     new Vector2(0, 0));
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize,   0);
-        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding,     ComputedStyle.BorderRadius);
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding,     ComputedStyle.BorderRadius);
-        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize,     10);
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(0, 0));
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, ComputedStyle.BorderRadius);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, ComputedStyle.BorderRadius);
+        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize, 10);
         ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarRounding, 0);
-        ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize,   0);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 0);
 
-        ImGui.PushStyleColor(ImGuiCol.FrameBg,              0);
-        ImGui.PushStyleColor(ImGuiCol.ScrollbarBg,          ComputedStyle.ScrollbarTrackColor.ToUInt());
-        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab,        ComputedStyle.ScrollbarThumbColor.ToUInt());
-        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive,  ComputedStyle.ScrollbarThumbActiveColor.ToUInt());
+        ImGui.PushStyleColor(ImGuiCol.FrameBg, 0);
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarBg, ComputedStyle.ScrollbarTrackColor.ToUInt());
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, ComputedStyle.ScrollbarThumbColor.ToUInt());
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, ComputedStyle.ScrollbarThumbActiveColor.ToUInt());
         ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, ComputedStyle.ScrollbarThumbHoverColor.ToUInt());
 
         ImGui.SetCursorScreenPos(Bounds.PaddingRect.TopLeft);
@@ -425,7 +425,7 @@ internal struct NodeSnapshot
     internal bool Equals(ref readonly NodeSnapshot other)
     {
         return MemoryMarshal
-            .AsBytes(new ReadOnlySpan<NodeSnapshot>(in this))
-            .SequenceEqual(MemoryMarshal.AsBytes(new ReadOnlySpan<NodeSnapshot>(in other)));
+              .AsBytes(new ReadOnlySpan<NodeSnapshot>(in this))
+              .SequenceEqual(MemoryMarshal.AsBytes(new ReadOnlySpan<NodeSnapshot>(in other)));
     }
 }
