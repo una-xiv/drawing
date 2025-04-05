@@ -20,6 +20,10 @@ internal partial class DynamicFont
         float maxLineWidth     = 0;
         float totalHeight      = 0;
         var   lineBuffer       = new StringBuilder();
+        
+        // Multiplies the given value with spaceWidth. No idea why this is needed,
+        // but without it, the text overflows the maximum width by a tiny bit.
+        const float lineEndOffsetMultiplier = 4.5f;
 
         foreach (var chunk in chunks) {
             SKFont chunkFont = GetFont(chunk, fontSize);
@@ -35,7 +39,7 @@ internal partial class DynamicFont
 
                 widthWithNextWord += wordWidth;
 
-                if (lineBuffer.Length > 0 && (widthWithNextWord + spaceWidth) > maxWidth) {
+                if (lineBuffer.Length > 0 && (widthWithNextWord + (spaceWidth * lineEndOffsetMultiplier)) >= maxWidth) {
                     string completedLine = lineBuffer.ToString().TrimStart();
                     lines.Add(completedLine);
                     totalHeight  += (lineHeight * lineHeightFactor);

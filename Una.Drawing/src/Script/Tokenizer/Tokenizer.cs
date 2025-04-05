@@ -132,7 +132,9 @@ internal partial class Tokenizer
 
         while (!IsEof) {
             c = _code[_position];
-            if (char.IsLetterOrDigit(c) || c == '_' || c == '-' || c == ':') {
+            if (char.IsLetterOrDigit(c) ||
+                c == '_' || c == '-' || c == ':' || c == '.' || c == '#' || c == '>' || c == ' '
+            ) {
                 _position++;
                 _columnNumber++;
             } else {
@@ -140,7 +142,7 @@ internal partial class Tokenizer
             }
         }
 
-        string value = _code.Substring(positionStart, _position - positionStart);
+        string value = _code.Substring(positionStart, _position - positionStart).Trim();
 
         _tokens.Add(new() {
             Type        = TokenType.Selector,

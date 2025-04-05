@@ -19,12 +19,12 @@ internal class QuerySelector
     /// <summary>
     /// A list of class-names that the current node must have.
     /// </summary>
-    public List<string> ClassList = [];
+    public readonly List<string> ClassList = [];
 
     /// <summary>
     /// Represents the tag names that the current node must have.
     /// </summary>
-    public List<string> TagList = [];
+    public readonly List<string> TagList = [];
 
     /// <summary>
     /// Represents a nested query selector that matches one or more of the
@@ -46,7 +46,7 @@ internal class QuerySelector
     public override string ToString()
     {
         string p = Parent?.ToString() ?? "";
-        
+
         if (p.Length > 0) {
             p += " > ";
         }
@@ -54,11 +54,11 @@ internal class QuerySelector
         if (Identifier != null) {
             p += $"#{Identifier}";
         }
-        
+
         if (ClassList.Count > 0) {
             p += ClassList.Aggregate("", (acc, x) => $"{acc}.{x}");
         }
-        
+
         if (TagList.Count > 0) {
             p += TagList.Aggregate("", (acc, x) => $"{acc}:{x}");
         }
@@ -75,33 +75,29 @@ internal class QuerySelector
     /// <returns>True if the node matches the full selector chain ending at this part.</returns>
     public bool Matches(Node node)
     {
-        if (node.CachedQuerySelectors.TryGetValue(this, out bool result)) return result;
-        
-        // DebugLogger.Log($"Testing {node} against {this}");
-        
+        if (node.CachedQuerySelectorResults.TryGetValue(this, out bool result)) return result;
+
         // 1. Check if the current node's properties match the current selector part's requirements.
-        // Check ID
         if (Identifier != null && !Identifier.Equals(node.Id)) {
-            node.CachedQuerySelectors.Add(this, false);
+            node.CachedQuerySelectorResults.Add(this, false);
             return false;
         }
 
         // Check Classes (all must be present)
-        // Using All() is efficient. It stops checking as soon as one class is missing.
         if (!ClassList.All(node.ClassList.Contains)) {
-            node.CachedQuerySelectors.Add(this, false);
+            node.CachedQuerySelectorResults.Add(this, false);
             return false;
         }
 
         // Check Tags (all must be present)
         if (!TagList.All(node.TagsList.Contains)) {
-            node.CachedQuerySelectors.Add(this, false);
+            node.CachedQuerySelectorResults.Add(this, false);
             return false;
         }
 
         // 2. If the current node matches this part, check the parent/ancestor constraints.
         if (Parent == null) {
-            node.CachedQuerySelectors.Add(this, true);
+            node.CachedQuerySelectorResults.Add(this, true);
             return true;
         }
 
@@ -116,28 +112,27 @@ internal class QuerySelector
         }
 
         // 4. Apply the hierarchical check based on the link type.
-
         if (isDirectChildLink) // Represents the '>' child combinator
         {
             // The node's direct parent in the DOM must match the Parent selector.
             if (node.ParentNode == null) {
-                node.CachedQuerySelectors.Add(this, false);
+                node.CachedQuerySelectorResults.Add(this, false);
                 return false; // Node has no parent, cannot satisfy child combinator.
             }
 
             // Recursively call Matches on the Parent selector, checking against the node's actual parent.
             bool res = Parent.Matches(node.ParentNode);
-            node.CachedQuerySelectors.Add(this, res);
+            node.CachedQuerySelectorResults.Add(this, res);
             return res;
-        } 
-        
+        }
+
         // Any ancestor in the DOM must match the Parent selector.
         // Iterate upwards through the node's ancestors.
         Node? ancestor = node.ParentNode;
         while (ancestor != null) {
             // Check if this ancestor satisfies the requirements of the Parent selector (and *its* parents).
             if (Parent.Matches(ancestor)) {
-                node.CachedQuerySelectors.Add(this, true);
+                node.CachedQuerySelectorResults.Add(this, true);
                 return true; // Found a matching ancestor.
             }
 
@@ -145,7 +140,8 @@ internal class QuerySelector
         }
 
         // If the loop finishes without finding a matching ancestor, the constraint is not met.
-        node.CachedQuerySelectors.Add(this, false);
+        node.CachedQuerySelectorResults.Add(this, false);
+
         return false;
     }
 }

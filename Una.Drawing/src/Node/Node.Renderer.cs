@@ -166,7 +166,7 @@ public partial class Node
             );
         }
 
-        DrawDebugBounds();
+        DrawDebugBounds(drawList);
 
         ImDrawListPtr? childDrawList = _drawLists.LastOrDefault();
         if (null == childDrawList) return;

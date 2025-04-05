@@ -181,7 +181,7 @@ internal partial class ScriptParser
             throw new Exception("Unexpected end of file. Expected an opening brace.");
         }
         
-        return string.Join(" > ", selectors);
+        return string.Join(" ", selectors);
     }
 
     private static PropertyInfo? FindStyleProperty(Type type, string name)

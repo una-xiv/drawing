@@ -20,7 +20,7 @@ public sealed class ExamplePlugin : IDalamudPlugin
     private readonly IDalamudPluginInterface   _plugin;
     private readonly Dictionary<string, ITest> _tests = [];
 
-    private string _activeTest = "Layout";
+    private string _activeTest = "Constraint";
 
     public static Stylesheet GlobalStylesheet = new(
         [
@@ -98,7 +98,7 @@ public sealed class ExamplePlugin : IDalamudPlugin
 
     private void OnDraw()
     {
-        ImGui.SetNextWindowSize(new(600, 110), ImGuiCond.Once);
+        ImGui.SetNextWindowSize(new(800, 150), ImGuiCond.Always);
         ImGui.SetNextWindowPos(new(10, 10), ImGuiCond.Once);
         ImGui.Begin("UnaDrawingTestSuite");
 

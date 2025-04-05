@@ -59,7 +59,7 @@ public partial class Node
     /// <remarks>
     /// This dictionary should be cleared on reflow to avoid stale results.
     /// </remarks>
-    internal readonly Dictionary<QuerySelector, bool> CachedQuerySelectors = [];
+    internal readonly Dictionary<QuerySelector, bool> CachedQuerySelectorResults = [];
 
     /// <summary>
     /// Defines the final computed style of this node.
@@ -168,7 +168,7 @@ public partial class Node
 
     private void ClearCachedQuerySelectors()
     {
-        CachedQuerySelectors.Clear();
+        CachedQuerySelectorResults.Clear();
         SignalReflow();
         
         lock (_childNodes) {

@@ -139,7 +139,7 @@ public class ScriptTest : ITest
             """;
         try
         {
-            var script = ScriptSource.FromCode(code);
+            var script = Node.FromCode(code);
             _rootNode = script.RootNode;
 
             foreach (var node in _rootNode!.QuerySelectorAll(".item"))

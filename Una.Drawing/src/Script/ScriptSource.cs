@@ -2,7 +2,7 @@
 
 namespace Una.Drawing.Script;
 
-public class ScriptSource
+internal class ScriptSource
 {
     public static ScriptSource FromCode(string code)
     {

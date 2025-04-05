@@ -67,7 +67,7 @@ internal static partial class Layout
             childrenCalculatedHeight = mainAxisAccumulatedSize; // Sum of Heights + Gaps from children.
         }
 
-        Size textSize = node.ComputeContentSizeFromText(); // Assuming this returns Content Size needed for text
+        Size textSize = node.ComputeContentSizeFromText();
 
         var finalContentWidth = isAutoWidth
             ? Math.Max(childrenCalculatedWidth, textSize.Width)
@@ -77,7 +77,11 @@ internal static partial class Layout
             ? Math.Max(childrenCalculatedHeight, textSize.Height)
             : node.ComputedStyle.Size.Height - node.ComputedStyle.Padding.VerticalSize;
 
-        node.Bounds.ContentSize = new Size( // Assuming Point(width, height)
+        if (node.ComputedStyle.MaxWidth is > 0) {
+            finalContentWidth = Math.Min(finalContentWidth, node.ComputedStyle.MaxWidth.Value);
+        }
+        
+        node.Bounds.ContentSize = new Size(
             Math.Max(0, finalContentWidth),
             Math.Max(0, finalContentHeight)
         );

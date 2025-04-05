@@ -10,7 +10,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling;
-using FFXIVClientStructs.FFXIV.Client.UI;
+using Una.Drawing.Script;
 
 namespace Una.Drawing;
 
@@ -294,6 +294,38 @@ public partial class Node : IDisposable
     private readonly ObservableHashSet<string>  _tagsList   = [];
     private          ObservableCollection<Node> _childNodes = [];
 
+    /// <summary>
+    /// Constructs and returns a new node of the given type from the given code.
+    /// </summary>
+    /// <param name="code"></param>
+    /// <typeparam name="T">The root node type</typeparam>
+    /// <returns>An instance of the given node type</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static T FromCode<T>(string code) where T : Node, new()
+    {
+        ScriptSource src = ScriptSource.FromCode(code);
+        
+        if (src.RootNode is not T node) {
+            throw new InvalidOperationException(
+                $"The given code does not contain a {typeof(T).Name} root node."
+            );
+        }
+        
+        return node;
+    }
+
+    /// <summary>
+    /// Returns a new node from the given code. The type of the node is
+    /// determined by the root node of the code. Use `FromCode&lt;T&gt;` to
+    /// return a node of a specific type.
+    /// </summary>
+    /// <param name="code"></param>
+    /// <returns></returns>
+    public static Node FromCode(string code)
+    {
+        return FromCode<Node>(code);
+    }
+    
     public Node()
     {
         ComputedStyle                     = ComputedStyleFactory.CreateDefault();

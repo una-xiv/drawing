@@ -52,7 +52,7 @@ public record Size(int Width = 0, int Height = 0)
     /// </summary>
     public bool IsZero => Width == 0 && Height == 0;
 
-    public override string ToString()    => $"Size({Width}, {Height})";
+    public override string ToString()    => $"({Width}, {Height})";
 
     public static Size operator +(Size  left, Size right) => new(left.Width + right.Width, left.Height + right.Height);
     public static Size operator -(Size  left, Size right) => new(left.Width - right.Width, left.Height - right.Height);
