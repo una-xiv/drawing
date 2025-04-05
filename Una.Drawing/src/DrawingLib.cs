@@ -26,6 +26,8 @@ public class DrawingLib
         DalamudServices.PluginInterface = pluginInterface;
         DalamudServices.UiBuilder       = pluginInterface.UiBuilder;
 
+        ElementRegistry.Register<Node>();
+        
         pluginInterface.UiBuilder.Draw += OnDraw;
 
         if (downloadGameGlyphs)
@@ -99,6 +101,9 @@ public class DrawingLib
         GfdIconRepository.Dispose();
         TextureLoader.Dispose();
         MouseCursor.Dispose();
+        StylesheetRegistry.Dispose();
+        ElementRegistry.Dispose();
+        QuerySelectorParser.Dispose();
     }
 
     private static void OnDraw()

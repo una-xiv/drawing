@@ -34,13 +34,6 @@ public partial class Style
     public Flow? Flow { get; set; }
 
     /// <summary>
-    /// Stretches the node to fill the remaining space in the current flow. For
-    /// example, if the flow of the parent node is set to Vertical, the node
-    /// will stretch horizontally to fill the parent node, and vice versa.
-    /// </summary>
-    public bool? Stretch { get; set; }
-
-    /// <summary>
     /// Defines the gap between nodes.
     /// </summary>
     public int? Gap { get; set; }

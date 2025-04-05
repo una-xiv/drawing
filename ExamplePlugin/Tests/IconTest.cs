@@ -11,16 +11,21 @@ public class ImageTest : ITest
 
     private static readonly Stylesheet ImageStyles = new([]);
 
-    private readonly Node _node = new() {
+    private readonly Node _node = new()
+    {
         Stylesheet = ImageStyles,
-        Style = new() {
+        Style = new()
+        {
             Flow = Flow.Vertical,
             Gap  = 4,
         },
-        ChildNodes = [
-            new() {
+        ChildNodes =
+        [
+            new()
+            {
                 NodeValue = SeIconChar.EorzeaTimeEn.ToIconString(),
-                Style = new() {
+                Style = new()
+                {
                     Font         = 4,
                     FontSize     = 24,
                     Color        = new(0xFF00FFFF),
@@ -45,7 +50,8 @@ public class ImageTest : ITest
     {
         ImageStyles.AddRule(
             ".icon-row",
-            new() {
+            new()
+            {
                 Anchor          = Anchor.TopLeft,
                 Size            = new(0, 40),
                 Padding         = new(4),
@@ -59,7 +65,8 @@ public class ImageTest : ITest
 
         ImageStyles.AddRule(
             ".icon",
-            new() {
+            new()
+            {
                 Size            = new(32, 32),
                 BackgroundColor = new(0x80232223),
                 BorderColor     = new(new(0xFFC0C0C0)),
@@ -74,7 +81,8 @@ public class ImageTest : ITest
 
         ImageStyles.AddRule(
             ".icon-desc",
-            new() {
+            new()
+            {
                 Size         = new(0, 32),
                 TextAlign    = Anchor.MiddleLeft,
                 WordWrap     = false,
@@ -87,6 +95,10 @@ public class ImageTest : ITest
         );
     }
 
+    public void OnActivate()
+    {
+    }
+
     public void Render()
     {
         _node.Render(ImGui.GetBackgroundDrawList(), new(200, 200));
@@ -94,28 +106,35 @@ public class ImageTest : ITest
 
     private static Node CreateBlock(uint iconId)
     {
-        Node box = new() {
+        Node box = new()
+        {
             ClassList = ["icon-row"],
-            ChildNodes = [
-                new() {
+            ChildNodes =
+            [
+                new()
+                {
                     ClassList = ["icon"],
-                    Style = new() {
+                    Style = new()
+                    {
                         IconId = iconId,
                     },
                 },
-                new() {
+                new()
+                {
                     ClassList = ["icon-desc"],
                     NodeValue = $"Image #{iconId}"
                 },
             ]
         };
 
-        box.OnMouseEnter += _ => {
+        box.OnMouseEnter += _ =>
+        {
             box.QuerySelector(".icon")!.Style.ImageGrayscale = false;
             box.QuerySelector(".icon")!.Style.ImageInset     = new(-4);
         };
 
-        box.OnMouseLeave += _ => {
+        box.OnMouseLeave += _ =>
+        {
             box.QuerySelector(".icon")!.Style.ImageGrayscale = true;
             box.QuerySelector(".icon")!.Style.ImageInset     = new(4);
         };

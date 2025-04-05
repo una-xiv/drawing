@@ -8,9 +8,11 @@ public class BarAnimatedTest : ITest
 {
     public string Name => "Bar (Animated)";
 
-    private readonly Node _node = new() {
+    private readonly Node _node = new()
+    {
         Stylesheet = ExamplePlugin.GlobalStylesheet,
-        Style = new() {
+        Style = new()
+        {
             Flow               = Flow.Horizontal,
             Size               = new(1920, 32),
             BackgroundColor    = new(0xFF2A2A2A),
@@ -18,10 +20,13 @@ public class BarAnimatedTest : ITest
             BorderColor        = new(Top: new(0xFF4F4F4F)),
             BorderWidth        = new() { Top = 1 },
         },
-        ChildNodes = [
-            new() {
+        ChildNodes =
+        [
+            new()
+            {
                 Id = "Left",
-                Style = new() {
+                Style = new()
+                {
                     Anchor  = Anchor.MiddleLeft,
                     Flow    = Flow.Horizontal,
                     Size    = new(0, 0),
@@ -29,18 +34,22 @@ public class BarAnimatedTest : ITest
                     Padding = new() { Left = 6 },
                 }
             },
-            new() {
+            new()
+            {
                 Id = "Center",
-                Style = new() {
+                Style = new()
+                {
                     Anchor = Anchor.MiddleCenter,
                     Flow   = Flow.Horizontal,
                     Size   = new(0, 0),
                     Gap    = 6,
                 }
             },
-            new() {
+            new()
+            {
                 Id = "Right",
-                Style = new() {
+                Style = new()
+                {
                     Anchor  = Anchor.MiddleRight,
                     Flow    = Flow.Horizontal,
                     Size    = new(0, 0),
@@ -53,15 +62,15 @@ public class BarAnimatedTest : ITest
 
     public BarAnimatedTest()
     {
-        Left.AppendChild(CreateBox("Left1",  "Button"));
-        Left.AppendChild(CreateBox("Left2",  "Button"));
-        Left.AppendChild(CreateBox("Left3",  "Button"));
-        Left.AppendChild(CreateBox("Left4",  "Button"));
-        Left.AppendChild(CreateBox("Left5",  "Button"));
-        Left.AppendChild(CreateBox("Left6",  "Button"));
-        Left.AppendChild(CreateBox("Left7",  "Button"));
-        Left.AppendChild(CreateBox("Left8",  "Button"));
-        Left.AppendChild(CreateBox("Left9",  "Button"));
+        Left.AppendChild(CreateBox("Left1", "Button"));
+        Left.AppendChild(CreateBox("Left2", "Button"));
+        Left.AppendChild(CreateBox("Left3", "Button"));
+        Left.AppendChild(CreateBox("Left4", "Button"));
+        Left.AppendChild(CreateBox("Left5", "Button"));
+        Left.AppendChild(CreateBox("Left6", "Button"));
+        Left.AppendChild(CreateBox("Left7", "Button"));
+        Left.AppendChild(CreateBox("Left8", "Button"));
+        Left.AppendChild(CreateBox("Left9", "Button"));
         Left.AppendChild(CreateBox("Left10", "Button"));
 
         Center.AppendChild(CreateBox("Center1", "Button", Anchor.TopCenter));
@@ -69,19 +78,23 @@ public class BarAnimatedTest : ITest
         Center.AppendChild(CreateBox("Center3", "Button", Anchor.TopCenter));
         Center.AppendChild(CreateBox("Center4", "Button", Anchor.TopCenter));
 
-        Right.AppendChild(CreateBox("Right1",  "Button", Anchor.TopRight));
-        Right.AppendChild(CreateBox("Right2",  "Button", Anchor.TopRight));
-        Right.AppendChild(CreateBox("Right3",  "Button", Anchor.TopRight));
-        Right.AppendChild(CreateBox("Right4",  "Button", Anchor.TopRight));
-        Right.AppendChild(CreateBox("Right5",  "Button", Anchor.TopRight));
-        Right.AppendChild(CreateBox("Right6",  "Button", Anchor.TopRight));
-        Right.AppendChild(CreateBox("Right7",  "Button", Anchor.TopRight));
-        Right.AppendChild(CreateBox("Right8",  "Button", Anchor.TopRight));
-        Right.AppendChild(CreateBox("Right9",  "Button", Anchor.TopRight));
+        Right.AppendChild(CreateBox("Right1", "Button", Anchor.TopRight));
+        Right.AppendChild(CreateBox("Right2", "Button", Anchor.TopRight));
+        Right.AppendChild(CreateBox("Right3", "Button", Anchor.TopRight));
+        Right.AppendChild(CreateBox("Right4", "Button", Anchor.TopRight));
+        Right.AppendChild(CreateBox("Right5", "Button", Anchor.TopRight));
+        Right.AppendChild(CreateBox("Right6", "Button", Anchor.TopRight));
+        Right.AppendChild(CreateBox("Right7", "Button", Anchor.TopRight));
+        Right.AppendChild(CreateBox("Right8", "Button", Anchor.TopRight));
+        Right.AppendChild(CreateBox("Right9", "Button", Anchor.TopRight));
         Right.AppendChild(CreateBox("Right10", "Button", Anchor.TopRight));
     }
 
     private float _frameCount;
+
+    public void OnActivate()
+    {
+    }
 
     public void Render()
     {
@@ -107,11 +120,13 @@ public class BarAnimatedTest : ITest
 
     private static Node CreateBox(string id, string label, Anchor? anchor = null)
     {
-        Node box = new() {
+        Node box = new()
+        {
             Id        = id,
             NodeValue = label,
             ClassList = ["button"],
-            Style = new() {
+            Style = new()
+            {
                 Anchor = anchor ?? Anchor.TopLeft,
             },
         };

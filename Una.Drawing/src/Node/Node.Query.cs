@@ -28,7 +28,7 @@ public partial class Node
             return cachedNode;
         }
 
-        var querySelectors = QuerySelectorParser.Parse(querySelectorString);
+        var querySelectors = QuerySelectorParser.Parse(querySelectorString, true);
 
         foreach (var querySelector in querySelectors) {
             Node? node = FindChildrenMatching(this, querySelector, true).FirstOrDefault();
@@ -155,7 +155,7 @@ public partial class Node
             nodeListResult.Add(child);
         }
 
-        if (recursive && (querySelector.IsFirstSelector || nodeListResult.Count == 0)) {
+        if (recursive && (querySelector.Parent == null || nodeListResult.Count == 0)) {
             for (int i = 0; i < childCount; i++) {
                 nodeListResult.AddRange(FindChildrenMatching(childNodes[i], querySelector, true));
             }

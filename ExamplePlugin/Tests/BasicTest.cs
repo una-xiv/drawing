@@ -8,15 +8,18 @@ public class BasicTest : ITest
 {
     public string Name => "Basic";
 
-    private readonly Node _node = new() {
+    private readonly Node _node = new()
+    {
         NodeValue = "Hello World! Pretty graphics! This is very neat with word wrap enabled.",
-        Style = new() {
+        Style = new()
+        {
             Size            = new(128, 128),
             Flow            = Flow.Vertical,
             Padding         = new(0, 0),
             Gap             = 4,
             BackgroundColor = new(0x504400FF),
-            BorderColor = new() {
+            BorderColor = new()
+            {
                 Top    = new(0xFFFFAAAA),
                 Bottom = new(0xFFFF00FF)
             },
@@ -41,6 +44,10 @@ public class BasicTest : ITest
     };
 
     private uint _frameCount = 0;
+
+    public void OnActivate()
+    {
+    }
 
     public void Render()
     {

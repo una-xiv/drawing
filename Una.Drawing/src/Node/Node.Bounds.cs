@@ -10,48 +10,35 @@ namespace Una.Drawing;
 public partial class Node
 {
     /// <summary>
-    /// Defines the sizes and positions of the content, padding, border, and
-    /// margin areas of this node.
+    /// Defines the sizes and positions of the content and padding areas of this node.
     /// </summary>
-    public NodeBounds Bounds { get; private set; } = new();
+    public NodeBounds Bounds { get; internal set; } = new();
 
     #region Box Model Properties
 
     /// <summary>
     /// A read-only property that represents the outer width of this node,
-    /// based on the total width of the content, padding and margin areas.
+    /// based on the total width of the content and padding areas.
     /// </summary>
-    public int OuterWidth => ComputedStyle.IsVisible ? Bounds.MarginSize.Width : 0;
+    public int OuterWidth => ComputedStyle.IsVisible ? Bounds.PaddingSize.Width : 0;
 
     /// <summary>
     /// A read-only property that represents the outer height of this node,
-    /// based on the total height of the content, padding and margin areas.
+    /// based on the total height of the content and padding areas.
     /// </summary>
-    public int OuterHeight => ComputedStyle.IsVisible ? Bounds.MarginSize.Height : 0;
-
-    /// <summary>
-    /// A read-only property that represents the inner width of this node,
-    /// based on the total width of the contents of the node.
-    /// </summary>
-    public int InnerWidth => ComputedStyle.IsVisible ? Bounds.ContentSize.Width : 0;
-
-    /// <summary>
-    /// A read-only property that represents the inner height of this node,
-    /// based on the total height of the contents of the node.
-    /// </summary>
-    public int InnerHeight => ComputedStyle.IsVisible ? Bounds.ContentSize.Height : 0;
+    public int OuterHeight => ComputedStyle.IsVisible ? Bounds.PaddingSize.Height : 0;
 
     /// <summary>
     /// A read-only property that represents the width of this node that is
-    /// made up of the content and padding areas.
+    /// made up of the content area.
     /// </summary>
-    public int Width => ComputedStyle.IsVisible ? Bounds.PaddingSize.Width : 0;
+    public int Width => ComputedStyle.IsVisible ? Bounds.ContentSize.Width : 0;
 
     /// <summary>
     /// A read-only property that represents the height of this node that is
-    /// made up of the content and padding areas.
+    /// made up of the content area.
     /// </summary>
-    public int Height => ComputedStyle.IsVisible ? Bounds.PaddingSize.Height : 0;
+    public int Height => ComputedStyle.IsVisible ? Bounds.ContentSize.Height : 0;
 
     #endregion
 }

@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
-using Lumina.Misc;
 using System.Collections.Immutable;
 using Una.Drawing.Texture;
 
@@ -102,7 +101,7 @@ public partial class Node
     private          NodeSnapshot         _snapshot;
     private readonly List<ImDrawListPtr>  _drawLists = [];
 
-    public void Render(ImDrawListPtr drawList, Point position, bool forceSynchronousStyleComputation = false)
+    public void Render(ImDrawListPtr drawList, Vector2 position, bool forceSynchronousStyleComputation = false)
     {
         if (IsDisposed) return;
 
@@ -138,7 +137,7 @@ public partial class Node
         if (Color.ThemeVersion != _colorThemeVersion) {
             _colorThemeVersion = Color.ThemeVersion;
             _texture?.Dispose();
-            _texture           = null;
+            _texture = null;
         }
 
         if (Style.IsVisible is false) return;
@@ -167,7 +166,7 @@ public partial class Node
             );
         }
 
-        DrawDebugBounds();
+        DrawDebugBounds(drawList);
 
         ImDrawListPtr? childDrawList = _drawLists.LastOrDefault();
         if (null == childDrawList) return;
@@ -228,19 +227,19 @@ public partial class Node
     {
         if (Overflow) return;
 
-        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding,      new Vector2(0, 0));
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding,     new Vector2(0, 0));
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize,   0);
-        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding,     ComputedStyle.BorderRadius);
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding,     ComputedStyle.BorderRadius);
-        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize,     10);
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(0, 0));
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, ComputedStyle.BorderRadius);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, ComputedStyle.BorderRadius);
+        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize, 10);
         ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarRounding, 0);
-        ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize,   0);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 0);
 
-        ImGui.PushStyleColor(ImGuiCol.FrameBg,              0);
-        ImGui.PushStyleColor(ImGuiCol.ScrollbarBg,          ComputedStyle.ScrollbarTrackColor.ToUInt());
-        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab,        ComputedStyle.ScrollbarThumbColor.ToUInt());
-        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive,  ComputedStyle.ScrollbarThumbActiveColor.ToUInt());
+        ImGui.PushStyleColor(ImGuiCol.FrameBg, 0);
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarBg, ComputedStyle.ScrollbarTrackColor.ToUInt());
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, ComputedStyle.ScrollbarThumbColor.ToUInt());
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, ComputedStyle.ScrollbarThumbActiveColor.ToUInt());
         ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, ComputedStyle.ScrollbarThumbHoverColor.ToUInt());
 
         ImGui.SetCursorScreenPos(Bounds.PaddingRect.TopLeft);
@@ -267,7 +266,7 @@ public partial class Node
         Vector2 pos = ImGui.GetCursorScreenPos();
 
         foreach (var child in _childNodes) {
-            child.ComputeBoundingRects(new((int)pos.X, (int)pos.Y));
+            // child.ComputeBoundingRects(new((int)pos.X, (int)pos.Y));
         }
     }
 
@@ -276,12 +275,12 @@ public partial class Node
     {
         if (Overflow) return;
 
-        var totalSize = GetTotalSizeOfChildren(_childNodes);
-        var maxSize   = GetMaxSizeOfChildren(_childNodes);
+        // var totalSize = GetTotalSizeOfChildren(_childNodes);
+        // var maxSize   = GetMaxSizeOfChildren(_childNodes);
 
         Vector2 size = new(
-            ComputedStyle.Flow == Flow.Horizontal ? totalSize.Width : maxSize.Width,
-            ComputedStyle.Flow == Flow.Vertical ? totalSize.Height : maxSize.Height
+            // ComputedStyle.Flow == Flow.Horizontal ? totalSize.Width : maxSize.Width,
+            // ComputedStyle.Flow == Flow.Vertical ? totalSize.Height : maxSize.Height
         );
 
         ImGui.SetCursorPos(size);
@@ -426,7 +425,7 @@ internal struct NodeSnapshot
     internal bool Equals(ref readonly NodeSnapshot other)
     {
         return MemoryMarshal
-            .AsBytes(new ReadOnlySpan<NodeSnapshot>(in this))
-            .SequenceEqual(MemoryMarshal.AsBytes(new ReadOnlySpan<NodeSnapshot>(in other)));
+              .AsBytes(new ReadOnlySpan<NodeSnapshot>(in this))
+              .SequenceEqual(MemoryMarshal.AsBytes(new ReadOnlySpan<NodeSnapshot>(in other)));
     }
 }

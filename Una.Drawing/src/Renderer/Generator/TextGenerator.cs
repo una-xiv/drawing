@@ -35,8 +35,8 @@ internal class TextGenerator : IGenerator
         if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
         if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;
         if (node.ComputedStyle.TextAlign.IsRight) x  += -(node.ComputedStyle.Padding.Right + outlineSize);
-        if (node.ComputedStyle.TextAlign.IsMiddle) y += (node.Height - size.Height) / 2 + outlineSize;
-        if (node.ComputedStyle.TextAlign.IsBottom) y =  node.Height - size.Height - outlineSize;
+        if (node.ComputedStyle.TextAlign.IsMiddle) y += (node.OuterHeight - size.Height) / 2 + outlineSize;
+        if (node.ComputedStyle.TextAlign.IsBottom) y =  node.OuterHeight - size.Height - outlineSize;
 
         foreach (string line in node.NodeValueMeasurement!.Value.Lines) {
             PrintLine(canvas, font, node, line, x, y);

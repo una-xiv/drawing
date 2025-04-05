@@ -10,7 +10,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling;
-using FFXIVClientStructs.FFXIV.Client.UI;
+using Una.Drawing.Script;
 
 namespace Una.Drawing;
 
@@ -55,6 +55,7 @@ public partial class Node : IDisposable
                 _internalIdCrc32 = null;
             }
 
+            ClearCachedQuerySelectors();
             OnPropertyChanged?.Invoke("Id", _id);
         }
     }
@@ -123,6 +124,7 @@ public partial class Node : IDisposable
         {
             if (_classList.SequenceEqual(value)) return;
 
+            ClearCachedQuerySelectors();
             _classList.Clear();
 
             foreach (string v in value) _classList.Add(v);
@@ -146,10 +148,34 @@ public partial class Node : IDisposable
         {
             if (_tagsList.SequenceEqual(value)) return;
 
+            ClearCachedQuerySelectors();
             _tagsList.Clear();
 
             foreach (string v in value) _tagsList.Add(v);
             OnPropertyChanged?.Invoke("TagsList", _tagsList);
+        }
+    }
+    
+    /// <summary>
+    /// <para>
+    /// Whether to inherit tags from the parent node.
+    /// </para>
+    /// <para>
+    /// This can be useful if the parent node is interactive and children have
+    /// style definitions that are affected by the parent's interactivity tags,
+    /// such as ":hover", ":active" and ":disabled".
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// Custom tags are overwritten by the parent's tags for as long as this
+    /// option is enabled.
+    /// </remarks>
+    public bool InheritTags {
+        get => _inheritTags;
+        set {
+            if (_inheritTags.Equals(value)) return;
+            _inheritTags = value;
+            ClearCachedQuerySelectors();
         }
     }
 
@@ -262,11 +288,44 @@ public partial class Node : IDisposable
     private string? _id;
     private object? _nodeValue;
     private int     _sortIndex;
+    private bool    _inheritTags;
 
     private readonly ObservableHashSet<string>  _classList  = [];
     private readonly ObservableHashSet<string>  _tagsList   = [];
     private          ObservableCollection<Node> _childNodes = [];
 
+    /// <summary>
+    /// Constructs and returns a new node of the given type from the given code.
+    /// </summary>
+    /// <param name="code"></param>
+    /// <typeparam name="T">The root node type</typeparam>
+    /// <returns>An instance of the given node type</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static T FromCode<T>(string code) where T : Node, new()
+    {
+        ScriptSource src = ScriptSource.FromCode(code);
+        
+        if (src.RootNode is not T node) {
+            throw new InvalidOperationException(
+                $"The given code does not contain a {typeof(T).Name} root node."
+            );
+        }
+        
+        return node;
+    }
+
+    /// <summary>
+    /// Returns a new node from the given code. The type of the node is
+    /// determined by the root node of the code. Use `FromCode&lt;T&gt;` to
+    /// return a node of a specific type.
+    /// </summary>
+    /// <param name="code"></param>
+    /// <returns></returns>
+    public static Node FromCode(string code)
+    {
+        return FromCode<Node>(code);
+    }
+    
     public Node()
     {
         ComputedStyle                     = ComputedStyleFactory.CreateDefault();
@@ -277,24 +336,28 @@ public partial class Node : IDisposable
 
         _classList.ItemAdded += c =>
         {
+            ClearCachedQuerySelectors();
             OnClassAdded?.Invoke(c);
             SignalReflow();
         };
 
         _classList.ItemRemoved += c =>
         {
+            ClearCachedQuerySelectors();
             OnClassRemoved?.Invoke(c);
             SignalReflow();
         };
 
         _tagsList.ItemAdded += t =>
         {
+            ClearCachedQuerySelectors();
             OnTagAdded?.Invoke(t);
             SignalReflow();
         };
 
         _tagsList.ItemRemoved += t =>
         {
+            ClearCachedQuerySelectors();
             OnTagRemoved?.Invoke(t);
             SignalReflow();
         };
@@ -358,7 +421,6 @@ public partial class Node : IDisposable
         OnPropertyChanged   = null;
 
         OnReflow           = null;
-        BeforeReflow       = null;
         BeforeDraw         = null;
         AfterDraw          = null;
         ComputedStyle      = new();
@@ -366,12 +428,10 @@ public partial class Node : IDisposable
         _intermediateStyle = new();
         _stylesheet        = null;
 
-        _anchorToChildNodes.Clear();
-        _childNodeToAnchor.Clear();
-
         ClearTextCache();
         ClearQuerySelectorCache();
-
+        ClearCachedQuerySelectors();
+        
         _texture?.Dispose();
         _texture  = null;
         _snapshot = new();
@@ -387,6 +447,8 @@ public partial class Node : IDisposable
         _internalIdCrc32      = 0;
         _internalIdLastIndex  = 0;
         _internalIdLastParent = null;
+
+       
 
         MouseCursor.RemoveMouseOver(this);
         FontRegistry.FontChanged -= OnFontConfigurationChanged;
@@ -460,6 +522,21 @@ public partial class Node : IDisposable
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private void InheritTagsFromParent()
+    {
+        if (IsDisposed) return;
+        if (Style.IsVisible is false) return;
+    
+        if (_inheritTags && ParentNode is not null) {
+            TagsList = ParentNode.TagsList;
+        }
+    
+        foreach (Node child in _childNodes) {
+            child.InheritTagsFromParent();
+        }
+    }
+    
     private void OnFontConfigurationChanged()
     {
         _texture?.Dispose();
@@ -475,6 +552,8 @@ public partial class Node : IDisposable
 
     private void HandleChildListChanged(object? _, NotifyCollectionChangedEventArgs e)
     {
+        ClearCachedQuerySelectors();
+        
         switch (e)
         {
             case { Action: NotifyCollectionChangedAction.Add, NewItems: not null }:
@@ -502,66 +581,6 @@ public partial class Node : IDisposable
 
         SignalReflow();
         ReassignAnchorNodes();
-    }
-
-    private void HandleClassListChanged(object? _, NotifyCollectionChangedEventArgs e)
-    {
-        switch (e)
-        {
-            case { Action: NotifyCollectionChangedAction.Add, NewItems: not null }:
-                {
-                    foreach (string className in e.NewItems) OnClassAdded?.Invoke(className);
-                    break;
-                }
-            case { Action: NotifyCollectionChangedAction.Remove, OldItems: not null }:
-                {
-                    foreach (string className in e.OldItems) OnClassRemoved?.Invoke(className);
-                    break;
-                }
-            case { Action: NotifyCollectionChangedAction.Replace, OldItems: not null, NewItems: not null }:
-                {
-                    foreach (string className in e.NewItems) OnClassAdded?.Invoke(className);
-                    foreach (string className in e.OldItems) OnClassRemoved?.Invoke(className);
-                    break;
-                }
-            case { Action: NotifyCollectionChangedAction.Reset, OldItems: not null }:
-                {
-                    foreach (string className in e.OldItems) OnClassRemoved?.Invoke(className);
-                    break;
-                }
-        }
-
-        SignalReflow();
-    }
-
-    private void HandleTagsListChanged(object? _, NotifyCollectionChangedEventArgs e)
-    {
-        switch (e)
-        {
-            case { Action: NotifyCollectionChangedAction.Add, NewItems: not null }:
-                {
-                    foreach (string tag in e.NewItems) OnTagAdded?.Invoke(tag);
-                    break;
-                }
-            case { Action: NotifyCollectionChangedAction.Remove, OldItems: not null }:
-                {
-                    foreach (string tag in e.OldItems) OnTagRemoved?.Invoke(tag);
-                    break;
-                }
-            case { Action: NotifyCollectionChangedAction.Replace, OldItems: not null, NewItems: not null }:
-                {
-                    foreach (string tag in e.NewItems) OnTagAdded?.Invoke(tag);
-                    foreach (string tag in e.OldItems) OnTagRemoved?.Invoke(tag);
-                    break;
-                }
-            case { Action: NotifyCollectionChangedAction.Reset, OldItems: not null }:
-                {
-                    foreach (string tag in e.OldItems) OnTagRemoved?.Invoke(tag);
-                    break;
-                }
-        }
-
-        SignalReflow();
     }
 
     /// <summary>
@@ -627,7 +646,8 @@ public partial class Node : IDisposable
         if (!_childNodes.Contains(oldChild)) return;
 
         ClearQuerySelectorCache();
-
+        ClearCachedQuerySelectors();
+        
         // Remove the new node from its parent if it has one.
         newChild.ParentNode?.RemoveChild(newChild);
 
@@ -648,22 +668,14 @@ public partial class Node : IDisposable
     private void OnChildAddedToList(Node node)
     {
         ClearQuerySelectorCache();
+        ClearCachedQuerySelectors();
 
         node.ParentNode?.RemoveChild(node);
         node.ParentNode = this;
 
-        if (false == _anchorToChildNodes.ContainsKey(node.ComputedStyle.Anchor.Point))
-        {
-            _anchorToChildNodes[node.ComputedStyle.Anchor.Point] = [];
-        }
-
-        _anchorToChildNodes[node.ComputedStyle.Anchor.Point].Add(node);
-        _childNodeToAnchor[node] = node.ComputedStyle.Anchor.Point;
-
         node.OnSortIndexChanged += SortChildren;
 
         SortChildren();
-        SignalReflow();
         OnChildAdded?.Invoke(node);
     }
 
@@ -674,19 +686,10 @@ public partial class Node : IDisposable
     private void OnChildRemovedFromList(Node node)
     {
         ClearQuerySelectorCache();
-
+        ClearCachedQuerySelectors();
+        
         node.ParentNode         =  null;
         node.OnSortIndexChanged -= SortChildren;
-
-        if (!_childNodeToAnchor.ContainsKey(node))
-        {
-            return;
-        }
-
-        if (_childNodeToAnchor.Remove(node, out var anchor))
-        {
-            _anchorToChildNodes[anchor].Remove(node);
-        }
 
         SortChildren();
         OnChildRemoved?.Invoke(node);
@@ -704,16 +707,8 @@ public partial class Node : IDisposable
         _childNodes                   =  new(_childNodes.OrderBy(n => n.SortIndex));
         _childNodes.CollectionChanged += HandleChildListChanged;
 
-        foreach ((Anchor.AnchorPoint pt, List<Node> nodes) in _anchorToChildNodes)
-        {
-            _anchorToChildNodes[pt] = [..nodes.OrderBy(n => n.SortIndex)];
-        }
-
         SignalReflow();
     }
-
-    private float _scaleFactor         = ScaleFactor;
-    private bool  _scaleAffectsBorders = ScaleAffectsBorders;
 
     [GeneratedRegex("^[A-Za-z]{1}[A-Za-z0-9_-]+$")]
     private static partial Regex IdentifierNamingRule();

@@ -7,7 +7,7 @@
 
 namespace Una.Drawing;
 
-public enum Flow
+public enum Flow : byte
 {
     Horizontal,
     Vertical,

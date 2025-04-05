@@ -64,4 +64,10 @@ public readonly record struct EdgeSize(int Top, int Right, int Bottom, int Left)
     {
         return new(Top, Right, Bottom, Left);
     }
+
+    public Vector2 TopLeft {
+        get {
+            return new Vector2(Left, Top);
+        }
+    }
 }

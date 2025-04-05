@@ -5,6 +5,9 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
+using System.Linq;
+using System.Text;
+
 namespace Una.Drawing;
 
 /// <summary>
@@ -23,4 +26,22 @@ public sealed partial class Style
     /// regardless of this setting.
     /// </summary>
     public bool? IsAntialiased { get; set; }
+
+    public override string ToString()
+    {
+        Type type = GetType();
+        
+        var properties = type.GetProperties()
+            .Where(p => p is { CanRead: true, CanWrite: true } && p.GetValue(this) != null)
+            .Select(p => $"    {p.Name}: {p.GetValue(this)}")
+            .ToList();
+
+        StringBuilder sb = new();
+        
+        foreach (var property in properties) {
+            sb.AppendLine(property);
+        }
+        
+        return sb.ToString();
+    }
 }

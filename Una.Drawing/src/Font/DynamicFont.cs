@@ -41,8 +41,10 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         float x = pos.X;
 
         foreach (var chunk in chunks) {
-            SKFont font = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
-            canvas.DrawText(chunk.Text, x, pos.Y, font, paint);
+            SKFont        font    = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
+            SKFontMetrics metrics = font.Metrics;
+
+            canvas.DrawText(chunk.Text, x, pos.Y + metrics.Leading + metrics.Descent, font, paint);
             x += font.MeasureText(chunk.Text);
         }
     }
@@ -56,7 +58,7 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
     /// <inheritdoc/>
     public float GetLineHeight(int fontSize)
     {
-        return (96 / 72) * GetTextFont(fontSize).Size;
+        return (96f / 72f) * GetTextFont(fontSize).Size;
     }
 
     /// <inheritdoc/>

@@ -21,7 +21,7 @@ internal partial class DynamicFont
     /// specified maximum width.
     /// </summary>
     /// <returns>True if the original chunk fits, false otherwise.</returns>
-    public bool BreakChunkAt(Chunk chunk, float x, float maxWidth, int fontSize, out Chunk result)
+    private bool BreakChunkAt(Chunk chunk, float x, float maxWidth, int fontSize, out Chunk result)
     {
         var font  = GetFont(chunk, fontSize);
         int bytes = font.BreakText(chunk.Text, maxWidth - x);

@@ -38,11 +38,10 @@ internal static class ComputedStyleFactory
         cs.IsVisible                 = style.IsVisible ?? cs.IsVisible;
         cs.Anchor                    = style.Anchor ?? cs.Anchor;
         cs.Size                      = style.Size ?? cs.Size;
+        cs.AutoSize                  = style.AutoSize ?? cs.AutoSize;
         cs.Flow                      = style.Flow ?? cs.Flow;
         cs.Gap                       = style.Gap ?? cs.Gap;
-        cs.Stretch                   = style.Stretch ?? cs.Stretch;
         cs.Padding                   = style.Padding ?? cs.Padding;
-        cs.Margin                    = style.Margin ?? cs.Margin;
         cs.Color                     = style.Color ?? cs.Color;
         cs.Font                      = style.Font ?? cs.Font;
         cs.FontSize                  = style.FontSize ?? cs.FontSize;
@@ -107,7 +106,6 @@ internal static class ComputedStyleFactory
     {
         computedStyle.Size    *= Node.ScaleFactor;
         computedStyle.Padding *= Node.ScaleFactor;
-        computedStyle.Margin  *= Node.ScaleFactor;
 
         computedStyle.MaxWidth =
             computedStyle.MaxWidth != null ? (int)(computedStyle.MaxWidth * Node.ScaleFactor) : null;
@@ -150,9 +148,7 @@ internal static class ComputedStyleFactory
             Size                      = new(),
             Flow                      = Flow.Horizontal,
             Gap                       = 0,
-            Stretch                   = false,
             Padding                   = new(),
-            Margin                    = new(),
             Color                     = new(0xFFC0C0C0),
             Font                      = 0,
             FontSize                  = 12,

@@ -38,13 +38,13 @@ public record Size(int Width = 0, int Height = 0)
     /// True if the width is 0, meaning that the box should only be auto-sized
     /// horizontally based on its content and child nodes.
     /// </summary>
-    public bool IsAutoWidth => Width == 0;
+    public bool IsFitWidth => Width == 0;
 
     /// <summary>
     /// True if the height is undefined, meaning that the box should only be
     /// auto-sized vertically based on its content and child nodes.
     /// </summary>
-    public bool IsAutoHeight => Height == 0;
+    public bool IsFitHeight => Height == 0;
 
     /// <summary>
     /// True if the size is 0 on both axes, meaning that the box should be
@@ -52,7 +52,7 @@ public record Size(int Width = 0, int Height = 0)
     /// </summary>
     public bool IsZero => Width == 0 && Height == 0;
 
-    public override string ToString()    => $"Size({Width}, {Height})";
+    public override string ToString()    => $"({Width}, {Height})";
 
     public static Size operator +(Size  left, Size right) => new(left.Width + right.Width, left.Height + right.Height);
     public static Size operator -(Size  left, Size right) => new(left.Width - right.Width, left.Height - right.Height);
