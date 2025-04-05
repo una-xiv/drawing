@@ -10,6 +10,7 @@ internal partial class ScriptParser
         new UnsignedIntegerStyleAttributeParser(),
         new BooleanStyleAttributeParser(), 
         new DoubleStyleAttributeParser(),
+        new StringStyleAttributeParser(),
         new AutoSizeStyleAttributeParser(),
         new AnchorStyleAttributeParser(),
         new FlowStyleAttributeParser(),
@@ -89,13 +90,11 @@ internal partial class ScriptParser
         throw new Exception($"Unexpected {keyword}");
     }
 
-    private List<Stylesheet.StyleDefinition> ParseRule(string? parent = null, List<Stylesheet.StyleDefinition>? rules = null)
+    private List<Stylesheet.StyleDefinition> ParseRule(bool isInline = false, string? parent = null, List<Stylesheet.StyleDefinition>? rules = null)
     {
         rules ??= [];
-        string selector = (parent != null ? $"{parent}" : "") + ParseSelectorString();
+        string selector = isInline ? "" : ((parent != null ? $"{parent}" : "") + ParseSelectorString());
         _stream.Consume(TokenType.OpenBrace);
-
-        DebugLogger.Log($"Selector: {selector}");
         
         Style style     = new();
         Type  styleType = typeof(Style);
@@ -113,13 +112,19 @@ internal partial class ScriptParser
             }
             
             if (_stream.SequenceEquals([TokenType.Ampersand, TokenType.Selector])) {
+                if (isInline) {
+                    throw new Exception("Unexpected ampersand in inline style.");
+                }
                 _stream.Consume(TokenType.Ampersand);
-                ParseRule(selector, rules);
+                ParseRule(false, selector, rules);
                 continue;
             }
 
             if (_stream.Peek()?.Type == TokenType.Selector) {
-                ParseRule($"{selector} > ", rules);
+                if (isInline) {
+                    throw new Exception("Unexpected selector in inline style.");
+                }
+                ParseRule(false, $"{selector} > ", rules);
                 continue;
             }
 

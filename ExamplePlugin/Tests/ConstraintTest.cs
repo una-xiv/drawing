@@ -62,21 +62,28 @@ public class ConstraintTest : ITest
             .icon {
                 size: 32 32;
                 icon-id: 111;
-                image-contrast: 0.1;
                 image-grayscale: true;
-                image-rotation: 45.0;
-                image-offset: 16 -16;
+            }
+            
+            .uld-icon {
+                size: 32 32;
+                uld-resource: "ui/uld/Character";
+                uld-parts-id: 13;
+                uld-part-id: 2;
             }
             </style>
             <node id="main">
                 <node class="left">
+                    <node class="uld-icon"/>
+                    <node class="uld-icon" style={ uld-part-id: 3; }/>
                     <node class="button" value="Button 1"/>
                     <node class="button" value="Button 2 with a long label"/>
                 </node>
                 <node class="right">
                     <node class="button" value="Button 3 also has a long label"/>
                     <node class="button" value="Button 4 yet again."/>
-                    <node class="icon"/>
+                    <node class="icon" style={ opacity: 0.5; }/>
+                    <node class="icon" style={ icon-id: 113; image-grayscale: false; }/>
                 </node>
             </node>
             """

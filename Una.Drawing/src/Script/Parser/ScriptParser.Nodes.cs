@@ -55,6 +55,17 @@ internal partial class ScriptParser
             if (_stream.SequenceEquals([TokenType.Identifier, TokenType.Assignment])) {
                 var attribute = _stream.Consume(TokenType.Identifier);
                 _stream.Consume(TokenType.Assignment);
+                
+                // Special handling for style attribute.
+                if (attribute.Value.ToString()?.ToLowerInvariant() == "style") {
+                    var rules = ParseRule(true);
+                    if (rules.Count != 1) {
+                        throw new Exception($"Rule '{identifier}' contains more than one style.");
+                    }
+                    node.Style = rules[0].Style;
+                    continue;
+                }
+                
                 var value = ParseAttributeValue();
 
                 if (value == null) {

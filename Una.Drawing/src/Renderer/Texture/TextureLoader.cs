@@ -5,13 +5,6 @@ using System.Linq;
 
 namespace Una.Drawing.Texture;
 
-internal struct UldIcon
-{
-    public SKImage Texture { get; set; }
-    public Rect Rect { get; set; }
-    public Vector2 Size { get; set; }
-}
-
 internal static class TextureLoader
 {
     private static readonly Dictionary<uint, TexFile>               IconToTexFileCache   = [];
@@ -89,7 +82,7 @@ internal static class TextureLoader
         return new UldIcon { Size = size, Texture = texFile, Rect = new Rect(uv, uv + size) };
     }
 
-    internal static UldFile? LoadUldFile(string path)
+    private static UldFile? LoadUldFile(string path)
     {
         if (DalamudServices.DataManager == null || DalamudServices.TextureProvider == null)
             throw new InvalidOperationException("Una.Drawing.DrawingLib has not been set-up.");
@@ -104,7 +97,7 @@ internal static class TextureLoader
         return uldFile;
     }
 
-    internal static string GetUldStyleString(UldStyle style) => style switch
+    private static string GetUldStyleString(UldStyle style) => style switch
     {
         UldStyle.Light => "uld/light/",
         UldStyle.Classic => "uld/third/",
@@ -234,4 +227,11 @@ internal static class TextureLoader
 
         return iconFile;
     }
+}
+
+internal struct UldIcon
+{
+    public SKImage Texture { get; init; }
+    public Rect    Rect    { get; init; }
+    public Vector2 Size    { get; set; }
 }
