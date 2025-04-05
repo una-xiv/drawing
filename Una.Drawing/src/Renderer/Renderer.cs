@@ -25,20 +25,19 @@ internal static class Renderer
     {
         // Collect generators.
         List<Type> generatorTypes = Assembly
-            .GetExecutingAssembly()
-            .GetTypes()
-            .Where(t => t.IsClass && t.IsAssignableTo(typeof(IGenerator)))
-            .ToList();
+                                   .GetExecutingAssembly()
+                                   .GetTypes()
+                                   .Where(t => t.IsClass && t.IsAssignableTo(typeof(IGenerator)))
+                                   .ToList();
 
         _generators = generatorTypes
-            .Select(t => (IGenerator)Activator.CreateInstance(t)!)
-            .OrderBy(g => g.RenderOrder)
-            .ToList();
+                     .Select(t => (IGenerator)Activator.CreateInstance(t)!)
+                     .OrderBy(g => g.RenderOrder)
+                     .ToList();
 
         Tuple<nint> handle = DalamudServices.PluginInterface.GetOrCreateData(
             "Una.Drawing.Framebuffer",
-            () =>
-            {
+            () => {
                 var data   = new byte[8192 * 8192 * 4];
                 var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
@@ -57,32 +56,43 @@ internal static class Renderer
     /// <summary>
     /// Creates a texture for the given node.
     /// </summary>
-    internal static unsafe IDalamudTextureWrap? CreateTexture(Node node)
+    internal static IDalamudTextureWrap? CreateTexture(Node node)
     {
         if (node.OuterWidth == 0 || node.OuterHeight == 0) return null;
         if (node.OuterWidth > 8192 || node.OuterHeight > 8192) return null;
 
-        SKImageInfo info    = new(node.OuterWidth, node.OuterHeight, SKColorType.Bgra8888, SKAlphaType.Premul, SkColorSpace);
-        using var   pixmap  = new SKPixmap(info, _pixelDataPtr);
-        using var   surface = SKSurface.Create(pixmap);
+        SKImageInfo info = new(node.OuterWidth, node.OuterHeight, SKColorType.Bgra8888, SKAlphaType.Premul,
+            SkColorSpace);
+        using var pixmap  = new SKPixmap(info, _pixelDataPtr);
+        using var surface = SKSurface.Create(pixmap);
 
         surface.Canvas.Clear();
 
         bool hasDrawn = false;
 
-        foreach (IGenerator generator in _generators)
-        {
-            if (generator.Generate(surface.Canvas, node))
-            {
-                hasDrawn = true;
+        foreach (IGenerator generator in _generators) {
+            try {
+                if (generator.Generate(surface.Canvas, node)) {
+                    hasDrawn = true;
+                }
+            } catch (Exception e) {
+                DalamudServices.PluginLog.Error($"{e.Message}\n{e.StackTrace}");
             }
         }
 
         if (!hasDrawn) return null;
 
-        return DalamudServices.TextureProvider.CreateFromRaw(
-            RawImageSpecification.Rgba32(node.OuterWidth, node.OuterHeight),
-            pixmap.GetPixelSpan()
-        );
+        try {
+            return DalamudServices.TextureProvider.CreateFromRaw(
+                RawImageSpecification.Rgba32(node.OuterWidth, node.OuterHeight),
+                pixmap.GetPixelSpan()
+            );
+        } catch(Exception e) {
+            DalamudServices.PluginLog.Error($"{e.Message}\n{e.StackTrace}");
+            
+            // If the texture creation fails, we can just return null to prevent
+            // crashes during the drawing process.
+            return null;
+        }
     }
 }

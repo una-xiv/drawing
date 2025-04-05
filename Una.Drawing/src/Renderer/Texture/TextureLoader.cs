@@ -137,10 +137,19 @@ internal static class TextureLoader
 
         try {
             iconFile = GetIconFile(iconId);
-        } catch (FileNotFoundException) {
+        } catch {
+            // There are 3 reasons why this can fail and neither of them are
+            // reasons for the plugin to crash:
+            //   - The icon ID is invalid
+            //   - The icon references a file that can not be found or read. (broken texture mods)
+            //   - A substituted texture file is corrupted (broken texture mods)
             return null;
         }
 
+        // If the icon size is 0 or negative (a good indicator for more broken texture mods),
+        // just return null as well.
+        if (iconFile.Header.Width <= 0 || iconFile.Header.Height <= 0) return null;
+        
         SKImageInfo info = new(iconFile.Header.Width, iconFile.Header.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
 
         IntPtr pixelPtr = Marshal.AllocHGlobal(iconFile.ImageData.Length);

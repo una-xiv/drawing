@@ -288,7 +288,7 @@ internal partial class Tokenizer
     {
         char c = _code[_position];
 
-        if (!char.IsDigit(c) && c != '.') return false;
+        if (!char.IsDigit(c) && c != '.' && c != '-') return false;
 
         int positionStart = _position;
         int columnStart   = _columnNumber;

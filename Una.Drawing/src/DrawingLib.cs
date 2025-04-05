@@ -10,7 +10,6 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using Una.Drawing.Font;
-using Una.Drawing.Script;
 using Una.Drawing.Texture;
 
 namespace Una.Drawing;

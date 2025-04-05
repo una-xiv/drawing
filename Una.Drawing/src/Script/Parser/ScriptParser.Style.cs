@@ -9,6 +9,7 @@ internal partial class ScriptParser
         new IntegerStyleAttributeParser(),
         new UnsignedIntegerStyleAttributeParser(),
         new BooleanStyleAttributeParser(), 
+        new DoubleStyleAttributeParser(),
         new AutoSizeStyleAttributeParser(),
         new AnchorStyleAttributeParser(),
         new FlowStyleAttributeParser(),
@@ -17,6 +18,8 @@ internal partial class ScriptParser
         new BorderColorStyleAttributeParser(),
         new ColorStyleAttributeParser(),
         new RoundedCornersStyleAttributeParser(),
+        new GradientColorStyleAttributeParser(),
+        new Vector2StyleAttributeParser(),
     ];
 
     /// <summary>
