@@ -25,11 +25,8 @@ public static class ElementRegistry
     
     internal static Type GetElementType(string name)
     {
-        // Retrieve the type from the registry
-        if (ElementTypes.TryGetValue(name, out var type))
-        {
-            return type;
-        }
+        name = name.ToLowerInvariant().Replace("-", "").Trim();
+        if (ElementTypes.TryGetValue(name, out var type)) return type;
         
         throw new Exception($"Element type '{name}' not found in registry.");
     }

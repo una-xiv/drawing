@@ -26,9 +26,10 @@ public sealed class ExamplePlugin : IDalamudPlugin
         [
             new(
                 ".button",
-                new() {
+                new()
+                {
                     Size                    = new(0, 26),
-                    Padding                 = new(0, 6),
+                    Padding                 = new(0, 12),
                     BackgroundColor         = new(0xC01A1A1A),
                     BorderColor             = new(new(0xFF787A7A)),
                     BorderWidth             = new(1),
@@ -38,12 +39,14 @@ public sealed class ExamplePlugin : IDalamudPlugin
                     BackgroundGradientInset = new(5),
                     TextAlign               = Anchor.MiddleCenter,
                     TextOffset              = new(0, -1),
+                    TextOverflow            = false,
                     FontSize                = 10,
                 }
             ),
             new(
                 ".button:hover",
-                new() {
+                new()
+                {
                     Color                   = new(0xFF101010),
                     BackgroundColor         = new(0xC0EAEAEA),
                     BackgroundGradient      = GradientColor.Vertical(new(0xC02FFFFF), null),
@@ -79,11 +82,12 @@ public sealed class ExamplePlugin : IDalamudPlugin
                    .Where(t => t.IsClass && t.IsAssignableTo(typeof(ITest)))
                    .ToList();
 
-        foreach (var test in tests) {
+        foreach (var test in tests)
+        {
             var instance = (ITest)Activator.CreateInstance(test)!;
             _tests[instance.Name] = instance;
         }
-        
+
         _tests[_activeTest].OnActivate();
 
         _plugin.UiBuilder.Draw += OnDraw;
@@ -102,17 +106,22 @@ public sealed class ExamplePlugin : IDalamudPlugin
         ImGui.SetNextWindowPos(new(10, 10), ImGuiCond.Once);
         ImGui.Begin("UnaDrawingTestSuite");
 
-        if (ImGui.BeginCombo("Tests", _activeTest)) {
-            if (ImGui.Selectable("None", _activeTest == "")) {
+        if (ImGui.BeginCombo("Tests", _activeTest))
+        {
+            if (ImGui.Selectable("None", _activeTest == ""))
+            {
                 _activeTest = "";
             }
 
-            foreach (var test in _tests) {
+            foreach (var test in _tests)
+            {
                 var selected = _activeTest == test.Key;
 
-                if (ImGui.Selectable(test.Key, selected)) {
+                if (ImGui.Selectable(test.Key, selected))
+                {
                     _activeTest = test.Key;
-                    if (_tests.TryGetValue(_activeTest, out var t)) {
+                    if (_tests.TryGetValue(_activeTest, out var t))
+                    {
                         t.OnActivate();
                     }
                 }
@@ -125,41 +134,49 @@ public sealed class ExamplePlugin : IDalamudPlugin
 
         var last = _tests.Keys.Last();
 
-        foreach (var test in _tests) {
-            if (ImGui.Button(test.Key)) {
+        foreach (var test in _tests)
+        {
+            if (ImGui.Button(test.Key))
+            {
                 _activeTest = test.Key;
-                if (_tests.TryGetValue(_activeTest, out var t)) {
+                if (_tests.TryGetValue(_activeTest, out var t))
+                {
                     t.OnActivate();
                 }
             }
 
-            if (test.Key != last) {
+            if (test.Key != last)
+            {
                 ImGui.SameLine();
             }
         }
 
         float scale = Node.ScaleFactor;
 
-        if (ImGui.DragFloat("UI Scale", ref scale, 0.1f, 0.5f, 3.0f)) {
+        if (ImGui.DragFloat("UI Scale", ref scale, 0.1f, 0.5f, 3.0f))
+        {
             Node.ScaleFactor = Math.Clamp(scale, 0.5f, 3.0f);
         }
 
         bool b = Node.ScaleAffectsBorders;
 
-        if (ImGui.Checkbox("Affect borders", ref b)) {
+        if (ImGui.Checkbox("Affect borders", ref b))
+        {
             Node.ScaleAffectsBorders = b;
         }
 
         ImGui.SameLine();
         bool b2 = Node.DrawDebugInfo;
 
-        if (ImGui.Checkbox("Draw debug bounds", ref b2)) {
+        if (ImGui.Checkbox("Draw debug bounds", ref b2))
+        {
             Node.DrawDebugInfo = b2;
         }
 
         ImGui.End();
 
-        if (_tests.TryGetValue(_activeTest, out var activeTest)) {
+        if (_tests.TryGetValue(_activeTest, out var activeTest))
+        {
             activeTest.Render();
         }
     }

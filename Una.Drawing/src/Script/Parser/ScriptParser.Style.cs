@@ -71,12 +71,12 @@ internal partial class ScriptParser
         if (keyword.Value.ToString()?.ToLowerInvariant() == "import") {
             string name = _stream.Consume(TokenType.String).Value.ToString()!;
 
-            if (!ScriptRegistry.Exists(name.ToLowerInvariant())) {
+            if (!StylesheetRegistry.Exists(name.ToLowerInvariant())) {
                 throw new Exception(
-                    $"Script '{name}' not found. Make sure to register it first via ScriptRegistry.Register()");
+                    $"Script '{name}' not found. Make sure to register it first via StylesheetRegistry.Register()");
             }
 
-            Stylesheet? sheet = ScriptSource.FromCode(ScriptRegistry.Get(name.ToLowerInvariant())).Stylesheet;
+            Stylesheet? sheet = ScriptSource.FromCode(StylesheetRegistry.Get(name.ToLowerInvariant())).Stylesheet;
             if (sheet == null) {
                 throw new Exception($"Script '{name}' does not contain a stylesheet.");
             }

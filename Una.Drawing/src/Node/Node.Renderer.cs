@@ -101,7 +101,7 @@ public partial class Node
     private          NodeSnapshot         _snapshot;
     private readonly List<ImDrawListPtr>  _drawLists = [];
 
-    public void Render(ImDrawListPtr drawList, Point position, bool forceSynchronousStyleComputation = false)
+    public void Render(ImDrawListPtr drawList, Vector2 position, bool forceSynchronousStyleComputation = false)
     {
         if (IsDisposed) return;
 

@@ -101,7 +101,7 @@ public class DrawingLib
         GfdIconRepository.Dispose();
         TextureLoader.Dispose();
         MouseCursor.Dispose();
-        ScriptRegistry.Dispose();
+        StylesheetRegistry.Dispose();
         ElementRegistry.Dispose();
         QuerySelectorParser.Dispose();
     }

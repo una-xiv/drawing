@@ -1,12 +1,12 @@
 ﻿namespace Una.Drawing;
 
-public static class ScriptRegistry
+public static class StylesheetRegistry
 {
     private static readonly Dictionary<string, string> Scripts = [];
 
     /// <summary>
     /// <para>
-    /// Registers a script with the given name and code.
+    /// Registers a stylesheet with the given name and source.
     /// </para>
     /// <para>
     /// The script can later be referenced in other scripts via an <c>@import</c>
@@ -23,14 +23,14 @@ public static class ScriptRegistry
     /// </example>
     /// </summary>
     /// <param name="name">The name of the script.</param>
-    /// <param name="code">The source code.</param>
-    public static void Register(string name, string code)
+    /// <param name="source">The source code.</param>
+    public static void Register(string name, string source)
     {
-        Scripts[name.ToLowerInvariant()] = code;
+        Scripts[name.ToLowerInvariant()] = $"<style>\n{source}\n</style>";
     }
 
     /// <summary>
-    /// Removes a script with the given name from the registry.
+    /// Removes a stylesheet with the given name from the registry.
     /// </summary>
     /// <param name="name"></param>
     public static void Unregister(string name)
@@ -42,7 +42,7 @@ public static class ScriptRegistry
     {
         Scripts.Clear();
     }
-    
+
     /// <summary>
     /// Returns true if a script with the given name exists.
     /// </summary>
@@ -63,6 +63,6 @@ public static class ScriptRegistry
         if (Scripts.TryGetValue(name.ToLowerInvariant(), out var code))
             return code;
 
-        throw new Exception($"Script '{name}' not found. Make sure to register it first via ScriptRegistry.Register()");
+        throw new Exception($"Script '{name}' not found. Make sure to register it first via StylesheetRegistry.Register()");
     }
 }

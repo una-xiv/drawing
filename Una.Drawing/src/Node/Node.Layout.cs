@@ -12,20 +12,21 @@ public partial class Node
     internal Dictionary<Anchor.AnchorPoint, List<Node>> AnchorToChildNodes { get; private set; } = [];
     // internal Dictionary<Node, Anchor.AnchorPoint>       ChildNodeToAnchor { get; private set; } = [];
 
-    private bool _mustReflow = true;
+    private bool     _mustReflow = true;
+    private Vector2? _lastPosition;
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    private void Reflow(Point? position = null)
+    private void Reflow(Vector2? position = null)
     {
         if (IsDisposed || !ComputedStyle.IsVisible) return;
-        if (!_mustReflow) return;
+        if (!_mustReflow && _lastPosition.Equals(position)) return;
 
-        Vector2 origin = new Vector2(position?.X ?? 0, position?.Y ?? 0);
+        _lastPosition = position;
+        _mustReflow   = false;
         
-        Layout.ComputeLayout(this, origin);
-        _mustReflow = false;
+        Layout.ComputeLayout(this, position ?? new Vector2());
     }
-    
+
     private void ReassignAnchorNodes()
     {
         lock (AnchorToChildNodes) {
