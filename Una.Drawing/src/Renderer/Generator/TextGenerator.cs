@@ -15,7 +15,7 @@ internal class TextGenerator : IGenerator
     public int RenderOrder => 999;
 
     /// <inheritdoc/>
-    public bool Generate(SKCanvas canvas, Node node)
+    public bool Generate(SKCanvas canvas, Node node, Vector2 origin)
     {
         if (node.NodeValue is not string str || string.IsNullOrWhiteSpace(str)) return false;
 
@@ -29,8 +29,8 @@ internal class TextGenerator : IGenerator
         var   lineHeight  = (int)Math.Ceiling(font.GetLineHeight(fontSize));
         var   metrics     = font.GetMetrics(node.ComputedStyle.FontSize);
 
-        var y = (int)(metrics.CapHeight + (int)node.ComputedStyle.TextOffset.Y + 1) + outlineSize;
-        var x = (int)node.ComputedStyle.TextOffset.X + 1;
+        var y = (int)origin.X + (int)(metrics.CapHeight + (int)node.ComputedStyle.TextOffset.Y + 1) + outlineSize;
+        var x = (int)origin.Y + (int)node.ComputedStyle.TextOffset.X + 1;
 
         if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
         if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;
@@ -62,7 +62,7 @@ internal class TextGenerator : IGenerator
             paint.Color       = Color.ToSkColor(node.ComputedStyle.OutlineColor);
             paint.Style       = SKPaintStyle.Stroke;
             paint.StrokeWidth = node.ComputedStyle.OutlineSize * 2;
-            paint.MaskFilter  = SKMaskFilter.CreateBlur(SKBlurStyle.Solid, node.ComputedStyle.OutlineSize * 2);
+            paint.MaskFilter  = SKMaskFilter.CreateBlur(SKBlurStyle.Solid, node.ComputedStyle.OutlineSize);
             font.DrawText(canvas, paint, point, node.ComputedStyle.FontSize, line);
         }
 

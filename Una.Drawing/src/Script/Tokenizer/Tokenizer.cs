@@ -7,7 +7,7 @@ internal partial class Tokenizer
 {
     public static TokenStream Tokenize(string code)
     {
-        return (new Tokenizer(code)).Tokenize();
+        return (new Tokenizer(code.Trim())).Tokenize();
     }
 
     private readonly string      _code;
@@ -42,7 +42,7 @@ internal partial class Tokenizer
         return new TokenStream(_tokens);
     }
 
-    private bool IsEof { get => _position >= _code.Length; }
+    private bool IsEof { get => _position == _code.Length; }
 
     private bool ProcessBoolean()
     {

@@ -15,10 +15,8 @@ internal static class ComputedStyleFactory
 
         var computedStyle = CreateDefault();
 
-        if (node.Stylesheet is not null)
-        {
-            foreach ((Stylesheet.Rule rule, Style style) in node.Stylesheet.Rules)
-            {
+        if (node.Stylesheet is not null) {
+            foreach ((Stylesheet.Rule rule, Style style) in node.Stylesheet.Rules) {
                 if (rule.Matches(node)) { Apply(ref computedStyle, style); }
             }
         }
@@ -73,12 +71,17 @@ internal static class ComputedStyleFactory
         cs.OutlineColor              = style.OutlineColor ?? cs.OutlineColor;
         cs.TextShadowSize            = style.TextShadowSize ?? cs.TextShadowSize;
         cs.TextShadowColor           = style.TextShadowColor ?? cs.TextShadowColor;
+        cs.DropShadow                = style.DropShadow ?? cs.DropShadow;
         cs.IconId                    = style.IconId ?? cs.IconId;
         cs.ImageBytes                = style.ImageBytes ?? cs.ImageBytes;
         cs.ImageInset                = style.ImageInset ?? cs.ImageInset;
         cs.ImageOffset               = style.ImageOffset ?? cs.ImageOffset;
         cs.ImageRounding             = style.ImageRounding ?? cs.ImageRounding;
         cs.ImageRoundedCorners       = style.ImageRoundedCorners ?? cs.ImageRoundedCorners;
+        cs.ImageScaleMode            = style.ImageScaleMode ?? cs.ImageScaleMode;
+        cs.ImageTileMode             = style.ImageTileMode ?? cs.ImageTileMode;
+        cs.ImageScale                = style.ImageScale ?? cs.ImageScale;
+        cs.ImageBlur                 = style.ImageBlur ?? cs.ImageBlur;
         cs.ImageGrayscale            = style.ImageGrayscale ?? cs.ImageGrayscale;
         cs.ImageContrast             = style.ImageContrast ?? cs.ImageContrast;
         cs.ImageRotation             = style.ImageRotation ?? cs.ImageRotation;
@@ -119,8 +122,7 @@ internal static class ComputedStyleFactory
 
         computedStyle.BackgroundGradientInset *= Node.ScaleFactor;
 
-        if (Node.ScaleAffectsBorders)
-        {
+        if (Node.ScaleAffectsBorders) {
             computedStyle.BorderWidth *= Node.ScaleFactor;
             computedStyle.StrokeWidth =  (int)MathF.Ceiling(computedStyle.StrokeWidth * Node.ScaleFactor);
         }
@@ -141,8 +143,7 @@ internal static class ComputedStyleFactory
     /// </summary>
     internal static ComputedStyle CreateDefault()
     {
-        return new ComputedStyle
-        {
+        return new ComputedStyle {
             IsVisible                 = true,
             Anchor                    = Anchor.TopLeft,
             Size                      = new(),
@@ -179,6 +180,7 @@ internal static class ComputedStyleFactory
             BackgroundImageBlendMode  = BlendMode.Modulate,
             TextShadowSize            = 0,
             TextShadowColor           = null,
+            DropShadow                = Vector4.Zero,
             IconId                    = null,
             ImageBytes                = null,
             ImageInset                = null,
@@ -190,6 +192,10 @@ internal static class ComputedStyleFactory
             ImageRotation             = 0,
             ImageColor                = new(0xFFFFFFFF),
             ImageBlendMode            = BlendMode.Modulate,
+            ImageTileMode             = ImageTileMode.Decal,
+            ImageScaleMode            = ImageScaleMode.Adapt,
+            ImageScale                = 1.0f,
+            ImageBlur                 = Vector2.Zero,
             UldResource               = null,
             UldPartId                 = null,
             UldPartsId                = null,

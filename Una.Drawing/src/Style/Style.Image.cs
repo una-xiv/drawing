@@ -67,6 +67,27 @@ public partial class Style
     public BlendMode? ImageBlendMode { get; set; }
 
     /// <summary>
+    /// The scale mode to apply to the image. Defaults to
+    /// <see cref="ImageScaleMode.Adapt"/>.
+    /// </summary>
+    public ImageScaleMode? ImageScaleMode { get; set; }
+    
+    /// <summary>
+    /// Specifies if the image should be clamped or repeated.
+    /// </summary>
+    public ImageTileMode? ImageTileMode { get; set; }
+
+    /// <summary>
+    /// Defines the scale of the image. Defaults to 1.0f.
+    /// </summary>
+    public float? ImageScale { get; set; }
+    
+    /// <summary>
+    /// Applies a gaussian blur to the image in the X and Y axis.
+    /// </summary>
+    public Vector2? ImageBlur { get; set; }
+    
+    /// <summary>
     /// Defines the resource path of the ULD file to be displayed in the node.
     /// </summary>
     public string? UldResource { get; set; }
@@ -85,4 +106,16 @@ public partial class Style
     /// Defines the ULD part id to be displayed in the node.
     /// </summary>
     public int? UldPartId { get; set; }
+    
+    /// <summary>
+    /// Adds a drop shadow to an image.
+    /// The elements of the vector are defined as follows:
+    /// <list type="bullet">
+    ///   <item>X: The X offset of the shadow.</item>
+    ///   <item>Y: The Y offset of the shadow.</item>
+    ///   <item>Z: The horizontal sigma of the shadow.</item>
+    ///   <item>W: The vertical sigma of the shadow.</item>
+    /// </list>
+    /// </summary>
+    public Vector4? DropShadow { get; set; }
 }

@@ -21,7 +21,7 @@ public partial class Node
         if (IsDisposed || !ComputedStyle.IsVisible) return;
         if (!_mustReflow && _lastPosition.Equals(position)) return;
 
-        _lastPosition = position;
+        _lastPosition = position ?? Vector2.Zero;
         _mustReflow   = false;
         
         Layout.ComputeLayout(this, position ?? new Vector2());

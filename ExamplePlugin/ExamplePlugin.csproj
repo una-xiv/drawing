@@ -9,14 +9,15 @@
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>..\out\$(Configuration)\</OutputPath>
+        <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
     </PropertyGroup>
 
     <PropertyGroup>
         <Authors>Una</Authors>
         <Company>-</Company>
-        <Version>0.0.0.1</Version>
-        <Description></Description>
-        <Copyright>-</Copyright>
+        <Version>1.0.0.0</Version>
+        <Description>Una.Drawing</Description>
+        <Copyright>(C)2025 - Una's FFXIV Plugins</Copyright>
         <PackageProjectUrl>https://github.com/una-xiv/drawing</PackageProjectUrl>
         <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
         <IsPackable>false</IsPackable>
@@ -31,6 +32,10 @@
         </Content>
     </ItemGroup>
 
+    <ItemGroup>
+        <EmbeddedResource Include="templates\*.tpl"/>
+    </ItemGroup>
+    
     <ItemGroup>
         <ProjectReference Include="..\Una.Drawing\Una.Drawing.csproj" />
     </ItemGroup>

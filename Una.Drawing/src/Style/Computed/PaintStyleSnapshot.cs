@@ -55,6 +55,7 @@ internal struct PaintStyleSnapshot
     internal uint?              OutlineColor;
     internal float              TextShadowSize;
     internal uint?              TextShadowColor;
+    internal Vector4?           DropShadow;
     internal uint?              IconId;
     internal int?               ImageInsetTop;
     internal int?               ImageInsetRight;
@@ -64,6 +65,10 @@ internal struct PaintStyleSnapshot
     internal float?             ImageOffsetY;
     internal float?             ImageRounding;
     internal RoundedCorners?    ImageRoundedCorners;
+    internal ImageScaleMode?    ImageScaleMode;
+    internal ImageTileMode?     ImageTileMode;
+    internal Vector2?           ImageBlur;
+    internal float?             ImageScale;
     internal bool?              ImageGrayscale;
     internal float?             ImageContrast;
     internal short?             ImageRotation;
@@ -77,8 +82,7 @@ internal struct PaintStyleSnapshot
 
     internal static PaintStyleSnapshot Create(ref ComputedStyle style)
     {
-        return new()
-        {
+        return new() {
             Color                         = style.Color.ToUInt(),
             TextAlign                     = style.TextAlign.Point,
             OutlineSize                   = style.OutlineSize,
@@ -122,6 +126,7 @@ internal struct PaintStyleSnapshot
             OutlineColor                  = style.OutlineColor?.ToUInt(),
             TextShadowSize                = style.TextShadowSize,
             TextShadowColor               = style.TextShadowColor?.ToUInt(),
+            DropShadow                    = style.DropShadow,
             IconId                        = style.IconId,
             ImageInsetTop                 = style.ImageInset?.Top,
             ImageInsetRight               = style.ImageInset?.Right,
@@ -131,6 +136,10 @@ internal struct PaintStyleSnapshot
             ImageOffsetY                  = style.ImageOffset?.Y,
             ImageRounding                 = style.ImageRounding,
             ImageRoundedCorners           = style.ImageRoundedCorners,
+            ImageScale                    = style.ImageScale,
+            ImageScaleMode                = style.ImageScaleMode,
+            ImageTileMode                 = style.ImageTileMode,
+            ImageBlur                     = style.ImageBlur,
             ImageGrayscale                = style.ImageGrayscale,
             ImageContrast                 = style.ImageContrast,
             ImageRotation                 = style.ImageRotation,

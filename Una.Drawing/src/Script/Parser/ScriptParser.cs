@@ -15,8 +15,6 @@ internal partial class ScriptParser
     private ScriptParser(TokenStream stream)
     {
         _stream = stream;
-        
-        DebugLogger.Log(stream.ToString());
     }
 
     private ScriptSource Parse()

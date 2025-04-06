@@ -61,18 +61,19 @@ internal static class Renderer
         if (node.OuterWidth == 0 || node.OuterHeight == 0) return null;
         if (node.OuterWidth > 8192 || node.OuterHeight > 8192) return null;
 
-        SKImageInfo info = new(node.OuterWidth, node.OuterHeight, SKColorType.Bgra8888, SKAlphaType.Premul,
+        SKImageInfo info = new(node.OuterWidth + 64, node.OuterHeight + 64, SKColorType.Bgra8888, SKAlphaType.Premul,
             SkColorSpace);
         using var pixmap  = new SKPixmap(info, _pixelDataPtr);
         using var surface = SKSurface.Create(pixmap);
 
         surface.Canvas.Clear();
 
-        bool hasDrawn = false;
+        bool    hasDrawn = false;
+        Vector2 origin   = new(32, 32);
 
         foreach (IGenerator generator in _generators) {
             try {
-                if (generator.Generate(surface.Canvas, node)) {
+                if (generator.Generate(surface.Canvas, node, origin)) {
                     hasDrawn = true;
                 }
             } catch (Exception e) {
@@ -84,8 +85,9 @@ internal static class Renderer
 
         try {
             return DalamudServices.TextureProvider.CreateFromRaw(
-                RawImageSpecification.Rgba32(node.OuterWidth, node.OuterHeight),
-                pixmap.GetPixelSpan()
+                RawImageSpecification.Rgba32(node.OuterWidth + 64, node.OuterHeight + 64),
+                pixmap.GetPixelSpan(),
+                node.ToString()
             );
         } catch(Exception e) {
             DalamudServices.PluginLog.Error($"{e.Message}\n{e.StackTrace}");

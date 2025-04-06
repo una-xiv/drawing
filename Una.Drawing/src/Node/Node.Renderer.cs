@@ -118,6 +118,10 @@ public partial class Node
             ComputedStyle = _intermediateStyle;
         }
 
+        if (IsInWindowDrawList(drawList)) {
+            position = ImGui.GetCursorScreenPos() + position;
+        }
+
         lock (_lockObject) {
             Reflow(position);
             Draw(drawList);
@@ -155,11 +159,13 @@ public partial class Node
 
         if (UpdateTexture()) RenderShadow(drawList);
 
+        Vector2 offset = new(32, 32);
+        
         if (null != _texture) {
             drawList.AddImage(
                 _texture.ImGuiHandle,
-                Bounds.PaddingRect.TopLeft,
-                Bounds.PaddingRect.BottomRight,
+                Bounds.PaddingRect.TopLeft - offset,
+                Bounds.PaddingRect.BottomRight + offset,
                 Vector2.Zero,
                 Vector2.One,
                 GetRenderColor()
@@ -246,7 +252,7 @@ public partial class Node
 
         ImGui.BeginChildFrame(
             InternalIdCrc32,
-            Bounds.PaddingSize.ToVector2() + new Vector2(1, 0),
+            Bounds.PaddingSize.ToVector2(),
             (HorizontalScrollbar ? ImGuiWindowFlags.HorizontalScrollbar : ImGuiWindowFlags.None)
         );
 
@@ -266,7 +272,7 @@ public partial class Node
         Vector2 pos = ImGui.GetCursorScreenPos();
 
         foreach (var child in _childNodes) {
-            // child.ComputeBoundingRects(new((int)pos.X, (int)pos.Y));
+            Layout.OverridePositionsOf(child, pos);
         }
     }
 
@@ -274,13 +280,12 @@ public partial class Node
     private void EndOverflowContainer()
     {
         if (Overflow) return;
-
-        // var totalSize = GetTotalSizeOfChildren(_childNodes);
-        // var maxSize   = GetMaxSizeOfChildren(_childNodes);
+        
+        (Size total, Size max) = GetTotalChildrenSize();
 
         Vector2 size = new(
-            // ComputedStyle.Flow == Flow.Horizontal ? totalSize.Width : maxSize.Width,
-            // ComputedStyle.Flow == Flow.Vertical ? totalSize.Height : maxSize.Height
+            ComputedStyle.Flow == Flow.Horizontal ? total.Width : max.Width,
+            ComputedStyle.Flow == Flow.Vertical ? total.Height : max.Height
         );
 
         ImGui.SetCursorPos(size);
@@ -409,6 +414,34 @@ public partial class Node
     private void PopDrawList()
     {
         _drawLists.RemoveAt(_drawLists.Count - 1);
+    }
+
+    private (Size, Size) GetTotalChildrenSize()
+    {
+        int totalWidth  = 0;
+        int maxWidth    = 0;
+        int totalHeight = 0;
+        int maxHeight   = 0;
+
+        lock (_childNodes) {
+            foreach (var child in _childNodes) {
+                Size sz = child.Bounds.PaddingSize;
+
+                totalWidth += sz.Width;
+                totalHeight += sz.Height;
+                maxWidth    = Math.Max(maxWidth, sz.Width);
+                maxHeight   = Math.Max(maxHeight, sz.Height);
+            }
+            
+            // Account for the gap between children.
+            if (ComputedStyle.Flow == Flow.Horizontal) {
+                totalWidth += (_childNodes.Count - 1) * ComputedStyle.Gap;
+            } else {
+                totalHeight += (_childNodes.Count - 1) * ComputedStyle.Gap;
+            }
+        }
+
+        return (new(totalWidth, totalHeight), new(maxWidth, maxHeight));
     }
 }
 

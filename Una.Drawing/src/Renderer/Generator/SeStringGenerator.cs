@@ -18,7 +18,7 @@ public class SeStringGenerator : IGenerator
     public int RenderOrder => 999;
 
     /// <inheritdoc/>
-    public bool Generate(SKCanvas canvas, Node node)
+    public bool Generate(SKCanvas canvas, Node node, Vector2 origin)
     {
         if (node.NodeValue is not SeString seString || seString.Payloads.Count == 0) return false;
 
@@ -28,8 +28,8 @@ public class SeStringGenerator : IGenerator
         var   metrics     = font.GetMetrics(node.ComputedStyle.FontSize);
         int   spaceWidth  = font.MeasureText("X", node.ComputedStyle.FontSize, node.ComputedStyle.OutlineSize).Size.Width;
 
-        var y = (int)(metrics.CapHeight) + outlineSize;
-        var x = (int)node.ComputedStyle.TextOffset.X + 1;
+        var y = (int)origin.X + (int)(metrics.CapHeight) + outlineSize;
+        var x = (int)origin.Y + (int)node.ComputedStyle.TextOffset.X + 1;
 
         if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
         if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;

@@ -13,7 +13,7 @@ internal class BackgroundGenerator : IGenerator
     public int RenderOrder => 0;
 
     /// <inheritdoc/>
-    public bool Generate(SKCanvas canvas, Node node)
+    public bool Generate(SKCanvas canvas, Node node, Vector2 origin)
     {
         if (null == node.ComputedStyle.BackgroundColor) return false;
 
@@ -25,7 +25,7 @@ internal class BackgroundGenerator : IGenerator
         paint.Style       = SKPaintStyle.Fill;
 
         if (node.ComputedStyle.BorderRadius == 0) {
-            canvas.DrawRect(0, 0, size.Width, size.Height, paint);
+            canvas.DrawRect(origin.X, origin.Y, size.Width, size.Height, paint);
             return true;
         }
 
@@ -35,7 +35,7 @@ internal class BackgroundGenerator : IGenerator
         var radius = (float)style.BorderRadius;
 
         RoundedCorners corners     = style.RoundedCorners;
-        SKRect         rect        = new(0, 0, size.Width, size.Height);
+        SKRect         rect        = new(origin.X, origin.Y, size.Width + origin.X, size.Height + origin.Y);
         SKPoint        topLeft     = corners.HasFlag(RoundedCorners.TopLeft) ? new(radius, radius) : new(0, 0);
         SKPoint        topRight    = corners.HasFlag(RoundedCorners.TopRight) ? new(radius, radius) : new(0, 0);
         SKPoint        bottomRight = corners.HasFlag(RoundedCorners.BottomRight) ? new(radius, radius) : new(0, 0);

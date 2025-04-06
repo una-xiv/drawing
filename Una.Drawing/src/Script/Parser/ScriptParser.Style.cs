@@ -21,6 +21,10 @@ internal partial class ScriptParser
         new RoundedCornersStyleAttributeParser(),
         new GradientColorStyleAttributeParser(),
         new Vector2StyleAttributeParser(),
+        new Vector4StyleAttributeParser(),
+        new UldStyleStyleAttributeParser(),
+        new ImageScaleModeStyleAttributeParser(),
+        new ImageTileModeStyleAttributeParser(),
     ];
 
     /// <summary>

@@ -7,7 +7,7 @@ public class BackgroundImageGenerator : IGenerator
     public int RenderOrder => 1000;
 
     /// <inheritdoc/>
-    public bool Generate(SKCanvas canvas, Node node)
+    public bool Generate(SKCanvas canvas, Node node, Vector2 origin)
     {
         if (null == node.ComputedStyle.BackgroundImage) return false;
 

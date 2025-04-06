@@ -124,6 +124,9 @@ public partial struct ComputedStyle
     /// <inheritdoc cref="Style.TextShadowColor"/>
     public Color? TextShadowColor;
 
+    /// <inheritdoc cref="Style.DropShadow"/>
+    public Vector4 DropShadow;
+
     /// <inheritdoc cref="Style.IconId"/>
     public uint? IconId;
 
@@ -141,6 +144,18 @@ public partial struct ComputedStyle
 
     /// <inheritdoc cref="Style.ImageRoundedCorners"/>
     public RoundedCorners ImageRoundedCorners;
+    
+    /// <inheritdoc cref="Style.ImageScaleMode"/>
+    public ImageScaleMode ImageScaleMode;
+    
+    /// <inheritdoc cref="Style.ImageTileMode"/>
+    public ImageTileMode ImageTileMode;
+
+    /// <inheritdoc cref="Style.ImageScale"/>
+    public float ImageScale;
+
+    /// <inheritdoc cref="Style.ImageBlur"/>
+    public Vector2 ImageBlur;
 
     /// <inheritdoc cref="Style.ImageGrayscale"/>
     public bool ImageGrayscale;

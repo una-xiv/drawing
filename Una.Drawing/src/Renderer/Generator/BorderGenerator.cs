@@ -13,12 +13,12 @@ internal class BorderGenerator : IGenerator
     public int RenderOrder => 10;
 
     /// <inheritdoc/>
-    public bool Generate(SKCanvas canvas, Node node)
+    public bool Generate(SKCanvas canvas, Node node, Vector2 origin)
     {
         Size          size  = node.Bounds.PaddingSize;
         ComputedStyle style = node.ComputedStyle;
 
-        DrawStroke(canvas, size, style);
+        DrawStroke(canvas, size, style, origin);
 
         if (null == style.BorderColor) return false;
         if (style.BorderWidth is { HorizontalSize: 0, VerticalSize: 0 }) return false;
@@ -36,10 +36,10 @@ internal class BorderGenerator : IGenerator
         float leftCornerRadius   = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Left));
 
         var rect = new SKRect(
-            inset.Left,
-            inset.Top,
-            size.Width - 1 - inset.Right,
-            size.Height - 1 - inset.Bottom
+            origin.X + inset.Left,
+            origin.Y + inset.Top,
+            origin.X + size.Width - inset.Right,
+            origin.Y + size.Height - inset.Bottom
         );
 
         Color? topColor    = style.BorderColor.Value.Top;
@@ -197,14 +197,14 @@ internal class BorderGenerator : IGenerator
         return true;
     }
 
-    private static bool DrawStroke(SKCanvas canvas, Size size, ComputedStyle style)
+    private static bool DrawStroke(SKCanvas canvas, Size size, ComputedStyle style, Vector2 origin)
     {
         if (!(style.StrokeColor?.IsVisible ?? false) || style.StrokeWidth == 0) return false;
 
         using var paint = new SKPaint();
 
         float  inset = style.StrokeInset + (style.StrokeWidth / 2f);
-        SKRect rect  = new(inset, inset, size.Width - inset, size.Height - inset);
+        SKRect rect  = new(origin.X + inset, origin.Y + inset, origin.X + (size.Width - inset), origin.Y + (size.Height - inset));
 
         paint.IsAntialias = style.IsAntialiased;
         paint.Color       = Color.ToSkColor(style.StrokeColor);

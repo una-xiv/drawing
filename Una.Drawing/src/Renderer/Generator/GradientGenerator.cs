@@ -11,7 +11,7 @@ internal class GradientGenerator : IGenerator
 {
     public int RenderOrder => 1;
 
-    public bool Generate(SKCanvas canvas, Node node)
+    public bool Generate(SKCanvas canvas, Node node, Vector2 origin)
     {
         ComputedStyle style = node.ComputedStyle;
         Size          size  = node.Bounds.PaddingSize;
@@ -21,7 +21,12 @@ internal class GradientGenerator : IGenerator
         EdgeSize inset = style.BackgroundGradientInset;
 
         using var paint = new SKPaint();
-        SKRect    rect  = new(inset.Left, inset.Top, size.Width - inset.Right, size.Height - inset.Bottom);
+        SKRect rect = new(
+            origin.X + inset.Left, 
+            origin.Y + inset.Top, 
+            origin.X + (size.Width - inset.Right),
+            origin.Y + (size.Height - inset.Bottom)
+        );
 
         paint.IsAntialias = true;
         paint.Style       = SKPaintStyle.Fill;
