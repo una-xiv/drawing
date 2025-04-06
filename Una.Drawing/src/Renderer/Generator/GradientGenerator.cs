@@ -21,36 +21,39 @@ internal class GradientGenerator : IGenerator
         EdgeSize inset = style.BackgroundGradientInset;
 
         using var paint = new SKPaint();
-        SKRect rect = new(
-            origin.X + inset.Left, 
-            origin.Y + inset.Top, 
-            origin.X + (size.Width - inset.Right),
-            origin.Y + (size.Height - inset.Bottom)
-        );
+        SKRect    rect  = new(inset.Left, inset.Top, size.Width - inset.Right, size.Height - inset.Bottom);
 
         paint.IsAntialias = true;
         paint.Style       = SKPaintStyle.Fill;
         paint.Shader      = CreateShader(size, style.BackgroundGradient, inset);
 
-        if (style.BorderRadius == 0) {
-            canvas.DrawRect(rect, paint);
+        int saveCount = canvas.Save();
+        try {
+            canvas.Translate(origin.X, origin.Y);
+            
+            if (style.BorderRadius == 0) {
+                canvas.DrawRect(rect, paint);
+                return true;
+            }
+
+            var radius = (float)style.BorderRadius;
+
+            RoundedCorners corners     = style.RoundedCorners;
+            SKPoint        topLeft     = corners.HasFlag(RoundedCorners.TopLeft) ? new(radius, radius) : new(0, 0);
+            SKPoint        topRight    = corners.HasFlag(RoundedCorners.TopRight) ? new(radius, radius) : new(0, 0);
+            SKPoint        bottomRight = corners.HasFlag(RoundedCorners.BottomRight) ? new(radius, radius) : new(0, 0);
+            SKPoint        bottomLeft  = corners.HasFlag(RoundedCorners.BottomLeft) ? new(radius, radius) : new(0, 0);
+
+            using SKRoundRect roundRect = new SKRoundRect(rect, radius, radius);
+
+            roundRect.SetRectRadii(rect, [topLeft, topRight, bottomRight, bottomLeft]);
+            canvas.DrawRoundRect(roundRect, paint);
+
             return true;
+        } finally {
+            canvas.RestoreToCount(saveCount);
+            paint.Shader?.Dispose();
         }
-
-        var radius = (float)style.BorderRadius;
-
-        RoundedCorners corners     = style.RoundedCorners;
-        SKPoint        topLeft     = corners.HasFlag(RoundedCorners.TopLeft) ? new(radius, radius) : new(0, 0);
-        SKPoint        topRight    = corners.HasFlag(RoundedCorners.TopRight) ? new(radius, radius) : new(0, 0);
-        SKPoint        bottomRight = corners.HasFlag(RoundedCorners.BottomRight) ? new(radius, radius) : new(0, 0);
-        SKPoint        bottomLeft  = corners.HasFlag(RoundedCorners.BottomLeft) ? new(radius, radius) : new(0, 0);
-
-        using SKRoundRect roundRect = new SKRoundRect(rect, radius, radius);
-
-        roundRect.SetRectRadii(rect, [topLeft, topRight, bottomRight, bottomLeft]);
-        canvas.DrawRoundRect(roundRect, paint);
-
-        return true;
     }
 
     private static SKShader CreateShader(Size size, GradientColor gradientColor, EdgeSize inset)

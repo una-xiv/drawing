@@ -11,8 +11,6 @@ internal class ImageGenerator : IGenerator
     /// <inheritdoc/>
     public bool Generate(SKCanvas canvas, Node node, Vector2 origin)
     {
-        // 1. Define the rectangle bounds *relative to the origin point (0,0)*, considering insets.
-        //    This rectangle will be drawn *after* the canvas is translated.
         SKRect relativeRect = new(
             node.ComputedStyle.ImageInset?.Left ?? 0,
             node.ComputedStyle.ImageInset?.Top ?? 0,
@@ -25,7 +23,6 @@ internal class ImageGenerator : IGenerator
         SKImage? image = GetImage(node);
         if (image == null) return false;
 
-        // --- Shader Matrix Calculation (Handles Scale, Rotation, Offset relative to the relativeRect's top-left) ---
         float scale = MathF.Max(0.1f, node.ComputedStyle.ImageScale) * Node.ScaleFactor;
 
         // Calculate the scale matrix based on the mode
@@ -53,18 +50,15 @@ internal class ImageGenerator : IGenerator
         SKMatrix rotationMatrix = SKMatrix.CreateRotationDegrees(node.ComputedStyle.ImageRotation, pivot.X, pivot.Y);
 
         // Calculate the translation matrix ONLY for the ImageOffset.
-        // ImageInset is handled by the definition of relativeRect.
         SKMatrix shaderOffsetMatrix = SKMatrix.CreateTranslation(
             (node.ComputedStyle.ImageOffset?.X ?? 0),
             (node.ComputedStyle.ImageOffset?.Y ?? 0)
         );
 
         // Combine transformations for the shader matrix. Order: Scale -> Rotate -> Translate Offset
-        // This matrix transforms the texture coordinates within the relativeRect.
         SKMatrix imageTransformMatrix = shaderOffsetMatrix;
         imageTransformMatrix = imageTransformMatrix.PreConcat(rotationMatrix);
         imageTransformMatrix = imageTransformMatrix.PreConcat(scaleMatrix);
-
 
         SKShaderTileMode tileMode = node.ComputedStyle.ImageTileMode switch {
             ImageTileMode.Clamp  => SKShaderTileMode.Clamp,
@@ -75,7 +69,6 @@ internal class ImageGenerator : IGenerator
                 node.ComputedStyle.ImageTileMode, null)
         };
 
-        // --- Paint Setup ---
         using SKPaint paint = new();
         paint.IsAntialias = node.ComputedStyle.IsAntialiased;
         paint.IsDither    = false;
@@ -108,38 +101,29 @@ internal class ImageGenerator : IGenerator
         );
         paint.Shader = imageShader;
 
-        // --- Drawing Calculation (Handles position on Canvas via Canvas Transform) ---
-
-        // Save the current canvas state (matrix, clip, etc.)
         int saveCount = canvas.Save();
         try {
-            // Translate the canvas origin to the desired drawing position
             canvas.Translate(origin.X, origin.Y);
 
-            // Now, draw the relativeRect at its coordinates (which are relative to the new origin)
             float radius = node.ComputedStyle.ImageRounding;
 
             if (radius < 0.01f) {
-                // Draw the rectangle using relativeRect coordinates in the translated space
                 canvas.DrawRect(relativeRect, paint);
             } else {
                 var            style   = node.ComputedStyle;
                 RoundedCorners corners = style.ImageRoundedCorners;
-                // Define radii for each corner
+                
                 SKPoint topLeft     = corners.HasFlag(RoundedCorners.TopLeft) ? new(radius, radius) : SKPoint.Empty;
                 SKPoint topRight    = corners.HasFlag(RoundedCorners.TopRight) ? new(radius, radius) : SKPoint.Empty;
                 SKPoint bottomRight = corners.HasFlag(RoundedCorners.BottomRight) ? new(radius, radius) : SKPoint.Empty;
                 SKPoint bottomLeft  = corners.HasFlag(RoundedCorners.BottomLeft) ? new(radius, radius) : SKPoint.Empty;
 
-                // Create the round rectangle geometry using relativeRect coordinates
                 using SKRoundRect roundRect = new();
                 roundRect.SetRectRadii(relativeRect, [topLeft, topRight, bottomRight, bottomLeft]);
 
-                // Draw the rounded rectangle in the translated space
                 canvas.DrawRoundRect(roundRect, paint);
             }
         } finally {
-            // Restore the canvas state to what it was before canvas.Save()
             canvas.RestoreToCount(saveCount);
         }
 
