@@ -32,6 +32,11 @@ public partial class Style
     /// Defines the flow direction of the node.
     /// </summary>
     public Flow? Flow { get; set; }
+    
+    /// <summary>
+    /// Defines the render order of child elements.
+    /// </summary>
+    public FlowOrder? FlowOrder { get; set; }
 
     /// <summary>
     /// Defines the gap between nodes.

@@ -1,14 +1,14 @@
 <style>
 #main {
     anchor: top-left;
-    size: 500 500;
+    size: 630 630;
     background-color: 0xFF212121;
     border-radius: 10;
     padding: 10;
     gap: 10;
     
     .item {
-        size: 128;
+        size: 150;
         background-color: 0xFF424242;
         background-gradient: radial 0x40FFFFFF 0x00000000;
         border-radius: 10;

@@ -10,6 +10,12 @@ namespace Una.Drawing;
 public class NodeBounds
 {
     /// <summary>
+    /// Represents the size of the margin area of this node, which is the area
+    /// that surrounds the content and padding areas of the node.
+    /// </summary>
+    public Size MarginSize { get; set; } = new(0, 0);
+    
+    /// <summary>
     /// Represents the size of the border area of this node, which is the area
     /// that surrounds the content and padding areas of the node.
     /// </summary>
@@ -22,6 +28,12 @@ public class NodeBounds
     /// </summary>
     public Size ContentSize  { get; set; } = new(0, 0);
 
+    /// <summary>
+    /// Represents the margin area of this node, which is the area that surrounds
+    /// the content and padding areas of the node.
+    /// </summary>
+    public Rect MarginRect { get; internal set; } = new(0, 0, 0, 0);
+    
     /// <summary>
     /// Represents the border area of this node, which is the area that surrounds
     /// the content and padding areas of the node.

@@ -17,7 +17,7 @@ internal class ImageGenerator : IGenerator
             node.Bounds.PaddingSize.Width - (node.ComputedStyle.ImageInset?.Right ?? 0),
             node.Bounds.PaddingSize.Height - (node.ComputedStyle.ImageInset?.Bottom ?? 0)
         );
-
+ 
         if (relativeRect.IsEmpty) return false;
 
         SKImage? image = GetImage(node);
@@ -149,7 +149,12 @@ internal class ImageGenerator : IGenerator
                 node.ComputedStyle.UldStyle ?? UldStyle.Default
             );
 
-            return uld?.Texture.Subset(uld.Value.Rect);
+            return uld?.Texture.Subset(new SKRectI(
+                (int)uld.Value.Rect.X1,
+                (int)uld.Value.Rect.Y1,
+                (int)uld.Value.Rect.X2,
+                (int)uld.Value.Rect.Y2
+            ));
         }
 
         return null;

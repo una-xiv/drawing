@@ -20,6 +20,7 @@ public partial struct ComputedStyle
             || TextShadowColor is not null
             || IconId is not null
             || ImageBytes is not null
+            || DropShadow != Vector4.Zero
             || (!string.IsNullOrWhiteSpace(UldResource) && UldPartsId.HasValue && UldPartId.HasValue);
     }
 

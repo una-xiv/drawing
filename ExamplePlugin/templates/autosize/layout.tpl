@@ -203,6 +203,7 @@
             <node class="button" value="X" />
             <node class="button" value="Y" />
             <node class="button" value="Z" />
+            <node class="button" value="W" sort-index="-1" />
         </node>
     </node>
     <node class="body">

@@ -10,17 +10,17 @@ namespace Una.Drawing;
 /// <summary>
 /// Defines the size of each of the four sides of a rectangle.
 /// </summary>
-public readonly record struct EdgeSize(int Top, int Right, int Bottom, int Left)
+public readonly record struct EdgeSize(float Top, float Right, float Bottom, float Left)
 {
     /// <summary>
     /// Returns the combined horizontal size of the left and right edges.
     /// </summary>
-    public int HorizontalSize => Left + Right;
+    public float HorizontalSize => Left + Right;
 
     /// <summary>
     /// Returns the combined vertical size of the top and bottom edges.
     /// </summary>
-    public int VerticalSize => Top + Bottom;
+    public float VerticalSize => Top + Bottom;
 
     /// <summary>
     /// Returns a new Size object with the combined horizontal and vertical
@@ -37,14 +37,14 @@ public readonly record struct EdgeSize(int Top, int Right, int Bottom, int Left)
     /// Defines a uniform perimeter size for all four edges.
     /// </summary>
     /// <param name="size">The edge size in pixels.</param>
-    public EdgeSize(int size) : this(size, size, size, size) { }
+    public EdgeSize(float size) : this(size, size, size, size) { }
 
     /// <summary>
     /// Defines the sizes for the vertical and horizontal edges.
     /// </summary>
     /// <param name="vertical">The size of vertical edges in pixels.</param>
     /// <param name="horizontal">The size of horizontal edges in pixels.</param>
-    public EdgeSize(int vertical, int horizontal) : this(vertical, horizontal, vertical, horizontal) { }
+    public EdgeSize(float vertical, float horizontal) : this(vertical, horizontal, vertical, horizontal) { }
 
     public bool IsZero => Top == 0 && Right == 0 && Bottom == 0 && Left == 0;
 

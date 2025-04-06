@@ -24,12 +24,18 @@ public partial struct ComputedStyle
 
     /// <inheritdoc cref="Style.Flow"/>
     public Flow Flow;
+    
+    /// <inheritdoc cref="Style.FlowOrder"/>
+    public FlowOrder FlowOrder;
 
     /// <inheritdoc cref="Style.Gap"/>
     public int Gap;
 
     /// <inheritdoc cref="Style.Padding"/>
     public EdgeSize Padding;
+    
+    /// <inheritdoc cref="Style.Margin"/>
+    public EdgeSize Margin;
 
     /// <inheritdoc cref="Style.Color"/>
     public Color Color;

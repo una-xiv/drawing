@@ -18,7 +18,7 @@ public class AutoSizeLayoutTest : DrawingTest
     /// <inheritdoc/>
     public override void OnActivate()
     {
-        _node = CreateNodeFromFile("autosize_layout.tpl");
+        _node = CreateNodeFromFile("autosize.layout.tpl");
 
         foreach (var item in _node.QuerySelectorAll(".menu-item, .button")) {
             item.OnClick += n => { };

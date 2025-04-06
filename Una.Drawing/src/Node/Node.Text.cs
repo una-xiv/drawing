@@ -106,10 +106,10 @@ public partial class Node
         }
 
         IFont font       = FontRegistry.Fonts[ComputedStyle.Font];
-        var   maxWidth   = 0;
-        var   maxHeight  = 0;
+        float maxWidth   = 0;
+        float maxHeight  = 0;
         Size  charSize   = font.MeasureText("X", ComputedStyle.FontSize, ComputedStyle.OutlineSize).Size;
-        int   spaceWidth = charSize.Width;
+        float spaceWidth = charSize.Width;
 
         foreach (var payload in str.Payloads) {
             switch (payload) {

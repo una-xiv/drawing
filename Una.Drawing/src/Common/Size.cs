@@ -12,13 +12,13 @@ namespace Una.Drawing;
 /// considered undefined, meaning that the object will be sized based on its
 /// content and child nodes.
 /// </summary>
-public record Size(int Width = 0, int Height = 0)
+public record Size(float Width = 0, float Height = 0)
 {
-    public int Width  { get; set; } = Width;
-    public int Height { get; set; } = Height;
+    public float Width  { get; set; } = Width;
+    public float Height { get; set; } = Height;
 
     public Size() : this(0, 0) { }
-    public Size(int size) : this(size, size) { }
+    public Size(float size) : this(size, size) { }
 
     /// <summary>
     /// True if both sides have an undefined size, meaning that the box should

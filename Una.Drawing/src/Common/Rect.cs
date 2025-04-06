@@ -7,24 +7,24 @@
 
 namespace Una.Drawing;
 
-public class Rect(int x1, int y1, int x2, int y2)
+public class Rect(float x1, float y1, float x2, float y2)
 {
-    public int X1 { get; set; } = x1;
-    public int Y1 { get; set; } = y1;
-    public int X2 { get; set; } = x2;
-    public int Y2 { get; set; } = y2;
+    public float X1 { get; set; } = x1;
+    public float Y1 { get; set; } = y1;
+    public float X2 { get; set; } = x2;
+    public float Y2 { get; set; } = y2;
 
     public Vector2 TopLeft     => new(X1, Y1);
     public Vector2 TopRight    => new(X2, Y1);
     public Vector2 BottomLeft  => new(X1, Y2);
     public Vector2 BottomRight => new(X2, Y2);
 
-    public int Width  => X2 - X1;
-    public int Height => Y2 - Y1;
+    public float Width  => X2 - X1;
+    public float Height => Y2 - Y1;
 
     public bool IsEmpty => X1 == 0 && Y1 == 0 && X2 == 0 && Y2 == 0;
 
-    public Rect(int     x,        int     y, Size size) : this(x, y, x + size.Width, y + size.Height) { }
+    public Rect(float     x,        float     y, Size size) : this(x, y, x + size.Width, y + size.Height) { }
     public Rect(Vector2 position, Size    size) : this((int)position.X, (int)position.Y, size) { }
     public Rect(Vector2 position, Vector2 size) : this((int)position.X, (int)position.Y, (int)size.X, (int)size.Y) { }
     public Rect(Size    size) : this(0, 0, size) { }
@@ -63,7 +63,7 @@ public class Rect(int x1, int y1, int x2, int y2)
     }
 
     /// <summary>
-    /// Returns true if the given point is contained within this rectangle.
+    /// Returns true if the given pofloat is contained within this rectangle.
     /// </summary>
     /// <param name="point"></param>
     /// <returns></returns>
@@ -102,11 +102,11 @@ public class Rect(int x1, int y1, int x2, int y2)
     public Rect Union(Rect rect) =>
         new(Math.Min(X1, rect.X1), Math.Min(Y1, rect.Y1), Math.Max(X2, rect.X2), Math.Max(Y2, rect.Y2));
 
-    public static implicit operator SKRectI(Rect rect) => new(rect.X1, rect.Y1, rect.X2, rect.Y2);
-    public static implicit operator Rect(SKRectI rect) => new(rect.Left, rect.Top, rect.Right, rect.Bottom);
+    public static implicit operator SKRect(Rect rect) => new(rect.X1, rect.Y1, rect.X2, rect.Y2);
+    public static implicit operator Rect(SKRect rect) => new(rect.Left, rect.Top, rect.Right, rect.Bottom);
 
     public override string ToString()
     {
-        return $"Rect({X1}, {Y1}, {X2}, {Y2})";
+        return $"({X1}x{Y1} - {X2}x{Y2})";
     }
 }

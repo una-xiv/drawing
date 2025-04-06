@@ -15,7 +15,7 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         bool   wordWrap     = false,
         bool   textOverflow = true,
         float  lineHeight   = 1.2f,
-        int?   maxWidth     = null
+        float? maxWidth     = null
     )
     {
         if (maxWidth > 0) {

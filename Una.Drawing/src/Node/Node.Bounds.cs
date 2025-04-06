@@ -20,25 +20,37 @@ public partial class Node
     /// A read-only property that represents the outer width of this node,
     /// based on the total width of the content and padding areas.
     /// </summary>
-    public int OuterWidth => ComputedStyle.IsVisible ? Bounds.PaddingSize.Width : 0;
+    public float OuterWidth => ComputedStyle.IsVisible ? Bounds.MarginSize.Width : 0;
 
     /// <summary>
     /// A read-only property that represents the outer height of this node,
     /// based on the total height of the content and padding areas.
     /// </summary>
-    public int OuterHeight => ComputedStyle.IsVisible ? Bounds.PaddingSize.Height : 0;
+    public float OuterHeight => ComputedStyle.IsVisible ? Bounds.MarginSize.Height : 0;
 
+    /// <summary>
+    /// A read-only property that represents the width of this node, that is
+    /// made up of the content and padding areas.
+    /// </summary>
+    public float Width => ComputedStyle.IsVisible ? Bounds.PaddingSize.Width : 0;
+    
+    /// <summary>
+    /// A read-only property that represents the height of this node, that is
+    /// made up of the content and padding areas.
+    /// </summary>
+    public float Height => ComputedStyle.IsVisible ? Bounds.PaddingSize.Height : 0;
+    
     /// <summary>
     /// A read-only property that represents the width of this node that is
     /// made up of the content area.
     /// </summary>
-    public int Width => ComputedStyle.IsVisible ? Bounds.ContentSize.Width : 0;
+    public float InnerWidth => ComputedStyle.IsVisible ? Bounds.ContentSize.Width : 0;
 
     /// <summary>
     /// A read-only property that represents the height of this node that is
     /// made up of the content area.
     /// </summary>
-    public int Height => ComputedStyle.IsVisible ? Bounds.ContentSize.Height : 0;
+    public float InnerHeight => ComputedStyle.IsVisible ? Bounds.ContentSize.Height : 0;
 
     #endregion
 }

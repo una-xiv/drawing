@@ -17,7 +17,7 @@ public class NestedAnchorsTest : DrawingTest
     /// <inheritdoc/>
     public override void OnActivate()
     {
-        _node = CreateNodeFromFile("anchors_nested.tpl");
+        _node = CreateNodeFromFile("anchors.nested.tpl");
     }
 
     /// <inheritdoc/>

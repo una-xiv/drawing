@@ -14,7 +14,7 @@ public interface IFont
     /// <param name="lineHeight">A scale factor that determines the height of lines.</param>
     /// <param name="maxWidth">The maximum width of a single line of text.</param>
     /// <returns>A <see cref="MeasuredText"/> object containing wrapped text.</returns>
-    public MeasuredText MeasureText(string text, int fontSize = 14, float outlineSize = 0, float? maxLineWidth = null, bool wordWrap = false, bool textOverflow = true, float lineHeight = 1.2f, int? maxWidth = null);
+    public MeasuredText MeasureText(string text, int fontSize = 14, float outlineSize = 0, float? maxLineWidth = null, bool wordWrap = false, bool textOverflow = true, float lineHeight = 1.2f, float? maxWidth = null);
 
     /// <summary>
     /// Draws the given text on the canvas using this font.

@@ -23,7 +23,7 @@ public class UldWindowTest : DrawingTest
     /// <inheritdoc/>
     public override void OnActivate()
     {
-        _node = CreateNodeFromFile("images_uld_window.tpl");
+        _node = CreateNodeFromFile("uld_window.tpl");
     }
 
     /// <inheritdoc/>

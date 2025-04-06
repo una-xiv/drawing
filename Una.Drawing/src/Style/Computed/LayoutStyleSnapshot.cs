@@ -12,20 +12,25 @@ internal struct LayoutStyleSnapshot
 {
     internal Anchor.AnchorPoint   Anchor;
     internal bool                 IsVisible;
-    internal int                  Width;
-    internal int                  Height;
+    internal float                Width;
+    internal float                Height;
     internal Flow                 Flow;
+    internal FlowOrder            FlowOrder;
     internal int                  Gap;
-    internal int                  PaddingTop;
-    internal int                  PaddingRight;
-    internal int                  PaddingBottom;
-    internal int                  PaddingLeft;
+    internal float                PaddingTop;
+    internal float                PaddingRight;
+    internal float                PaddingBottom;
+    internal float                PaddingLeft;
+    internal float                MarginTop;
+    internal float                MarginRight;
+    internal float                MarginBottom;
+    internal float                MarginLeft;
     internal bool                 WordWrap;
     internal uint                 Font;
     internal int                  FontSize;
     internal float                LineHeight;
     internal bool                 TextOverflow;
-    internal int?                 MaxWidth;
+    internal float?               MaxWidth;
     internal (AutoSize, AutoSize) AutoSize;
 
     internal static LayoutStyleSnapshot Create(ref ComputedStyle style)
@@ -36,11 +41,16 @@ internal struct LayoutStyleSnapshot
             Width         = style.Size.Width,
             Height        = style.Size.Height,
             Flow          = style.Flow,
+            FlowOrder     = style.FlowOrder,
             Gap           = style.Gap,
             PaddingTop    = style.Padding.Top,
             PaddingRight  = style.Padding.Right,
             PaddingBottom = style.Padding.Bottom,
             PaddingLeft   = style.Padding.Left,
+            MarginTop     = style.Margin.Top,
+            MarginRight   = style.Margin.Right,
+            MarginBottom  = style.Margin.Bottom,
+            MarginLeft    = style.Margin.Left,
             WordWrap      = style.WordWrap,
             Font          = style.Font,
             FontSize      = style.FontSize,

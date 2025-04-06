@@ -24,23 +24,23 @@ internal class TextGenerator : IGenerator
 
         Size  size        = node.NodeValueMeasurement!.Value.Size;
         IFont font        = FontRegistry.Fonts[node.ComputedStyle.Font];
-        var   outlineSize = (int)node.ComputedStyle.OutlineSize;
+        var   outlineSize = node.ComputedStyle.OutlineSize;
         int   fontSize    = node.ComputedStyle.FontSize;
-        var   lineHeight  = (int)Math.Ceiling(font.GetLineHeight(fontSize));
+        var   lineHeight  = Math.Ceiling(font.GetLineHeight(fontSize));
         var   metrics     = font.GetMetrics(node.ComputedStyle.FontSize);
 
-        var y = (int)origin.X + (int)(metrics.CapHeight + (int)node.ComputedStyle.TextOffset.Y + 1) + outlineSize;
-        var x = (int)origin.Y + (int)node.ComputedStyle.TextOffset.X + 1;
+        var y = origin.X + (metrics.CapHeight + node.ComputedStyle.TextOffset.Y + 1) + outlineSize;
+        var x = origin.Y + node.ComputedStyle.TextOffset.X + 1;
 
         if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
         if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;
         if (node.ComputedStyle.TextAlign.IsRight) x  += -(node.ComputedStyle.Padding.Right + outlineSize);
-        if (node.ComputedStyle.TextAlign.IsMiddle) y += (node.OuterHeight - size.Height) / 2 + outlineSize;
-        if (node.ComputedStyle.TextAlign.IsBottom) y =  node.OuterHeight - size.Height - outlineSize;
+        if (node.ComputedStyle.TextAlign.IsMiddle) y += (node.Height - size.Height) / 2 + outlineSize;
+        if (node.ComputedStyle.TextAlign.IsBottom) y =  origin.Y + (node.Height - size.Height - outlineSize);
 
         foreach (string line in node.NodeValueMeasurement!.Value.Lines) {
             PrintLine(canvas, font, node, line, x, y);
-            y += (int)(lineHeight * node.ComputedStyle.LineHeight);
+            y += (float)(lineHeight * node.ComputedStyle.LineHeight);
         }
 
         return true;

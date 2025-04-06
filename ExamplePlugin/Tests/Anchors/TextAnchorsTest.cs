@@ -18,7 +18,7 @@ public class TextAnchorsTest : DrawingTest
     /// <inheritdoc/>
     public override void OnActivate()
     {
-        _node = CreateNodeFromFile("anchors_text.tpl");
+        _node = CreateNodeFromFile("anchors.text.tpl");
     }
 
     /// <inheritdoc/>

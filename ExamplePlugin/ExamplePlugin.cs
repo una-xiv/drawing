@@ -48,7 +48,7 @@ public sealed class ExamplePlugin : IDalamudPlugin
         }
 
         Node.DrawDebugInfo               = false;
-        Node.UseThreadedStyleComputation = true;
+        Node.UseThreadedStyleComputation = true; 
 
         var file = new FileInfo(
             Path.Combine(_plugin.DalamudAssetDirectory.FullName, "UIRes", "NotoSansKR-Regular.otf")

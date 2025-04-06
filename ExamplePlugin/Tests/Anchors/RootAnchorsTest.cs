@@ -21,7 +21,7 @@ public class RootAnchorsTest : DrawingTest
     {
         // Iterate over all anchor points and create a node for each one.
         foreach (var anchor in Enum.GetValues<Anchor.AnchorPoint>()) {
-            Node node = CreateNodeFromFile("anchors_root.tpl");
+            Node node = CreateNodeFromFile("anchors.root.tpl");
             node.Style.Anchor = anchor;
             _nodes.Add(anchor, node);
         }

@@ -37,6 +37,16 @@ public partial class Style
     public EdgeSize? Padding { get; set; }
 
     /// <summary>
+    /// Margins are inserted between the margin edge and the padding edge of an
+    /// element, providing spacing between the element and its parent node.
+    /// </summary>
+    /// <remarks>
+    /// Modifying this property will trigger a reflow of the layout. This is a
+    /// computationally expensive operation and should be done sparingly.
+    /// </remarks>
+    public EdgeSize? Margin { get; set; }
+    
+    /// <summary>
     /// <para>
     /// Specifies the definitive inner dimensions of the content area of an
     /// element, including the padding edges.

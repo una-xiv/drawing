@@ -38,8 +38,10 @@ internal static class ComputedStyleFactory
         cs.Size                      = style.Size ?? cs.Size;
         cs.AutoSize                  = style.AutoSize ?? cs.AutoSize;
         cs.Flow                      = style.Flow ?? cs.Flow;
+        cs.FlowOrder                 = style.FlowOrder ?? cs.FlowOrder;
         cs.Gap                       = style.Gap ?? cs.Gap;
         cs.Padding                   = style.Padding ?? cs.Padding;
+        cs.Margin                    = style.Margin ?? cs.Margin;
         cs.Color                     = style.Color ?? cs.Color;
         cs.Font                      = style.Font ?? cs.Font;
         cs.FontSize                  = style.FontSize ?? cs.FontSize;
@@ -148,6 +150,7 @@ internal static class ComputedStyleFactory
             Anchor                    = Anchor.TopLeft,
             Size                      = new(),
             Flow                      = Flow.Horizontal,
+            FlowOrder                 = FlowOrder.Normal,
             Gap                       = 0,
             Padding                   = new(),
             Color                     = new(0xFFC0C0C0),

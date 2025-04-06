@@ -58,11 +58,17 @@ internal static class Renderer
     /// </summary>
     internal static IDalamudTextureWrap? CreateTexture(Node node)
     {
-        if (node.OuterWidth == 0 || node.OuterHeight == 0) return null;
-        if (node.OuterWidth > 8192 || node.OuterHeight > 8192) return null;
+        if (node.Width == 0 || node.Height == 0) return null;
+        if (node.Width > 8192 || node.Height > 8192) return null;
 
-        SKImageInfo info = new(node.OuterWidth + 64, node.OuterHeight + 64, SKColorType.Bgra8888, SKAlphaType.Premul,
-            SkColorSpace);
+        SKImageInfo info = new(
+            (int)node.Width + 64, 
+            (int)node.Height + 64,
+            SKColorType.Bgra8888,
+            SKAlphaType.Premul,
+            SkColorSpace
+        );
+        
         using var pixmap  = new SKPixmap(info, _pixelDataPtr);
         using var surface = SKSurface.Create(pixmap);
 
@@ -85,7 +91,7 @@ internal static class Renderer
 
         try {
             return DalamudServices.TextureProvider.CreateFromRaw(
-                RawImageSpecification.Rgba32(node.OuterWidth + 64, node.OuterHeight + 64),
+                RawImageSpecification.Rgba32((int)node.Width + 64, (int)node.Height + 64),
                 pixmap.GetPixelSpan(),
                 node.ToString()
             );

@@ -24,10 +24,10 @@ internal class BorderGenerator : IGenerator
         if (style.BorderWidth is { HorizontalSize: 0, VerticalSize: 0 }) return false;
 
         EdgeSize inset       = style.BorderInset;
-        int      topWidth    = style.BorderWidth.Top;
-        int      rightWidth  = style.BorderWidth.Right;
-        int      bottomWidth = style.BorderWidth.Bottom;
-        int      leftWidth   = style.BorderWidth.Left;
+        float    topWidth    = style.BorderWidth.Top;
+        float    rightWidth  = style.BorderWidth.Right;
+        float    bottomWidth = style.BorderWidth.Bottom;
+        float    leftWidth   = style.BorderWidth.Left;
 
         // FIXME: This isn't right. Corner radius should respect individual edge sizes now.
         float topCornerRadius    = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Top));

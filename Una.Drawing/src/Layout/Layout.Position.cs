@@ -17,46 +17,75 @@ internal static partial class Layout
 
     private static void PositionNodesWithSameAnchor(Anchor anchor, Node root, List<Node> children)
     {
-        (int originX, int originY) = GetNodeOrigin(anchor, root, children);
+        if (children.Count == 0) return;
 
-        int x   = originX, y = originY;
-        int gap = root.ComputedStyle.Gap;
+        FlowOrder order = root.ComputedStyle.FlowOrder;
+        Flow      flow  = root.ComputedStyle.Flow;
 
-        Node lastChild = children.Last();
+        int firstIndex = order is FlowOrder.Normal ? 0 : children.Count - 1;
+        int lastIndex  = order is FlowOrder.Normal ? children.Count - 1 : 0;
+
+        (float originX, float originY) = GetNodeOrigin(anchor, root, children);
+
+        int   gap = root.ComputedStyle.Gap;
+        float x   = originX, y = originY;
+
+        float center = 0f;
+        float middle = 0f;
 
         if (anchor.IsCenter) {
-            x = GetCenterStart(root, children);
+            center = GetCenter(root);
+            x      = center - (children[firstIndex].OuterWidth / 2f);
         }
 
         if (anchor.IsTop) {
             y = originY;
-        }
-        
-        foreach (Node node in children) {
-            if (node.IsDisposed || !node.IsVisible) continue;
-            
-            if (anchor.IsMiddle) {
-                y = originY - (int)Math.Ceiling(node.OuterHeight / 2f);
-            } else if (anchor.IsBottom) {
-                y = originY - node.OuterHeight;
+        } else if (anchor.IsBottom) {
+            y = originY - GetChildrenHeight(root, children);
+        } else if (anchor.IsMiddle) {
+            middle = GetMiddle(root);
+            if (flow == Flow.Horizontal) {
+                y      = middle - (children[firstIndex].OuterHeight / 2f);
+            } else {
+                y      = middle - (GetChildrenHeight(root, children) / 2f);
             }
+        }
 
-            node.Bounds.PaddingRect = new Rect(x, y, node.Bounds.PaddingSize);
-            node.Bounds.ContentRect = new Rect(x + node.ComputedStyle.Padding.Left,
-                y + node.ComputedStyle.Padding.Top, node.Bounds.ContentSize);
+        int step = (order is FlowOrder.Normal ? 1 : -1);
 
-            if (node.Equals(lastChild)) {
+        for (var i = firstIndex; i <= lastIndex; i += step) {
+            Node node = children[i];
+
+            if (node.IsDisposed || !node.IsVisible) continue;
+
+            node.Bounds.MarginRect = new Rect(x, y, node.Bounds.MarginSize);
+
+            node.Bounds.PaddingRect = new Rect(
+                x + node.ComputedStyle.Margin.Left,
+                y + node.ComputedStyle.Margin.Top,
+                node.Bounds.PaddingSize
+            );
+
+            node.Bounds.ContentRect = new Rect(
+                x + node.ComputedStyle.Margin.Left + node.ComputedStyle.Padding.Left,
+                y + node.ComputedStyle.Margin.Top + node.ComputedStyle.Padding.Top,
+                node.Bounds.ContentSize
+            );
+
+            if (i == lastIndex) {
                 ComputePositions(node);
                 break;
             }
+            
+            Node nextNode = children[i + step];
 
-            switch (root.ComputedStyle.Flow) {
+            switch (flow) {
                 case Flow.Vertical:
                     // X-axis
                     if (anchor.IsLeft) {
                         x = originX;
                     } else if (anchor.IsCenter) {
-                        x = originX - (int)Math.Ceiling(node.OuterWidth / 2f);
+                        x = center - (node.OuterWidth / 2f);
                     } else if (anchor.IsRight) {
                         x = originX - node.OuterWidth;
                     }
@@ -72,6 +101,10 @@ internal static partial class Layout
                     // Y-axis
                     if (anchor.IsTop) {
                         y = originY;
+                    } else if (anchor.IsMiddle) {
+                        y = middle - (nextNode.OuterHeight / 2f);
+                    } else if (anchor.IsBottom) {
+                        y = originY - nextNode.OuterHeight;
                     }
 
                     break;
@@ -81,10 +114,10 @@ internal static partial class Layout
         }
     }
 
-    private static (int, int) GetNodeOrigin(Anchor anchor, Node root, List<Node> children)
+    private static (float, float) GetNodeOrigin(Anchor anchor, Node root, List<Node> children)
     {
-        int x = 0;
-        int y = 0;
+        float x = 0;
+        float y = 0;
 
         if (anchor.IsLeft) {
             x = root.Bounds.ContentRect.X1;
@@ -105,25 +138,45 @@ internal static partial class Layout
         return (x, y);
     }
 
-    private static int GetCenterStart(Node root, List<Node> children)
+    private static float GetCenterStart(Node root, List<Node> children)
     {
         return root.Bounds.ContentRect.X1 + Math.Abs(
-            (int)Math.Ceiling((root.Width / 2f) - (GetChildrenWidth(root, children) / 2f)));
+            (int)Math.Ceiling((root.InnerWidth / 2f) - (GetChildrenWidth(root, children) / 2f)));
     }
 
-    private static int GetMiddle(Node root)
+    private static float GetCenter(Node root)
+    {
+        return root.Bounds.ContentRect.X1 + (int)Math.Ceiling(root.Bounds.ContentSize.Width / 2f);
+    }
+
+    private static float GetMiddle(Node root)
     {
         return root.Bounds.ContentRect.Y1 + (int)Math.Ceiling(root.Bounds.ContentSize.Height / 2f);
     }
 
-    private static int GetChildrenWidth(Node root, List<Node> children)
+    private static float GetChildrenWidth(Node root, List<Node> children)
     {
-        int width = children
-                   .Where(node => node is { IsDisposed: false, ComputedStyle.IsVisible: true })
-                   .Sum(node => node.OuterWidth);
+        float width = children
+                     .Where(node => node is { IsDisposed: false, ComputedStyle.IsVisible: true })
+                     .Sum(node => node.OuterWidth);
 
-        width += root.ComputedStyle.Gap > 0 ? (children.Count - 1) * root.ComputedStyle.Gap : 0;
+        if (root.ComputedStyle.Flow == Flow.Horizontal) {
+            width += root.ComputedStyle.Gap > 0 ? (children.Count - 1) * root.ComputedStyle.Gap : 0;
+        }
 
         return width;
+    }
+
+    private static float GetChildrenHeight(Node root, List<Node> children)
+    {
+        float height = children
+                      .Where(node => node is { IsDisposed: false, ComputedStyle.IsVisible: true })
+                      .Sum(node => node.OuterHeight);
+
+        if (root.ComputedStyle.Flow == Flow.Vertical) {
+            height += root.ComputedStyle.Gap > 0 ? (children.Count - 1) * root.ComputedStyle.Gap : 0;
+        }
+
+        return height;
     }
 }

@@ -24,12 +24,14 @@ public class SeStringGenerator : IGenerator
 
         Size  size        = node.NodeValueMeasurement!.Value.Size;
         IFont font        = FontRegistry.Fonts[node.ComputedStyle.Font];
-        var   outlineSize = (int)node.ComputedStyle.OutlineSize;
+        float outlineSize = node.ComputedStyle.OutlineSize;
         var   metrics     = font.GetMetrics(node.ComputedStyle.FontSize);
-        int   spaceWidth  = font.MeasureText("X", node.ComputedStyle.FontSize, node.ComputedStyle.OutlineSize).Size.Width;
 
-        var y = (int)origin.X + (int)(metrics.CapHeight) + outlineSize;
-        var x = (int)origin.Y + (int)node.ComputedStyle.TextOffset.X + 1;
+        float spaceWidth = font.MeasureText("X", node.ComputedStyle.FontSize, node.ComputedStyle.OutlineSize)
+                               .Size.Width;
+
+        float y = origin.X + (metrics.CapHeight) + outlineSize;
+        float x = origin.Y + node.ComputedStyle.TextOffset.X + 1;
 
         if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
         if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;
@@ -53,6 +55,7 @@ public class SeStringGenerator : IGenerator
                         prevColor = color;
                         color     = Color.ToSkColor(new(RgbaToAbgr(fg.UIColor.Value.Dark)));
                     }
+
                     continue;
                 case UIGlowPayload glow:
                     uint rgba = glow.RGBA;
@@ -63,9 +66,11 @@ public class SeStringGenerator : IGenerator
                         prevEdgeColor = edgeColor;
                         edgeColor     = Color.ToSkColor(new(RgbaToAbgr(glow.UIColor.Value.Dark)));
                     }
+
                     continue;
                 case TextPayload text:
-                    x += DrawText(canvas, new(x, y + node.ComputedStyle.TextOffset.Y), color, edgeColor, node, text.Text ?? "", x, node.ComputedStyle.MaxWidth);
+                    x += DrawText(canvas, new(x, y + node.ComputedStyle.TextOffset.Y), color, edgeColor, node,
+                        text.Text ?? "", x, node.ComputedStyle.MaxWidth);
                     continue;
                 case IconPayload icon: {
                     x += spaceWidth;
@@ -95,13 +100,15 @@ public class SeStringGenerator : IGenerator
         return true;
     }
 
-    private static int DrawText(SKCanvas canvas, SKPoint point, SKColor color, SKColor? edgeColor, Node node, string text, int currentWidth, int? maxWidth)
+    private static float DrawText(SKCanvas canvas, SKPoint point,        SKColor color, SKColor? edgeColor, Node node,
+                                  string   text,   float   currentWidth, float?  maxWidth)
     {
         if (string.IsNullOrEmpty(text)) return 0;
 
         IFont font = FontRegistry.Fonts[node.ComputedStyle.Font];
 
-        MeasuredText measurements = font.MeasureText(text, node.ComputedStyle.FontSize, node.ComputedStyle.OutlineSize, maxWidth: maxWidth - currentWidth);
+        MeasuredText measurements = font.MeasureText(text, node.ComputedStyle.FontSize, node.ComputedStyle.OutlineSize,
+            maxWidth: maxWidth - currentWidth);
 
         if (measurements.Size.Width == 0) return 0;
         text = measurements.Lines[0];

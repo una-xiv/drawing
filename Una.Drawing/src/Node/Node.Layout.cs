@@ -5,12 +5,13 @@
  * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
  * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
 
+using System.Linq;
+
 namespace Una.Drawing;
 
 public partial class Node
 {
-    internal Dictionary<Anchor.AnchorPoint, List<Node>> AnchorToChildNodes { get; private set; } = [];
-    // internal Dictionary<Node, Anchor.AnchorPoint>       ChildNodeToAnchor { get; private set; } = [];
+    internal Dictionary<Anchor.AnchorPoint, List<Node>> AnchorToChildNodes { get; } = [];
 
     private bool     _mustReflow = true;
     private Vector2? _lastPosition;
@@ -32,7 +33,7 @@ public partial class Node
         lock (AnchorToChildNodes) {
             lock (_childNodes) {
                 AnchorToChildNodes.Clear();
-
+                
                 foreach (Node child in _childNodes) {
                     if (child.ComputedStyle.Anchor == Anchor.AnchorPoint.None) continue;
 

@@ -18,7 +18,7 @@ public class AutoSizeNestedTest : DrawingTest
     /// <inheritdoc/>
     public override void OnActivate()
     {
-        _node = CreateNodeFromFile("autosize_deep_nest.tpl");
+        _node = CreateNodeFromFile("autosize.deep_nest.tpl");
     }
 
     /// <inheritdoc/>

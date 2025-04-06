@@ -85,8 +85,11 @@ public partial class Node
         int     depth    = GetNodeDepth();
 
         if (!Bounds.PaddingRect.Contains(mousePos)) {
-            // dl.AddRect(Bounds.PaddingRect.TopLeft, Bounds.PaddingRect.BottomRight, 0xAAFFFF00);
+            Vector2 offset = new(1, 1);
             drawList.AddRectFilled(Bounds.ContentRect.TopLeft, Bounds.ContentRect.BottomRight, DebugColors[depth]);
+            drawList.AddRect(Bounds.MarginRect.TopLeft, Bounds.MarginRect.BottomRight, 0xFF00FFFF);
+            drawList.AddRect(Bounds.MarginRect.TopLeft + offset, Bounds.MarginRect.BottomRight - offset, 0xFF00FFFF);
+            drawList.AddRect(Bounds.PaddingRect.TopLeft, Bounds.PaddingRect.BottomRight, 0xFFFF00FF);
             return;
         }
 
@@ -94,7 +97,7 @@ public partial class Node
         drawList.AddRect(Bounds.ContentRect.TopLeft, Bounds.ContentRect.BottomRight, 0xFF00FF00);
 
         ImDrawListPtr dl = ImGui.GetForegroundDrawList();
-        string text = $"Layer #{depth}: Content Size = {Bounds.ContentSize}\tPadding Size = {Bounds.PaddingSize}";
+        string text = $"Layer #{depth}: MR = {Bounds.MarginRect}\tPR = {Bounds.PaddingRect}\tCR = {Bounds.ContentRect}";
         Vector2 textPos = mousePos + new Vector2(32f, 32f + (depth * 16f));
         Vector2 textSize = ImGui.CalcTextSize(text);
 
@@ -117,38 +120,38 @@ public partial class Node
     }
 
     private static readonly Dictionary<int, uint> DebugColors = new() {
-        { 0, 0xC00000FF },
-        { 1, 0xC000FF00 },
-        { 2, 0xC0FF0000 },
-        { 3, 0xC0FFFF00 },
-        { 4, 0xC000FFFF },
-        { 5, 0xC0FF00FF },
-        { 6, 0xC0000000 },
-        { 7, 0xC0FFFFFF },
-        { 8, 0xC0808080 },
-        { 9, 0xC0808000 },
-        { 10, 0xC0800080 },
-        { 11, 0xC0008080 },
-        { 12, 0xC0000080 },
-        { 13, 0xC0800000 },
-        { 14, 0xC0008000 },
-        { 15, 0xC0000040 },
-        { 16, 0xC0404040 },
-        { 17, 0xC0404000 },
-        { 18, 0xC0400040 },
-        { 19, 0xC0004040 },
-        { 20, 0xC0004000 },
-        { 21, 0xC0000020 },
-        { 22, 0xC0202020 },
-        { 23, 0xC0202000 },
-        { 24, 0xC0200020 },
-        { 25, 0xC0002020 },
-        { 26, 0xC0002000 },
-        { 27, 0xC0000010 },
-        { 28, 0xC0101010 },
-        { 29, 0xC0101000 },
-        { 30, 0xC0100010 },
-        { 31, 0xC0001010 },
-        { 32, 0xC0001000 },
+        { 0, 0x800000FF },
+        { 1, 0x8000FF00 },
+        { 2, 0x80FF0000 },
+        { 3, 0x80FFFF00 },
+        { 4, 0x8000FFFF },
+        { 5, 0x80FF00FF },
+        { 6, 0x80000000 },
+        { 7, 0x80FFFFFF },
+        { 8, 0x80808080 },
+        { 9, 0x80808000 },
+        { 10, 0x80800080 },
+        { 11, 0x80008080 },
+        { 12, 0x80000080 },
+        { 13, 0x80800000 },
+        { 14, 0x80008000 },
+        { 15, 0x80000040 },
+        { 16, 0x80404040 },
+        { 17, 0x80404000 },
+        { 18, 0x80400040 },
+        { 19, 0x80004040 },
+        { 20, 0x80004000 },
+        { 21, 0x80000020 },
+        { 22, 0x80202020 },
+        { 23, 0x80202000 },
+        { 24, 0x80200020 },
+        { 25, 0x80002020 },
+        { 26, 0x80002000 },
+        { 27, 0x80000010 },
+        { 28, 0x80101010 },
+        { 29, 0x80101000 },
+        { 30, 0x80100010 },
+        { 31, 0x80001010 },
+        { 32, 0x80001000 },
     };
 }

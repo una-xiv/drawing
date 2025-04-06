@@ -14,6 +14,7 @@ internal partial class ScriptParser
         new AutoSizeStyleAttributeParser(),
         new AnchorStyleAttributeParser(),
         new FlowStyleAttributeParser(),
+        new FlowOrderStyleAttributeParser(),
         new SizeStyleAttributeParser(),
         new EdgeSizeStyleAttributeParser(),
         new BorderColorStyleAttributeParser(),

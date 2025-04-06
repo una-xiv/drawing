@@ -25,17 +25,17 @@ internal static partial class Layout
         bool isHorizontal = node.ComputedStyle.Flow == Flow.Horizontal;
 
         // Use clearer names reflecting the final calculated dimension
-        int childrenCalculatedWidth;
-        int childrenCalculatedHeight;
+        float childrenCalculatedWidth;
+        float childrenCalculatedHeight;
 
         // Use temporary accumulators based on flow direction
-        int mainAxisAccumulatedSize = 0;
-        int crossAxisMaxSize        = 0;
+        float mainAxisAccumulatedSize = 0;
+        float crossAxisMaxSize        = 0;
 
         bool isAutoWidth  = node.ComputedStyle.Size.Width <= 0;
         bool isAutoHeight = node.ComputedStyle.Size.Height <= 0;
 
-        int visibleChildCount = 0; // Needed for correct gap calculation
+        float visibleChildCount = 0; // Needed for correct gap calculation
 
         foreach (Node child in node.ChildNodes) {
             if (child.IsDisposed || !child.ComputedStyle.IsVisible) continue;
@@ -43,8 +43,8 @@ internal static partial class Layout
             visibleChildCount++;            // Count only visible children for gap calculation.
             ComputeFixedAndFitSizes(child); // Recurse reverse-breadth-first.
 
-            int childOuterWidth  = child.Bounds.PaddingSize.Width; // Using OuterWidth/Height based on context
-            int childOuterHeight = child.Bounds.PaddingSize.Height;
+            float childOuterWidth  = child.OuterWidth;
+            float childOuterHeight = child.OuterHeight;
 
             if (isHorizontal) {
                 mainAxisAccumulatedSize += childOuterWidth;                              // Sum widths
@@ -69,18 +69,21 @@ internal static partial class Layout
 
         Size textSize = node.ComputeContentSizeFromText();
 
+        float outerW = node.ComputedStyle.Padding.HorizontalSize + node.ComputedStyle.Margin.HorizontalSize;
+        float outerH = node.ComputedStyle.Padding.VerticalSize + node.ComputedStyle.Margin.VerticalSize;
+        
         var finalContentWidth = isAutoWidth
             ? Math.Max(childrenCalculatedWidth, textSize.Width)
-            : node.ComputedStyle.Size.Width - node.ComputedStyle.Padding.HorizontalSize;
+            : node.ComputedStyle.Size.Width - outerW;
 
-        int finalContentHeight = isAutoHeight
+        var finalContentHeight = isAutoHeight
             ? Math.Max(childrenCalculatedHeight, textSize.Height)
-            : node.ComputedStyle.Size.Height - node.ComputedStyle.Padding.VerticalSize;
+            : node.ComputedStyle.Size.Height - outerH;
 
         if (node.ComputedStyle.MaxWidth is > 0) {
             finalContentWidth = Math.Min(finalContentWidth, node.ComputedStyle.MaxWidth.Value);
         }
-        
+
         node.Bounds.ContentSize = new Size(
             Math.Max(0, finalContentWidth),
             Math.Max(0, finalContentHeight)
@@ -89,6 +92,11 @@ internal static partial class Layout
         node.Bounds.PaddingSize = new Size(
             node.Bounds.ContentSize.Width + node.ComputedStyle.Padding.HorizontalSize,
             node.Bounds.ContentSize.Height + node.ComputedStyle.Padding.VerticalSize
+        );
+
+        node.Bounds.MarginSize = new Size(
+            node.Bounds.PaddingSize.Width + node.ComputedStyle.Margin.HorizontalSize,
+            node.Bounds.PaddingSize.Height + node.ComputedStyle.Margin.VerticalSize
         );
     }
 
@@ -128,11 +136,12 @@ internal static partial class Layout
 
     private static void GrowChildrenAlongAxis(Node node, Flow axis, List<Node> children)
     {
-        List<Node>               growableChildren;
-        Func<Node, int>          getOuterSize;
-        Func<ComputedStyle, int> getPaddingSize;
-        int                      parentContentSize;
-        int                      gap = node.ComputedStyle.Gap;
+        List<Node>                 growableChildren;
+        Func<Node, float>          getOuterSize;
+        Func<ComputedStyle, float> getPaddingSize;
+        Func<ComputedStyle, float> getMarginSize;
+        float                      parentContentSize;
+        float                      gap = node.ComputedStyle.Gap;
 
         // Configure based on axis.
         if (axis == Flow.Horizontal) {
@@ -140,12 +149,14 @@ internal static partial class Layout
                 { IsDisposed: false, ComputedStyle: { AutoSize.Horizontal: AutoSize.Grow, IsVisible: true } }).ToList();
             getOuterSize      = n => n.OuterWidth;
             getPaddingSize    = cs => cs.Padding.HorizontalSize;
+            getMarginSize     = cs => cs.Margin.HorizontalSize;
             parentContentSize = node.Bounds.ContentSize.Width;
         } else {
             growableChildren = children.Where(n => n is
                 { IsDisposed: false, ComputedStyle: { AutoSize.Vertical: AutoSize.Grow, IsVisible: true } }).ToList();
             getOuterSize      = n => n.OuterHeight;
             getPaddingSize    = cs => cs.Padding.VerticalSize;
+            getMarginSize     = cs => cs.Margin.VerticalSize;
             parentContentSize = node.Bounds.ContentSize.Height;
         }
 
@@ -153,28 +164,29 @@ internal static partial class Layout
         if (growableChildren.Count == 0) return;
 
         // Calculate space used by non-growable items and gaps.
-        int nonGrowableSize = children
+        float nonGrowableSize = children
                              .Where(n => !growableChildren.Contains(n) &&
                                          n is { IsDisposed: false, ComputedStyle.IsVisible: true })
                              .Sum(n => getOuterSize(n));
 
-        int visibleChildCount = children.Count(n => n is { IsDisposed: false, ComputedStyle.IsVisible: true });
-        int totalGapSize      = children.Count > 1 ? gap * (visibleChildCount - 1) : 0;
+        float visibleChildCount = children.Count(n => n is { IsDisposed: false, ComputedStyle.IsVisible: true });
+        float totalGapSize      = children.Count > 1 ? gap * (visibleChildCount - 1) : 0;
 
         // Total space the growable items should collectively occupy.
-        int availableSizeForGrowableGroup = parentContentSize - nonGrowableSize - totalGapSize;
+        float availableSizeForGrowableGroup = parentContentSize - nonGrowableSize - totalGapSize;
         availableSizeForGrowableGroup = Math.Max(0, availableSizeForGrowableGroup);
 
         // Distribute available size.
-        int baseTargetOuterSize = availableSizeForGrowableGroup / growableChildren.Count;
-        int remainderSize       = availableSizeForGrowableGroup % growableChildren.Count;
+        float baseTargetOuterSize = availableSizeForGrowableGroup / growableChildren.Count;
+        float remainderSize       = availableSizeForGrowableGroup % growableChildren.Count;
 
         foreach (Node child in growableChildren) {
             if (child.IsDisposed || !child.ComputedStyle.IsVisible) continue;
 
-            int targetOuterSize  = baseTargetOuterSize + (remainderSize > 0 ? 1 : 0);
-            int childPaddingSize = getPaddingSize(child.ComputedStyle);
-            int newContentSize   = targetOuterSize - childPaddingSize;
+            float targetOuterSize  = baseTargetOuterSize + (remainderSize > 0 ? 1 : 0);
+            float childPaddingSize = getPaddingSize(child.ComputedStyle);
+            float childMarginSize  = getMarginSize(child.ComputedStyle);
+            float newContentSize   = targetOuterSize - (childPaddingSize + childMarginSize);
 
             newContentSize = Math.Max(0, newContentSize);
 
@@ -183,6 +195,7 @@ internal static partial class Layout
                 : new Size(child.Bounds.ContentSize.Width, newContentSize);
 
             child.Bounds.PaddingSize = child.Bounds.ContentSize + child.ComputedStyle.Padding.Size;
+            child.Bounds.MarginSize  = child.Bounds.PaddingSize + child.ComputedStyle.Margin.Size;
 
             if (remainderSize > 0) { remainderSize--; }
         }
@@ -190,34 +203,38 @@ internal static partial class Layout
 
     private static void GrowChildrenAlongCrossAxis(Node node, Flow axisToStretch, List<Node> children)
     {
-        int parentContentSize = (axisToStretch == Flow.Horizontal)
+        float parentContentSize = (axisToStretch == Flow.Horizontal)
             ? node.Bounds.ContentSize.Width
             : node.Bounds.ContentSize.Height;
 
-        Func<Node, bool>         shouldStretchChild;
-        Func<ComputedStyle, int> getPaddingSize;
+        Func<Node, bool>           shouldStretchChild;
+        Func<ComputedStyle, float> getPaddingSize;
+        Func<ComputedStyle, float> getMarginSize;
 
         if (axisToStretch == Flow.Horizontal) {
             shouldStretchChild = n =>
                 n.ComputedStyle.AutoSize.Horizontal is AutoSize.Grow && n.ComputedStyle.Size.Width <= 0;
             getPaddingSize = cs => cs.Padding.HorizontalSize;
+            getMarginSize  = cs => cs.Margin.HorizontalSize;
         } else {
             shouldStretchChild = n =>
                 n.ComputedStyle.AutoSize.Vertical is AutoSize.Grow && n.ComputedStyle.Size.Height <= 0;
             getPaddingSize = cs => cs.Padding.VerticalSize;
+            getMarginSize  = cs => cs.Margin.VerticalSize;
         }
 
         foreach (Node child in children) {
             if (child.IsDisposed || !child.ComputedStyle.IsVisible) continue;
             if (!shouldStretchChild(child)) continue;
 
-            int childPaddingSize = getPaddingSize(child.ComputedStyle);
-            int newContentSize   = parentContentSize - childPaddingSize;
+            float childPaddingSize = getPaddingSize(child.ComputedStyle);
+            float childMarginSize  = getMarginSize(child.ComputedStyle);
+            float newContentSize   = parentContentSize - (childPaddingSize + childMarginSize);
 
             newContentSize = Math.Max(0, newContentSize);
 
             // Get current content size on the axis to potentially update.
-            int currentContentSize = (axisToStretch == Flow.Horizontal)
+            float currentContentSize = (axisToStretch == Flow.Horizontal)
                 ? child.Bounds.ContentSize.Width
                 : child.Bounds.ContentSize.Height;
 
@@ -229,6 +246,7 @@ internal static partial class Layout
                 : new Size(child.Bounds.ContentSize.Width, newContentSize);
 
             child.Bounds.PaddingSize = child.Bounds.ContentSize + child.ComputedStyle.Padding.Size;
+            child.Bounds.MarginSize  = child.Bounds.PaddingSize + child.ComputedStyle.Margin.Size;
         }
     }
 }

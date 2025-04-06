@@ -3,12 +3,12 @@ using Una.Drawing;
 
 namespace ExamplePlugin.Tests.Overflow;
 
-public class OverflowBasicTest : DrawingTest
+public class OverflowBasicVerticalTest : DrawingTest
 {
     private Node? _node;
     
     /// <inheritdoc/>
-    public override string Name => "Overflow Basic Test";
+    public override string Name => "Basic Vertical";
 
     /// <inheritdoc/>
     public override string Category => "Overflow";
@@ -16,7 +16,7 @@ public class OverflowBasicTest : DrawingTest
     /// <inheritdoc/>
     public override void OnActivate()
     {
-        _node = CreateNodeFromFile("overflow_basic.tpl");
+        _node = CreateNodeFromFile("overflow.basic-v.tpl");
     }
 
     /// <inheritdoc/>
@@ -28,7 +28,7 @@ public class OverflowBasicTest : DrawingTest
     /// <inheritdoc/>
     public override void RenderConfig()
     {
-        ImGui.TextWrapped("Renders a node with overflow disabled, causing a scrollbar to appear if the inner node of this node exceeds to maximum size of the available content region.");
+        ImGui.TextWrapped("Tests a vertical overflow.");
     }
 
     /// <inheritdoc/>

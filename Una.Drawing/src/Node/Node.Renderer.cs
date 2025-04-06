@@ -160,7 +160,7 @@ public partial class Node
         if (UpdateTexture()) RenderShadow(drawList);
 
         Vector2 offset = new(32, 32);
-        
+
         if (null != _texture) {
             drawList.AddImage(
                 _texture.ImGuiHandle,
@@ -271,8 +271,17 @@ public partial class Node
 
         Vector2 pos = ImGui.GetCursorScreenPos();
 
+        var x = pos.X;
+        var y = pos.Y;
+
         foreach (var child in _childNodes) {
-            Layout.OverridePositionsOf(child, pos);
+            Layout.OverridePositionsOf(child, new Vector2(x, y));
+
+            if (ComputedStyle.Flow == Flow.Vertical) {
+                y += child.Bounds.PaddingSize.Height + ComputedStyle.Gap;
+            } else {
+                x += child.Bounds.PaddingSize.Width + ComputedStyle.Gap;
+            }
         }
     }
 
@@ -280,7 +289,7 @@ public partial class Node
     private void EndOverflowContainer()
     {
         if (Overflow) return;
-        
+
         (Size total, Size max) = GetTotalChildrenSize();
 
         Vector2 size = new(
@@ -418,21 +427,21 @@ public partial class Node
 
     private (Size, Size) GetTotalChildrenSize()
     {
-        int totalWidth  = 0;
-        int maxWidth    = 0;
-        int totalHeight = 0;
-        int maxHeight   = 0;
+        float totalWidth  = 0;
+        float maxWidth    = 0;
+        float totalHeight = 0;
+        float maxHeight   = 0;
 
         lock (_childNodes) {
             foreach (var child in _childNodes) {
                 Size sz = child.Bounds.PaddingSize;
 
-                totalWidth += sz.Width;
+                totalWidth  += sz.Width;
                 totalHeight += sz.Height;
-                maxWidth    = Math.Max(maxWidth, sz.Width);
-                maxHeight   = Math.Max(maxHeight, sz.Height);
+                maxWidth    =  Math.Max(maxWidth, sz.Width);
+                maxHeight   =  Math.Max(maxHeight, sz.Height);
             }
-            
+
             // Account for the gap between children.
             if (ComputedStyle.Flow == Flow.Horizontal) {
                 totalWidth += (_childNodes.Count - 1) * ComputedStyle.Gap;
@@ -448,10 +457,10 @@ public partial class Node
 [StructLayout(LayoutKind.Sequential)]
 internal struct NodeSnapshot
 {
-    internal int                 Width;
-    internal int                 Height;
-    internal int                 ValueWidth;
-    internal int                 ValueHeight;
+    internal float               Width;
+    internal float               Height;
+    internal float               ValueWidth;
+    internal float               ValueHeight;
     internal LayoutStyleSnapshot Layout;
     internal PaintStyleSnapshot  Paint;
 
