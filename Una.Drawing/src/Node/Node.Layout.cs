@@ -3,7 +3,7 @@
 public partial class Node
 {
     [Obsolete("This method is obsolete. You can probably fix your layout with auto-size.")]
-    public event Action<Node>? BeforeReflow;
+    public Action<Node>? BeforeReflow;
     
     internal Dictionary<Anchor.AnchorPoint, List<Node>> AnchorToChildNodes { get; } = [];
 
