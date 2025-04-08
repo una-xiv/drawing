@@ -329,6 +329,9 @@ public partial class Node : IDisposable
         DisposeEventHandlersOf(OnRightClick);
         DisposeEventHandlersOf(OnMiddleClick);
         DisposeEventHandlersOf(OnDelayedMouseEnter);
+        DisposeEventHandlersOf(OnDragStart);
+        DisposeEventHandlersOf(OnDragEnd);
+        DisposeEventHandlersOf(OnDragMove);
         DisposeEventHandlersOf(OnChildAdded);
         DisposeEventHandlersOf(OnChildRemoved);
         DisposeEventHandlersOf(OnClassAdded);
@@ -629,6 +632,7 @@ public partial class Node : IDisposable
         _childNodes                   =  new(_childNodes.OrderBy(n => n.SortIndex));
         _childNodes.CollectionChanged += HandleChildListChanged;
 
+        ReassignAnchorNodes();
         SignalReflow();
     }
 

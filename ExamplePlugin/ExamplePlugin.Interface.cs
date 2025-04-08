@@ -25,7 +25,7 @@ public sealed partial class ExamplePlugin
         ImGui.PushStyleColor(ImGuiCol.ChildBg, 0xFF313031);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(8, 8));
-        ImGui.BeginChild("TestPanel", new Vector2(400, 0), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
+        ImGui.BeginChild("TestPanel", new Vector2(500, 0), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
 
         try {
             _activeTest?.RenderConfig();
@@ -41,7 +41,7 @@ public sealed partial class ExamplePlugin
     private void RenderTestRenderer()
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
-        ImGui.BeginChild("TestRenderer", new Vector2(ImGui.GetContentRegionMax().X - 400, 0), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
+        ImGui.BeginChild("TestRenderer", new Vector2(ImGui.GetContentRegionMax().X - 500, 0), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
         RunActiveTest();
         ImGui.EndChild();
         ImGui.PopStyleVar(1);

@@ -45,9 +45,9 @@ internal static partial class Layout
         } else if (anchor.IsMiddle) {
             middle = GetMiddle(root);
             if (flow == Flow.Horizontal) {
-                y      = middle - (children[firstIndex].OuterHeight / 2f);
+                y = middle - (children[firstIndex].OuterHeight / 2f);
             } else {
-                y      = middle - (GetChildrenHeight(root, children) / 2f);
+                y = middle - (GetChildrenHeight(root, children) / 2f);
             }
         }
 
@@ -58,8 +58,11 @@ internal static partial class Layout
 
             if (node.IsDisposed || !node.IsVisible) continue;
 
-            node.Bounds.MarginRect = new Rect(x, y, node.Bounds.MarginSize);
+            // Prohibit sub-pixel positioning to prevent blurry images.
+            x = MathF.Round(x);
+            y = MathF.Round(y);
 
+            node.Bounds.MarginRect = new Rect(x, y, node.Bounds.MarginSize);
             node.Bounds.PaddingRect = new Rect(
                 x + node.ComputedStyle.Margin.Left,
                 y + node.ComputedStyle.Margin.Top,
@@ -76,7 +79,7 @@ internal static partial class Layout
                 ComputePositions(node);
                 break;
             }
-            
+
             Node nextNode = children[i + step];
 
             switch (flow) {
@@ -146,12 +149,12 @@ internal static partial class Layout
 
     private static float GetCenter(Node root)
     {
-        return root.Bounds.ContentRect.X1 + (int)Math.Ceiling(root.Bounds.ContentSize.Width / 2f);
+        return root.Bounds.ContentRect.X1 + MathF.Ceiling(root.Bounds.ContentSize.Width / 2f);
     }
 
     private static float GetMiddle(Node root)
     {
-        return root.Bounds.ContentRect.Y1 + (int)Math.Ceiling(root.Bounds.ContentSize.Height / 2f);
+        return root.Bounds.ContentRect.Y1 + MathF.Ceiling(root.Bounds.ContentSize.Height / 2f);
     }
 
     private static float GetChildrenWidth(Node root, List<Node> children)

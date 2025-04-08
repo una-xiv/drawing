@@ -26,6 +26,9 @@ public class Stylesheet
         }
     }
 
+    /// <summary>
+    /// Imports the rules from another stylesheet into this one.
+    /// </summary>
     public void ImportFrom(Stylesheet other)
     {
         foreach (var rule in other.Rules) {
@@ -33,6 +36,28 @@ public class Stylesheet
         }
     }
 
+    /// <summary>
+    /// <para>
+    /// Returns a dictionary of all rules in this stylesheet.
+    /// </para>
+    /// <para>
+    /// Modifying this dictionary will not affect the original stylesheet.
+    /// </para>
+    /// </summary>
+    public Dictionary<string, Style> GetRuleList()
+    {
+        Dictionary<string, Style> rules = new();
+
+        foreach (var rule in Rules) {
+            string key = rule.Key.ToString();
+            if (!rules.ContainsKey(key)) {
+                rules.Add(key, rule.Value);
+            }
+        }
+
+        return rules;
+    }
+    
     internal class Rule(QuerySelector querySelector)
     {
         public override string ToString()

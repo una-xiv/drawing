@@ -5,7 +5,7 @@ using Una.Drawing;
 
 namespace ExamplePlugin.Tests;
 
-public abstract class DrawingTest
+internal abstract class DrawingTest
 {
     /// <summary>
     /// The name of the test.

@@ -3,6 +3,7 @@ using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Una.Drawing;
 
 namespace ExamplePlugin;
 
@@ -26,6 +27,8 @@ public sealed partial class ExamplePlugin
             test.OnActivate();
         } catch (Exception ex) {
             _activateException = ex;
+            DebugLogger.Error(ex.Message);
+            DebugLogger.Error(ex.StackTrace ?? " - No stacktrace available -");
         }
 
         _configuration.LastTestName = test.GetType().Name;

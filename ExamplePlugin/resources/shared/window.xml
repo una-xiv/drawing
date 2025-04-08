@@ -1,25 +1,36 @@
 ﻿<udt>
     <![CDATA[
-    .box {
-        background-color: 0xff484848;
-        background-gradient: vertical 0x20dcdcdc 0xff484848;
-        stroke-width: 1;
-        stroke-color: 0xff787a7a;
-        border-radius: 4;
-        drop-shadow: 0 3 6 6;
-        border-width: 1 0 1 0;
-        border-color: 0xffdadede 0 0xff000000 0;
-        border-inset: 1;
-        outline-size: 1;
-        outline-color: 0xc0000000;
-    }
-    
     .window {
         flow: vertical;
         size: 640 480;
+        border-radius: 12;
+        
+        .text {
+            font-size: 13;
+            outline-size: 1;
+        }
         
         &.default {
             background-color: 0xff212021;
+            
+            .text {
+                color: 0xffdcdcdc;
+                outline-color: 0xff000000;
+            }
+        }
+        
+        &.light {
+            .text {
+                color: 0xff000000;
+                outline-color: 0x00ffffff;
+            }
+        }
+        
+        &.classic {
+            .text {
+                color: 0xfff0f0f0;
+                outline-color: 0xff000000;
+            }
         }
         
         & > .header {
@@ -32,14 +43,17 @@
             & > .tr { size: 14 32; uld-part-id: 2; }
             
             .title {
-                margin: 8 0 0 0;
                 anchor: middle-left;
-                padding: 2 0 0 0;
                 auto-size: grow fit;
+                padding: 8 0 0 8;
+                
+                .text {
+                    font-size: 12;
+                }
             }
             
             .buttons {
-                margin: 8 0 0 0;
+                padding: 8 8 0 0;
                 anchor: middle-left;
                 gap: 4;
             }
@@ -76,7 +90,10 @@
     ]]>
 
     <template name="window">
-        <n class="window">
+        <argument name="width" default="640"/>
+        <argument name="height" default="480"/>
+
+        <n class="window light" style="size: ${width} ${height};">
             <n class="header">
                 <n class="uld tl"/>
                 <n class="uld tc">

@@ -13,6 +13,9 @@ public partial class Node
     public event Action<Node>? OnMouseDown;
     public event Action<Node>? OnMouseUp;
     public event Action<Node>? OnDelayedMouseEnter;
+    public event Action<Node>? OnDragStart;
+    public event Action<Node>? OnDragMove;
+    public event Action<Node>? OnDragEnd;
 
     /// <summary>
     /// True if the element has any interactive event listeners attached to it.
@@ -28,6 +31,19 @@ public partial class Node
             || null != OnMouseLeave
             || null != OnMouseDown
             || null != OnMouseUp
+            || null != OnDragStart
+            || null != OnDragMove
+            || null != OnDragEnd
+        );
+
+    /// <summary>
+    /// True if the element has any drag-related event listeners attached to it.
+    /// </summary>
+    public bool IsDraggable =>
+        !IsDisabled && (
+            null != OnDragStart
+            || null != OnDragMove
+            || null != OnDragEnd
         );
 
     /// <summary>
@@ -38,7 +54,8 @@ public partial class Node
     /// <summary>
     /// True if the element has any primary interaction event listeners attached to it.
     /// </summary>
-    public bool HasPrimaryInteraction => !IsDisabled && (null != OnClick || null != OnMouseUp || null != OnMouseDown);
+    public bool HasPrimaryInteraction =>
+        !IsDisabled && (IsDraggable || null != OnClick || null != OnMouseUp || null != OnMouseDown);
 
     /// <summary>
     /// Set to true from an event listener to stop remaining event listeners from being called.
@@ -61,7 +78,7 @@ public partial class Node
     public bool IsMouseDownOverOtherNode { get; private set; }
 
     public bool IsMiddleMouseDown { get; private set; }
-    public bool IsRightMouseDown { get; private set; }
+    public bool IsRightMouseDown  { get; private set; }
 
     /// <summary>
     /// True if this element currently has focus.
@@ -73,6 +90,16 @@ public partial class Node
     /// listeners.
     /// </summary>
     public bool IsDisabled { get; set; }
+
+    /// <summary>
+    /// True if this node is currently being dragged.
+    /// </summary>
+    public bool IsDragging { get; private set; }
+
+    /// <summary>
+    /// The offset of the drag position from the original position of the node.
+    /// </summary>
+    public Vector2 DragDelta { get; private set; }
 
     private bool _isInWindowOrInteractiveParent;
     private bool _didStartInteractive;
@@ -106,11 +133,11 @@ public partial class Node
 
         _didStartInteractive = true;
 
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize,    Vector2.Zero);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding,    Vector2.Zero);
-        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding,     Vector2.Zero);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, Vector2.Zero);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, Vector2.Zero);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0);
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize,  0);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0);
 
         string  imGuiId           = InternalId;
         Vector2 boundingBoxSize   = Bounds.PaddingSize.ToVector2();
@@ -130,12 +157,14 @@ public partial class Node
             ImGui.Begin(imGuiId, InteractiveWindowFlags);
         }
 
-        bool wasHovered = IsMouseOver;
+        bool wasHovered  = IsMouseOver;
+        bool wasDragging = IsDragging;
 
         ImGui.SetCursorScreenPos(Bounds.PaddingRect.TopLeft);
         ImGui.InvisibleButton($"{imGuiId}##Button", Bounds.PaddingSize.ToVector2());
         IsMouseOver = ImGui.IsItemHovered();
         IsFocused   = ImGui.IsItemFocused();
+        IsDragging  = IsDragging || (IsMouseOver && ImGui.IsMouseDragging(ImGuiMouseButton.Left));
 
         if (IsMouseOver && HasPrimaryInteraction && EnableHoverTag) {
             MouseCursor.RegisterMouseOver(this);
@@ -143,7 +172,29 @@ public partial class Node
             MouseCursor.RemoveMouseOver(this);
         }
 
-        switch (IsMouseOver && HasPrimaryInteraction && EnableHoverTag) {
+        if (IsDragging) {
+            if (!wasDragging) {
+                RaiseEvent(OnDragStart);
+                ToggleTag("dragging", true);
+                ToggleTag("hover", false);
+                IsMouseOver = false;
+                IsDragging  = true;
+                DragDelta   = ImGui.GetIO().MouseDelta;
+            } else {
+                DragDelta += ImGui.GetIO().MouseDelta;
+                RaiseEvent(OnDragMove);
+                RenderDragGhost();
+            }
+        }
+
+        if (ImGui.IsMouseReleased(ImGuiMouseButton.Left) && IsDragging) {
+            RaiseEvent(OnDragEnd);
+            ToggleTag("dragging", false);
+            IsDragging = false;
+            DragDelta  = Vector2.Zero;
+        }
+
+        switch (!IsDragging && IsMouseOver && HasPrimaryInteraction && EnableHoverTag) {
             case true when !_tagsList.Contains("hover"):
                 _tagsList.Add("hover");
                 break;
@@ -161,7 +212,7 @@ public partial class Node
                 break;
         }
 
-        switch (IsMouseDown) {
+        switch (IsMouseDown && !IsDragging) {
             case true when !_tagsList.Contains("active"):
                 _tagsList.Add("active");
                 break;
@@ -171,11 +222,11 @@ public partial class Node
         }
 
         if (Tooltip != null && IsMouseOver && _mouseOverStartTime < DateTimeOffset.Now.ToUnixTimeMilliseconds() - 500) {
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding,  new Vector2(8, 6));
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 6));
             ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 6);
-            ImGui.PushStyleColor(ImGuiCol.Border,   0xFF3F3F3F);
+            ImGui.PushStyleColor(ImGuiCol.Border, 0xFF3F3F3F);
             ImGui.PushStyleColor(ImGuiCol.WindowBg, 0xFF252525);
-            ImGui.PushStyleColor(ImGuiCol.Text,     0xFFCACACA);
+            ImGui.PushStyleColor(ImGuiCol.Text, 0xFFCACACA);
             ImGui.BeginTooltip();
             ImGui.SetCursorPos(new(8, 4));
             ImGui.TextUnformatted(Tooltip);
@@ -227,14 +278,17 @@ public partial class Node
                     RaiseEvent(OnClick);
                     IsMouseDown = false;
                 }
+
                 if (IsMiddleMouseDown) {
                     RaiseEvent(OnMiddleClick);
                     IsMiddleMouseDown = false;
                 }
+
                 if (IsRightMouseDown) {
                     RaiseEvent(OnRightClick);
                     IsRightMouseDown = false;
                 }
+
                 if (IsMouseDownOverOtherNode) {
                     RaiseEvent(OnMouseUp);
                 }
@@ -299,6 +353,7 @@ public partial class Node
             if (!CancelEvent) handler.DynamicInvoke(this);
             if (CancelEvent) break;
         }
+
         CancelEvent = false;
     }
 

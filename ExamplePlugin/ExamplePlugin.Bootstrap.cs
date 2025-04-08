@@ -12,7 +12,7 @@ public sealed partial class ExamplePlugin
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
 
-        UdtDocument doc = UdtLoader.LoadFromAssembly(assembly, "tests.styles.xml");
+        UdtDocument doc = UdtLoader.LoadFromAssembly(assembly, "shared.box.xml");
         StylesheetRegistry.Register("tests", doc.Stylesheet!);
 
         var tests = assembly

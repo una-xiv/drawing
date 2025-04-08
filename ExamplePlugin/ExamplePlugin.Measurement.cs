@@ -65,7 +65,7 @@ public sealed partial class ExamplePlugin
         sb.Append($"FPS: {_fps:F2}\t");
         sb.AppendLine($"Frame Time: {_averageFrameTimeMilliseconds:F2} ms\t\t");
         sb.Append($"Draw Time: {_testTime:F2} ms\t");
-        sb.Append($"Peak: {_testTime:F2} ms");
+        sb.Append($"Peak: {_testPeakTime:F2} ms");
         
         return sb.ToString();
     }

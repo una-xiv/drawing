@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using System;
+using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Una.Drawing;
@@ -11,12 +12,26 @@ internal abstract class SimpleUdtTest : DrawingTest
     protected abstract string UdtFileName { get; }
 
     protected UdtDocument? Document;
+    protected Vector2      RootOffset = new(10, 10);
+    protected float        CurrentTime => (float)(DateTime.UtcNow - _startTime).TotalMilliseconds;
 
-    private readonly string[] _tabs     = ["Test", "Node Tree", "Stylesheet", "XML Source"];
+    private readonly string[] _tabs     = ["Test", "Node Tree", "Stylesheet"];
     private readonly string[] _nodeTabs = ["Node Info", "Computed Style"];
 
-    private string _activeTab     = "Node Tree";
-    private string _activeNodeTab = "Node Info";
+    private string   _activeTab     = "Stylesheet";
+    private string   _activeNodeTab = "Node Info";
+    private string   _hoveredStyle = "";
+    private DateTime _startTime;
+
+    /// <summary>
+    /// Invoked when the document is loaded.
+    /// </summary>
+    protected virtual void OnDocumentLoaded() { }
+
+    /// <summary>
+    /// Invoked when the document is unloaded.
+    /// </summary>
+    protected virtual void OnDocumentUnloaded() { }
 
     /// <summary>
     /// Invoked when the test is rendered.
@@ -38,10 +53,14 @@ internal abstract class SimpleUdtTest : DrawingTest
     {
         Document      = UdtLoader.LoadFromAssembly(Assembly.GetExecutingAssembly(), UdtFileName);
         _selectedNode = Document?.RootNode;
+        _startTime    = DateTime.UtcNow;
+
+        if (Document != null) OnDocumentLoaded();
     }
 
     public sealed override void OnDeactivate()
     {
+        if (Document != null) OnDocumentUnloaded();
         Document?.RootNode?.Dispose();
     }
 
@@ -67,32 +86,42 @@ internal abstract class SimpleUdtTest : DrawingTest
                 RenderNodeTreeViewer();
                 break;
             case "Stylesheet":
-                ImGui.TextWrapped(Document?.Stylesheet?.ToString() ?? "No stylesheet found in UDT.");
+                RenderStylesheetViewer();
                 break;
         }
     }
 
     public sealed override void RenderTest(ImDrawListPtr dl)
     {
-        OnRenderTest(dl);
-        Document?.RootNode?.Render(dl, new(10, 10));
+        if (Document?.RootNode != null) OnRenderTest(dl);
+        Document?.RootNode?.Render(dl, RootOffset);
 
-        if (_hoveredNode != null) {
-            Rect outer   = _hoveredNode.Bounds.MarginRect;
-            Rect inner   = _hoveredNode.Bounds.PaddingRect;
-            Rect content = _hoveredNode.Bounds.ContentRect;
+        if (_activeTab == "Node Tree") {
+            if (_hoveredNode != null) {
+                Rect outer   = _hoveredNode.Bounds.MarginRect;
+                Rect inner   = _hoveredNode.Bounds.PaddingRect;
+                Rect content = _hoveredNode.Bounds.ContentRect;
 
-            dl.AddRect(outer.TopLeft, outer.BottomRight, 0xFF0000FF, 0, ImDrawFlags.None, 1);
-            dl.AddRect(inner.TopLeft, inner.BottomRight, 0xFFFFCC00, 0, ImDrawFlags.None, 1);
-            dl.AddRect(content.TopLeft, content.BottomRight, 0xFF00FF00, 0, ImDrawFlags.None, 1);
+                dl.AddRect(outer.TopLeft, outer.BottomRight, 0xFF0000FF, 0, ImDrawFlags.None, 1);
+                dl.AddRect(inner.TopLeft, inner.BottomRight, 0xFFFFCC00, 0, ImDrawFlags.None, 1);
+                dl.AddRect(content.TopLeft, content.BottomRight, 0xFF00FF00, 0, ImDrawFlags.None, 1);
+            }
+
+            if (_selectedNode != null) {
+                Rect outer = _selectedNode.Bounds.MarginRect;
+                dl.AddRect(outer.TopLeft, outer.BottomRight, 0xFF00FF00, 0, ImDrawFlags.None, 1);
+            }
         }
 
-        if (_selectedNode != null) {
-            Rect outer = _selectedNode.Bounds.MarginRect;
-            dl.AddRect(outer.TopLeft, outer.BottomRight, 0xFF00FF00, 0, ImDrawFlags.None, 1);
+        if (_activeTab == "Stylesheet" && _hoveredStyle != "") {
+            foreach (var node in Document!.RootNode!.QuerySelectorAll(_hoveredStyle)) {
+                Rect outer = node.Bounds.MarginRect;
+                dl.AddRect(outer.TopLeft, outer.BottomRight, 0xFF00FF00, 0, ImDrawFlags.None, 1);
+            }
         }
 
-        _hoveredNode = null;
+        _hoveredNode  = null;
+        _hoveredStyle = "";
     }
 
     #endregion
@@ -149,7 +178,7 @@ internal abstract class SimpleUdtTest : DrawingTest
         ImGui.BeginChild("NodeTreeViewerDetails", new(0, -1), false);
 
         ImGui.Dummy(new Vector2(0, 0));
-        
+
         ImGui.BeginTabBar("NodeDetailsTabs", ImGuiTabBarFlags.FittingPolicyScroll);
         foreach (var tab in _nodeTabs) {
             if (ImGui.BeginTabItem(tab)) {
@@ -157,11 +186,12 @@ internal abstract class SimpleUdtTest : DrawingTest
                 ImGui.EndTabItem();
             }
         }
+
         ImGui.EndTabBar();
-        
+
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
         ImGui.BeginChild("NodeDetailsTab", new(0, -1), true, ImGuiWindowFlags.AlwaysUseWindowPadding);
-        
+
         switch (_activeNodeTab) {
             case "Node Info":
                 RenderNodeInfoTab();
@@ -170,7 +200,7 @@ internal abstract class SimpleUdtTest : DrawingTest
                 RenderComputedStyleTab();
                 return;
         }
-        
+
         ImGui.EndChild();
         ImGui.PopStyleVar();
         ImGui.EndChild();
@@ -179,21 +209,21 @@ internal abstract class SimpleUdtTest : DrawingTest
     private void RenderNodeInfoTab()
     {
         if (_selectedNode == null) return;
-        
+
         ImGui.BeginTable("NodeInfoTable", 2, ImGuiTableFlags.Borders);
-        
+
         ImGui.TableSetupColumn("Property");
         ImGui.TableSetupColumn("Value");
         ImGui.TableHeadersRow();
-    
+
         foreach (var property in _selectedNode.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)) {
             var actualType = property.PropertyType;
             if (actualType.IsGenericType && actualType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
                 actualType = Nullable.GetUnderlyingType(actualType)!;
             }
-            
-            if (actualType == typeof(int) || actualType == typeof(float) || actualType == typeof(double) || 
-                actualType == typeof(decimal) || actualType == typeof(string) || actualType == typeof(bool) || 
+
+            if (actualType == typeof(int) || actualType == typeof(float) || actualType == typeof(double) ||
+                actualType == typeof(decimal) || actualType == typeof(string) || actualType == typeof(bool) ||
                 actualType == typeof(string) || actualType == typeof(ObservableHashSet<string>)) {
                 ImGui.TableNextColumn();
                 ImGui.TextUnformatted(property.Name);
@@ -201,37 +231,37 @@ internal abstract class SimpleUdtTest : DrawingTest
                 ImGui.TextUnformatted(property.GetValue(_selectedNode)?.ToString() ?? "null");
             }
         }
-        
+
         ImGui.EndTable();
     }
 
     private void RenderComputedStyleTab()
     {
         if (_selectedNode == null) return;
-        
+
         ImGui.BeginTable("ComputedStyleTable", 2, ImGuiTableFlags.Borders);
-        
+
         ImGui.TableSetupColumn("Property");
         ImGui.TableSetupColumn("Value");
         ImGui.TableHeadersRow();
-        
+
         foreach (var property in typeof(ComputedStyle).GetFields(BindingFlags.Instance | BindingFlags.Public)) {
             ImGui.TableNextColumn();
             ImGui.TextUnformatted(property.Name);
             ImGui.TableNextColumn();
-            ImGui.TextUnformatted(property.GetValue(_selectedNode.ComputedStyle)?.ToString() ?? "null");
+            ImGui.TextWrapped(property.GetValue(_selectedNode.ComputedStyle)?.ToString() ?? "null");
         }
-    
+
         foreach (var property in typeof(ComputedStyle).GetProperties(BindingFlags.Instance | BindingFlags.Public)) {
             ImGui.TableNextColumn();
             ImGui.TextUnformatted(property.Name);
             ImGui.TableNextColumn();
-            ImGui.TextUnformatted(property.GetValue(_selectedNode.ComputedStyle)?.ToString() ?? "null");
+            ImGui.TextWrapped(property.GetValue(_selectedNode.ComputedStyle)?.ToString() ?? "null");
         }
-        
+
         ImGui.EndTable();
     }
-    
+
     private void RenderNodeTreeViewerNode(Node node)
     {
         _nodeTreeId++;
@@ -256,7 +286,7 @@ internal abstract class SimpleUdtTest : DrawingTest
             return;
         }
 
-        if (ImGui.TreeNodeEx(node.ToString(),
+        if (ImGui.TreeNodeEx($"{node} ({node.ChildNodes.Count})",
             ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.OpenOnDoubleClick | ImGuiTreeNodeFlags.SpanFullWidth |
             (_selectedNode == node ? ImGuiTreeNodeFlags.Selected : ImGuiTreeNodeFlags.None))) {
             if (ImGui.IsItemClicked()) {
@@ -275,6 +305,56 @@ internal abstract class SimpleUdtTest : DrawingTest
         }
 
         ImGui.PopID();
+    }
+
+    #endregion
+
+    #region Stylesheet Viewer
+
+    private void RenderStylesheetViewer()
+    {
+        if (null == Document?.Stylesheet) return;
+
+        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(4, 4));
+        ImGui.BeginChild("StylesheetViewer", new(0, 0), true, ImGuiWindowFlags.HorizontalScrollbar);
+
+        int index = 0;
+
+        foreach ((string key, Style style) in Document.Stylesheet.GetRuleList()) {
+            index++;
+            if (ImGui.CollapsingHeader($"{key}##{index}",
+                ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanFullWidth)) {
+                
+                if (ImGui.IsItemHovered()) _hoveredStyle = key;
+                
+                ImGui.Indent();
+
+                ImGui.BeginTable($"##styleTable_{key}_{index}", 2, ImGuiTableFlags.RowBg);
+                ImGui.TableSetupColumn("Property");
+                ImGui.TableSetupColumn("Value");
+
+                var properties = style
+                                .GetType().GetProperties()
+                                .Where(p => p is { CanRead: true, CanWrite: true } && p.GetValue(style) != null)
+                                .ToList();
+
+                foreach (var property in properties) {
+                    ImGui.TableNextColumn();
+                    ImGui.TextUnformatted($"  {property.Name}");
+                    ImGui.TableNextColumn();
+                    ImGui.TextWrapped(property.GetValue(style)?.ToString() ?? "null");
+                }
+
+                ImGui.EndTable();
+
+                ImGui.Unindent();
+            }
+            
+            if (ImGui.IsItemHovered()) _hoveredStyle = key;
+        }
+
+        ImGui.EndChild();
+        ImGui.PopStyleVar();
     }
 
     #endregion

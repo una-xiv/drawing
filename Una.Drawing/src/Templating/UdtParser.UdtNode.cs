@@ -27,19 +27,20 @@ internal sealed partial class UdtParser
     /// <exception cref="Exception"></exception>
     private void ParseUdtNode(XmlElement udt)
     {
-        // If the UDT element contains a CDATA section, parse it as a style.
-        XmlCDataSection? cdata = udt.ChildNodes.OfType<XmlCDataSection>().FirstOrDefault();
-        if (cdata != null) {
-            _stylesheet = StyleParser.StylesheetFromCode(cdata.Data.Trim());
-        }
-
         var elementNodes = udt.ChildNodes.OfType<XmlElement>().ToList();
-        if (elementNodes.Count == 0) return;
+        if (elementNodes.Count == 0) {
+            ParseStylesheetFromCDataSection(udt);
+            return;
+        }
 
         // Find import nodes.
         foreach (var el in elementNodes.Where(el => NormalizeElementName(el.Name) == "import")) {
             ParseImportNode(el);
         }
+        
+        // Parse the stylesheet (if it exists). It is important to do this _after_ imports
+        // to allow style rules to be overwritten.
+        ParseStylesheetFromCDataSection(udt);
 
         // Find template nodes.
         foreach (var el in elementNodes.Where(el => NormalizeElementName(el.Name) == "template")) {
@@ -65,5 +66,20 @@ internal sealed partial class UdtParser
                 }
                 break;
         }
+    }
+
+    private void ParseStylesheetFromCDataSection(XmlElement udt)
+    {
+        XmlCDataSection? cdata = udt.ChildNodes.OfType<XmlCDataSection>().FirstOrDefault();
+        if (cdata == null) return;
+            
+        Stylesheet sheet = StyleParser.StylesheetFromCode(cdata.Data.Trim());
+
+        if (_stylesheet == null) {
+            _stylesheet = sheet;
+            return;
+        }
+
+        _stylesheet.ImportFrom(sheet);
     }
 }

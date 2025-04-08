@@ -89,7 +89,7 @@ public sealed partial class ExamplePlugin : IDalamudPlugin
         ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-        ImGui.PushStyleColor(ImGuiCol.WindowBg, 0xFF272021);
+        ImGui.PushStyleColor(ImGuiCol.WindowBg, 0xff1a100a);
         ImGui.PushStyleColor(ImGuiCol.Border, 0xFF595959);
         ImGui.PushStyleColor(ImGuiCol.Text, 0xFFDADEDE);
         ImGui.Begin("Una.Drawing Sandbox");

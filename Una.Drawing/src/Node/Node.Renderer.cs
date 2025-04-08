@@ -93,7 +93,7 @@ public partial class Node
     /// Used for caching purposes by the renderer.
     /// </summary>
     internal int RenderHash { get; private set; }
-    
+
     private uint _colorThemeVersion;
 
     private          IDalamudTextureWrap? _texture;
@@ -158,13 +158,15 @@ public partial class Node
 
         if (UpdateTexture()) RenderShadow(drawList);
 
-        Vector2 offset = new(32, 32);
+        Vector2 topLeft     = Bounds.PaddingRect.TopLeft;
+        Vector2 bottomRight = Bounds.PaddingRect.BottomRight;
+        Vector2 offset      = new(32, 32);
 
         if (null != _texture) {
             drawList.AddImage(
                 _texture.ImGuiHandle,
-                Bounds.PaddingRect.TopLeft - offset,
-                Bounds.PaddingRect.BottomRight + offset,
+                topLeft - offset,
+                bottomRight + offset,
                 Vector2.Zero,
                 Vector2.One,
                 GetRenderColor()
@@ -201,10 +203,10 @@ public partial class Node
         bool         hasDrawables = ComputedStyle.HasDrawables() || NodeValue != null;
 
         RenderHash = snapshot.GetHashCode();
-        
+
         if (hasDrawables && ((_texture is null || !snapshot.Equals(ref _snapshot)) && Width > 0 && Height > 0)) {
             Vector2 padding = new(64, 64); // Optimization point: Only add padding when needed.
-            
+
             _texture?.Dispose();
             _texture  = Renderer.CreateTexture(this, padding);
             _snapshot = snapshot;
@@ -455,6 +457,25 @@ public partial class Node
 
         return (new(totalWidth, totalHeight), new(maxWidth, maxHeight));
     }
+
+    private void RenderDragGhost()
+    {
+        if (null == _texture) return;
+
+        Vector2       topLeft     = Bounds.PaddingRect.TopLeft + DragDelta;
+        Vector2       bottomRight = Bounds.PaddingRect.BottomRight + DragDelta;
+        ImDrawListPtr ptr         = ImGui.GetForegroundDrawList();
+        Vector2       offset      = new(32, 32);
+
+        ptr.AddImage(
+            _texture.ImGuiHandle,
+            topLeft - offset,
+            bottomRight + offset,
+            Vector2.Zero,
+            Vector2.One,
+            0xA0FFFFFF
+        );
+    }
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -473,7 +494,7 @@ internal struct NodeSnapshot
               .AsBytes(new ReadOnlySpan<NodeSnapshot>(in this))
               .SequenceEqual(MemoryMarshal.AsBytes(new ReadOnlySpan<NodeSnapshot>(in other)));
     }
-    
+
     public override int GetHashCode()
     {
         HashCode hash = new();

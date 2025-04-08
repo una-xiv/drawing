@@ -1,5 +1,6 @@
 ﻿<udt>
-    <import from="tests.styles.xml"/>
+    <import from="shared.window.xml"/>
+    <import from="shared.box.xml"/>
     
     <![CDATA[
     .header-text {
@@ -11,8 +12,8 @@
     ]]>
     
     <window theme="dark">
-        <n slot="header" class="header-text" value="This is the header!"/>
-        <n slot="footer" class="footer-text" value="This is the footer!"/>
+        <n slot="header-text" class="text" value="This is the header!"/>
+        <n slot="footer" class="text" value="This is the footer!"/>
         
         <n class="box body-box" value="This is a body box."/>
     </window>

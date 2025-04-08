@@ -83,7 +83,7 @@ public partial class Node
         drawList.AddRect(Bounds.ContentRect.TopLeft, Bounds.ContentRect.BottomRight, 0xFF00FF00);
 
         ImDrawListPtr dl = ImGui.GetForegroundDrawList();
-        string text = $"Layer #{depth}: MR = {Bounds.MarginRect}\tPR = {Bounds.PaddingRect}\tCR = {Bounds.ContentRect}";
+        string text = $"Layer #{depth}: MR = {Bounds.MarginRect}\tPR = {Bounds.PaddingRect}\tCR = {Bounds.ContentRect}\tMS: {Bounds.MarginSize}\tPS: {Bounds.PaddingSize}\tCS: {Bounds.ContentSize}";
         Vector2 textPos = mousePos + new Vector2(32f, 32f + (depth * 16f));
         Vector2 textSize = ImGui.CalcTextSize(text);
 

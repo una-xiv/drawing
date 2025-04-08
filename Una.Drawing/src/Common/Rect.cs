@@ -11,7 +11,8 @@ public class Rect(float x1, float y1, float x2, float y2)
     public Vector2 TopRight    => new(X2, Y1);
     public Vector2 BottomLeft  => new(X1, Y2);
     public Vector2 BottomRight => new(X2, Y2);
-
+    public Vector2 Center => new((X1 + X2) / 2, (Y1 + Y2) / 2);
+    
     public float Width  => X2 - X1;
     public float Height => Y2 - Y1;
 

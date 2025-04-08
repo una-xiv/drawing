@@ -14,7 +14,14 @@ internal static partial class Layout
         
         origin = ComputeAnchorPoint(node, origin);
 
-        node.Bounds.PaddingRect = new Rect(origin, node.Bounds.PaddingSize);
+        node.Bounds.MarginRect = new Rect(origin, node.Bounds.MarginSize);
+        
+        node.Bounds.PaddingRect = new Rect(
+            (int)Math.Ceiling(origin.X) + node.ComputedStyle.Margin.Left,
+            (int)Math.Ceiling(origin.Y) + node.ComputedStyle.Margin.Top,
+            node.Bounds.PaddingSize
+        );
+        
         node.Bounds.ContentRect = new Rect(
             (int)Math.Ceiling(origin.X) + node.ComputedStyle.Padding.Left,
             (int)Math.Ceiling(origin.Y) + node.ComputedStyle.Padding.Top,

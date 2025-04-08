@@ -7,7 +7,7 @@ using Una.Drawing;
 
 namespace ExamplePlugin.Tests.BoxModel;
 
-public class RootAnchorsTest : DrawingTest
+internal class RootAnchorsTest : DrawingTest
 {
     public override string Name     => "Root Anchors";
     public override string Category => "Box Model";
@@ -60,7 +60,8 @@ public class RootAnchorsTest : DrawingTest
         node.Style.Anchor = point;
         node.NodeValue    = point.ToString();
 
-        node.Render(dl, position + offset);
+        // No need to add padding to the position, because the ImGui child already has WindowPadding of 10.
+        node.Render(dl, position);
 
         dl.AddCircleFilled(ImGui.GetWindowPos() + position + offset, 4, 0xFF0000FF);
     }

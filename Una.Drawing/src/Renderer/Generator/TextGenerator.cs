@@ -25,6 +25,8 @@ internal class TextGenerator : IGenerator
         var y = origin.X + (metrics.CapHeight + node.ComputedStyle.TextOffset.Y + 1) + outlineSize;
         var x = origin.Y + node.ComputedStyle.TextOffset.X + 1;
 
+        y = (int)Math.Ceiling(y);
+
         if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
         if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;
         if (node.ComputedStyle.TextAlign.IsRight) x  += -(node.ComputedStyle.Padding.Right + outlineSize);
@@ -54,7 +56,7 @@ internal class TextGenerator : IGenerator
             paint.ImageFilter = null;
             paint.Color       = Color.ToSkColor(node.ComputedStyle.OutlineColor);
             paint.Style       = SKPaintStyle.Stroke;
-            paint.StrokeWidth = node.ComputedStyle.OutlineSize * 2;
+            paint.StrokeWidth = node.ComputedStyle.OutlineSize;
             paint.MaskFilter  = SKMaskFilter.CreateBlur(SKBlurStyle.Solid, node.ComputedStyle.OutlineSize);
             font.DrawText(canvas, paint, point, node.ComputedStyle.FontSize, line);
         }
@@ -63,8 +65,8 @@ internal class TextGenerator : IGenerator
             paint.ImageFilter = paint.ImageFilter = SKImageFilter.CreateDropShadow(
                 0,
                 0,
-                node.ComputedStyle.TextShadowSize * 2,
-                node.ComputedStyle.TextShadowSize * 2,
+                node.ComputedStyle.TextShadowSize,
+                node.ComputedStyle.TextShadowSize,
                 Color.ToSkColor(node.ComputedStyle.TextShadowColor ?? new(0xFF000000))
             );
         }

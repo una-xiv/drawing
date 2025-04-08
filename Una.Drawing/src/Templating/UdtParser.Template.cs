@@ -89,6 +89,9 @@ internal sealed partial class UdtParser
                 }
 
                 attributes.Add(attrName, attrValue);
+                
+                DebugLogger.Log(element.Name);
+                DebugLogger.Log($"{attrName} = {attrValue}");
             }
 
             // TODO: Detect self-referencing nodes.
@@ -145,15 +148,48 @@ internal sealed partial class UdtParser
         {
             string result = attributeValue;
 
-            foreach (var (name, arg) in _arguments) {
-                string? argValue = _attributes.FirstOrDefault(x => x.Key == name).Value ?? arg.DefaultValue;
+            foreach (var variableName in ExtractVariablePlaceholdersFromAttributeValue(attributeValue)) {
+                string name = NormalizeElementName(variableName);
 
-                if (argValue == null) {
-                    throw new Exception($"Failed to construct element \"{TemplateName}\" in \"{_parser._filename}\": " +
-                                        $"Argument \"{name}\" is not defined and has no default value.");
+                if (!_arguments.TryGetValue(name, out var attribute)) {
+                    throw new Exception(
+                        $"The variable \"{variableName}\" was referenced in a template but was not defined as a template argument."
+                    );
                 }
+                
+                string? argValue = _attributes.FirstOrDefault(x => x.Key == name).Value ?? attribute.DefaultValue;
+                if (argValue == null) {
+                    throw new Exception(
+                        $"Failed to construct element \"{TemplateName}\" in \"{_parser._filename}\": " +
+                        $"Argument \"{name}\" is not defined and has no default value."
+                    );
+                }
+                
+                result = result.Replace($"${{{variableName}}}", argValue);
+            }
 
-                result = result.Replace($"${{{name}}}", argValue);
+            return result;
+        }
+
+        /// <summary>
+        /// Extracts variable placeholders from the attribute value.
+        /// Variables are formatted like <c>${variableName}</c>.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private List<string> ExtractVariablePlaceholdersFromAttributeValue(string value)
+        {
+            List<string> result = [];
+
+            int startIndex = 0;
+            while ((startIndex = value.IndexOf("${", startIndex, StringComparison.InvariantCulture)) != -1) {
+                int endIndex = value.IndexOf("}", startIndex, StringComparison.InvariantCulture);
+                if (endIndex == -1) break;
+
+                string variableName = value.Substring(startIndex + 2, endIndex - startIndex - 2);
+                result.Add(variableName);
+
+                startIndex = endIndex + 1;
             }
 
             return result;
@@ -198,7 +234,7 @@ internal sealed partial class UdtParser
                 string? defaultValue                 = el.GetAttribute("default");
                 if (defaultValue == "") defaultValue = null;
 
-                templateArguments.Add(name, new TemplateArgument(defaultValue));
+                templateArguments.Add(NormalizeElementName(name), new TemplateArgument(defaultValue));
             }
 
             return templateArguments;
