@@ -118,7 +118,7 @@ internal sealed class Tokenizer
         char c = _code[_position];
         char p = _position > 1 ? _code[_position - 1] : ' ';
 
-        if (char.IsLetter(p) || (c != '#' && c != '.' && c != ':')) {
+        if (char.IsLetter(p) || (c != '#' && c != '.' && c != ':' && c != '&' && c != '>')) {
             return false;
         }
 

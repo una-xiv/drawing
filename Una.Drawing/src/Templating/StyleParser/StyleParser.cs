@@ -83,8 +83,18 @@ internal class StyleParser
     private void ParseRule(string? parentSelector = null, bool defer = false)
     {
         string selector = _stream.Consume(TokenType.Selector).Value.Trim();
-        selector = $"{(parentSelector ?? "")}{selector}";
-        
+
+        if (selector.StartsWith('&')) {
+            selector = selector.Substring(1, selector.Length - 1);
+            if (parentSelector == null) {
+                throw new Exception("Unexpected ampersand in selector.");
+            }
+            
+            selector = $"{parentSelector}{selector}";
+        } else {
+            selector = $"{parentSelector ?? ""} {selector}";
+        }
+
         _stream.Consume(TokenType.OpenBrace);
         Style style = ParseStyle(selector);
 
@@ -93,8 +103,6 @@ internal class StyleParser
         }
 
         _stream.Consume(TokenType.CloseBrace);
-
-        
         
         if (defer) {
             _deferredRules.Add((selector, style));
@@ -130,38 +138,9 @@ internal class StyleParser
                 continue;
             }
 
-            if (_stream.Peek()?.Type == TokenType.Ampersand) {
-                if (parentSelector == null) throw new Exception("Unexpected selector in inline style.");
-
-                _stream.Consume(TokenType.Ampersand);
-                StringBuilder sb = new();
-                sb.Append(parentSelector);
-
-                if (_stream.Peek()?.Type == TokenType.GreaterThan) {
-                    sb.Append(" > ");
-                    _stream.Consume(TokenType.GreaterThan);
-                } else {
-                    sb.Append(' ');
-                }
-
-                if (_stream.Peek()?.Type != TokenType.Selector) {
-                    throw new Exception($"Expected Selector after '&' but got {_stream.Peek()?.Type}");
-                }
-
-                ParseRule(sb.ToString(), true);
-                continue;
-            }
-
-            if (_stream.Peek()?.Type == TokenType.GreaterThan) {
-                if (parentSelector == null) throw new Exception("Unexpected selector in inline style.");
-                _stream.Consume(TokenType.GreaterThan);
-                ParseRule($"{parentSelector} > ", true);
-                continue;
-            }
-
             if (_stream.Peek()?.Type == TokenType.Selector) {
                 if (parentSelector == null) throw new Exception("Unexpected selector in inline style.");
-                ParseRule($"{parentSelector} ", true);
+                ParseRule(parentSelector, true);
                 continue;
             }
 

@@ -18,6 +18,10 @@
         flow: vertical;
         size: 640 480;
         
+        &.default {
+            background-color: 0xff212021;
+        }
+        
         & > .header {
             flow: horizontal;
             auto-size: grow fit;
@@ -27,14 +31,14 @@
             & > .tc { size: 0 32; auto-size: grow fit; uld-part-id: 1; }
             & > .tr { size: 14 32; uld-part-id: 2; }
             
-            & > .tc > .title {
+            .title {
                 margin: 8 0 0 0;
                 anchor: middle-left;
                 padding: 2 0 0 0;
                 auto-size: grow fit;
             }
             
-            & > .tc > .buttons {
+            .buttons {
                 margin: 8 0 0 0;
                 anchor: middle-left;
                 gap: 4;
@@ -67,10 +71,6 @@
             image-tile-mode: repeat;
             image-scale-mode: adapt;
             image-scale: 0.5;
-        }
-        
-        &.default {
-            background-color: 0xff212021;
         }
     }
     ]]>
