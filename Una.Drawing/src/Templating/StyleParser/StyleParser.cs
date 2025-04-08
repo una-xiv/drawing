@@ -112,10 +112,11 @@ internal class StyleParser
         _stylesheet.AddRule(selector, style);
         if (_deferredRules.Count <= 0) return;
 
-        foreach (var rule in _deferredRules) {
-            _stylesheet.AddRule(rule.selector, rule.style);
+        for (var i = _deferredRules.Count - 1; i >= 0; i--) {
+            (string qs, Style s) = _deferredRules[i];
+            _stylesheet.AddRule(qs, s);
         }
-
+        
         _deferredRules.Clear();
     }
 

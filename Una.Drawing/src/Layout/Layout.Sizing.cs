@@ -10,7 +10,6 @@ internal static partial class Layout
     private static void ComputeSizes(Node node)
     {
         ComputeFixedAndFitSizes(node);
-
         if (!ComputeGrowingSizes(node)) {
             return; // No need to stabilize.
         }
@@ -83,6 +82,9 @@ internal static partial class Layout
         if (node.ComputedStyle.MaxWidth is > 0) {
             finalContentWidth = Math.Min(finalContentWidth, node.ComputedStyle.MaxWidth.Value);
         }
+        
+        finalContentWidth = MathF.Round(finalContentWidth);
+        finalContentHeight = MathF.Round(finalContentHeight);
 
         node.Bounds.ContentSize = new Size(
             Math.Max(0, finalContentWidth),
@@ -123,9 +125,9 @@ internal static partial class Layout
             Size newTextSize = node.ComputeContentSizeFromText();
 
             if ((node.ComputedStyle.AutoSize.Horizontal == AutoSize.Fit && node.ComputedStyle.Size.Width == 0 &&
-                 newTextSize.Width != node.Bounds.ContentSize.Width) ||
+                 Math.Abs(newTextSize.Width - node.Bounds.ContentSize.Width) > 0.9f) ||
                 (node.ComputedStyle.AutoSize.Vertical == AutoSize.Fit && node.ComputedStyle.Size.Height == 0 &&
-                 newTextSize.Height != node.Bounds.ContentSize.Height)
+                 Math.Abs(newTextSize.Height - node.Bounds.ContentSize.Height) > 0.9f)
             ) {
                 return true;
             }

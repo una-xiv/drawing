@@ -95,7 +95,7 @@ internal abstract class SimpleUdtTest : DrawingTest
     {
         if (Document?.RootNode != null) OnRenderTest(dl);
         Document?.RootNode?.Render(dl, RootOffset);
-
+        
         if (_activeTab == "Node Tree") {
             if (_hoveredNode != null) {
                 Rect outer   = _hoveredNode.Bounds.MarginRect;
@@ -107,7 +107,7 @@ internal abstract class SimpleUdtTest : DrawingTest
                 dl.AddRect(content.TopLeft, content.BottomRight, 0xFF00FF00, 0, ImDrawFlags.None, 1);
             }
 
-            if (_selectedNode != null) {
+            if (_selectedNode is { IsVisible: true } && _selectedNode != _hoveredNode) {
                 Rect outer = _selectedNode.Bounds.MarginRect;
                 dl.AddRect(outer.TopLeft, outer.BottomRight, 0xFF00FF00, 0, ImDrawFlags.None, 1);
             }
@@ -175,10 +175,21 @@ internal abstract class SimpleUdtTest : DrawingTest
         ImGui.EndChild();
         ImGui.PopStyleVar();
 
+        if (null == _selectedNode) return;
+        
         ImGui.BeginChild("NodeTreeViewerDetails", new(0, -1), false);
 
         ImGui.Dummy(new Vector2(0, 0));
 
+        bool isVisible = _selectedNode!.ComputedStyle.IsVisible;
+        bool isDisabled = _selectedNode.IsDisabled;
+        
+        if (ImGui.Checkbox("Visible", ref isVisible)) _selectedNode.Style.IsVisible = isVisible;
+        ImGui.SameLine();
+        if (ImGui.Checkbox("Disabled", ref isDisabled)) _selectedNode.IsDisabled = isDisabled;
+        
+        ImGui.Separator();
+        
         ImGui.BeginTabBar("NodeDetailsTabs", ImGuiTabBarFlags.FittingPolicyScroll);
         foreach (var tab in _nodeTabs) {
             if (ImGui.BeginTabItem(tab)) {
@@ -265,8 +276,9 @@ internal abstract class SimpleUdtTest : DrawingTest
     private void RenderNodeTreeViewerNode(Node node)
     {
         _nodeTreeId++;
+        ImGui.PushStyleColor(ImGuiCol.Text, node.IsVisible ? 0xFFFFFFFF : 0xFF808080);
         ImGui.PushID(_nodeTreeId);
-
+        
         if (node.ChildNodes.Count == 0) {
             if (ImGui.TreeNodeEx(node.ToString(),
                 ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.Bullet |
@@ -283,6 +295,7 @@ internal abstract class SimpleUdtTest : DrawingTest
             }
 
             ImGui.PopID();
+            ImGui.PopStyleColor();
             return;
         }
 
@@ -305,6 +318,7 @@ internal abstract class SimpleUdtTest : DrawingTest
         }
 
         ImGui.PopID();
+        ImGui.PopStyleColor();
     }
 
     #endregion

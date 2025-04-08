@@ -13,7 +13,7 @@ public partial class Node
     /// to the listener to keep track of the changes and perform the reflow
     /// operation as efficiently as possible.
     /// </summary>
-    public Action? OnReflow;
+    public event Action? OnReflow;
 
     /// <summary>
     /// Defines the properties that specify the visual representation of this
