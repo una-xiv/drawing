@@ -40,8 +40,7 @@ public partial class Node
         Layout.ComputeBounds(this);
     }
     
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    private void Reflow(Vector2? position = null)
+    public void Reflow(Vector2? position = null)
     {
         if (IsDisposed || !ComputedStyle.IsVisible) return;
         if (!_mustReflow && _lastPosition.Equals(position)) return;
@@ -50,10 +49,28 @@ public partial class Node
         _mustReflow   = false;
         
         Layout.ComputeBounds(this);
-        BeforeReflow?.Invoke(this);   
+        InvokeReflowHook();
         Layout.ComputeLayout(this, position ?? new Vector2());
     }
 
+    private bool InvokeReflowHook()
+    {
+        if (IsDisposed) return false;
+
+        var changed = false;
+
+        lock (_childNodes) {
+            foreach (Node child in _childNodes) {
+                bool result         = child.InvokeReflowHook();
+                if (result) changed = true;
+            }
+        }
+
+        if (changed) Layout.ComputeBounds(this);
+
+        return (BeforeReflow?.Invoke(this) ?? false) || changed;
+    }
+    
     private void ReassignAnchorNodes()
     {
         lock (AnchorToChildNodes) {
