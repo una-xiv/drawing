@@ -2,8 +2,24 @@
 
 public partial class Node
 {
-    [Obsolete("This method is obsolete. You can probably fix your layout with auto-size.")]
-    public Action<Node>? BeforeReflow;
+    /// <summary>
+    /// <para>
+    /// Invoked immediate after the bounding boxes of all nodes have been
+    /// computed and immediately before the reflow process begins.
+    /// </para>
+    /// <para>
+    /// Use this hook to perform any resize operations on the Bounds of the
+    /// node, for example, manually resizing the node with certain constraints.
+    /// </para>
+    /// <remarks>
+    /// This callback is only invoked if the node needs to reflow. This only
+    /// happens if any property of this node or any of its dependencies has
+    /// been modified that would affect its layout.
+    /// </remarks>
+    /// </summary>
+    public ReflowDelegate? BeforeReflow;
+
+    public delegate bool ReflowDelegate(Node node);
     
     internal Dictionary<Anchor.AnchorPoint, List<Node>> AnchorToChildNodes { get; } = [];
 
@@ -19,6 +35,8 @@ public partial class Node
         _lastPosition = position ?? Vector2.Zero;
         _mustReflow   = false;
         
+        Layout.ComputeBounds(this);
+        BeforeReflow?.Invoke(this);   
         Layout.ComputeLayout(this, position ?? new Vector2());
     }
 

@@ -340,7 +340,6 @@ public partial class Node : IDisposable
         DisposeEventHandlersOf(OnTagRemoved);
         DisposeEventHandlersOf(OnSortIndexChanged);
         DisposeEventHandlersOf(OnPropertyChanged);
-        DisposeEventHandlersOf(BeforeReflow);
         DisposeEventHandlersOf(OnReflow);
 
         OnClick             = null;
@@ -362,6 +361,7 @@ public partial class Node : IDisposable
         OnDispose           = null;
 
         OnReflow           = null;
+        BeforeReflow       = null;
         BeforeDraw         = null;
         AfterDraw          = null;
         ComputedStyle      = new();

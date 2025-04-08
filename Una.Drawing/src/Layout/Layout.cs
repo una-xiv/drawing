@@ -2,7 +2,7 @@
 
 internal static partial class Layout
 {
-    public static void ComputeLayout(Node node, Vector2 origin)
+    public static void ComputeBounds(Node node)
     {
         if (node.ParentNode != null) {
             node = node.RootNode;
@@ -11,7 +11,10 @@ internal static partial class Layout
         if (node.IsDisposed || !node.ComputedStyle.IsVisible) return;
 
         ComputeSizes(node);
-        
+    }
+    
+    public static void ComputeLayout(Node node, Vector2 origin)
+    {
         origin = ComputeAnchorPoint(node, origin);
 
         node.Bounds.MarginRect = new Rect(origin, node.Bounds.MarginSize);
