@@ -1,11 +1,5 @@
-﻿/* Una.Drawing                                                 ____ ___
- *   A declarative drawing library for FFXIV.                 |    |   \____ _____        ____                _
- *                                                            |    |   /    \\__  \      |    \ ___ ___ _ _ _|_|___ ___
- * By Una. Licensed under AGPL-3.                             |    |  |   |  \/ __ \_    |  |  |  _| .'| | | | |   | . |
- * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
- * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
-
-using System.Linq;
+﻿using System.Linq;
+using System.Text;
 
 namespace Una.Drawing;
 
@@ -45,25 +39,22 @@ internal class QuerySelector
 
     public override string ToString()
     {
-        string p = Parent?.ToString() ?? "";
+        StringBuilder sb = new();
 
-        if (p.Length > 0) {
-            p += " > ";
+        if (Identifier is not null) sb.Append($"#{Identifier}");
+        if (ClassList.Count > 0) sb.Append($".{string.Join('.', ClassList)}");
+        if (TagList.Count > 0) sb.Append($":{string.Join(':', TagList)}");
+
+        string self = sb.ToString();
+        sb.Clear();
+
+        if (Parent is null) {
+            return self;
         }
 
-        if (Identifier != null) {
-            p += $"#{Identifier}";
-        }
-
-        if (ClassList.Count > 0) {
-            p += ClassList.Aggregate("", (acc, x) => $"{acc}.{x}");
-        }
-
-        if (TagList.Count > 0) {
-            p += TagList.Aggregate("", (acc, x) => $"{acc}:{x}");
-        }
-
-        return p;
+        return Parent.DirectChild == this 
+            ? $"{Parent} > {self}" 
+            : $"{Parent} {self}";
     }
 
     /// <summary>
@@ -107,6 +98,7 @@ internal class QuerySelector
         bool isNestedChildLink = Parent.NestedChild == this;
 
         if (!isDirectChildLink && !isNestedChildLink) {
+            // This should never happen.
             throw new InvalidOperationException(
                 "QuerySelector structure inconsistency: Parent is set, but this instance is neither its DirectChild nor NestedChild.");
         }
@@ -143,5 +135,16 @@ internal class QuerySelector
         node.CachedQuerySelectorResults.Add(this, false);
 
         return false;
+    }
+
+    private QuerySelector RootNode()
+    {
+        QuerySelector root = this;
+
+        while (root.Parent != null) {
+            root = root.Parent;
+        }
+
+        return root;
     }
 }

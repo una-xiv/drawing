@@ -1,11 +1,4 @@
-﻿/* Una.Drawing                                                 ____ ___
- *   A declarative drawing library for FFXIV.                 |    |   \____ _____        ____                _
- *                                                            |    |   /    \\__  \      |    \ ___ ___ _ _ _|_|___ ___
- * By Una. Licensed under AGPL-3.                             |    |  |   |  \/ __ \_    |  |  |  _| .'| | | | |   | . |
- * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
- * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
-
-using Dalamud.Interface.Textures;
+﻿using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using System.Linq;
 using System.Reflection;
@@ -21,7 +14,7 @@ internal static class Renderer
 
     private static readonly SKColorSpace SkColorSpace = SKColorSpace.CreateSrgb();
 
-    internal static unsafe void Setup()
+    internal static void Setup()
     {
         // Collect generators.
         List<Type> generatorTypes = Assembly
@@ -41,6 +34,8 @@ internal static class Renderer
                 var data   = new byte[8192 * 8192 * 4];
                 var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
+                DebugLogger.Log($"Creating framebuffer of size {data.Length} bytes.");
+
                 return Tuple.Create(handle.AddrOfPinnedObject());
             }
         );
@@ -56,26 +51,28 @@ internal static class Renderer
     /// <summary>
     /// Creates a texture for the given node.
     /// </summary>
-    internal static IDalamudTextureWrap? CreateTexture(Node node)
+    internal static IDalamudTextureWrap? CreateTexture(Node node, Vector2? padding)
     {
         if (node.Width == 0 || node.Height == 0) return null;
         if (node.Width > 8192 || node.Height > 8192) return null;
 
+        padding ??= Vector2.Zero;
+
         SKImageInfo info = new(
-            (int)node.Width + 64, 
-            (int)node.Height + 64,
+            (int)(node.Width + padding.Value.X),
+            (int)(node.Height + padding.Value.Y),
             SKColorType.Bgra8888,
             SKAlphaType.Premul,
             SkColorSpace
         );
-        
+
         using var pixmap  = new SKPixmap(info, _pixelDataPtr);
         using var surface = SKSurface.Create(pixmap);
 
         surface.Canvas.Clear();
 
         bool    hasDrawn = false;
-        Vector2 origin   = new(32, 32);
+        Vector2 origin   = new(padding.Value.X / 2f, padding.Value.Y / 2f);
 
         foreach (IGenerator generator in _generators) {
             try {
@@ -91,13 +88,16 @@ internal static class Renderer
 
         try {
             return DalamudServices.TextureProvider.CreateFromRaw(
-                RawImageSpecification.Rgba32((int)node.Width + 64, (int)node.Height + 64),
+                RawImageSpecification.Rgba32(
+                    (int)(node.Width + padding.Value.X),
+                    (int)(node.Height + padding.Value.Y)
+                ),
                 pixmap.GetPixelSpan(),
                 node.ToString()
             );
-        } catch(Exception e) {
+        } catch (Exception e) {
             DalamudServices.PluginLog.Error($"{e.Message}\n{e.StackTrace}");
-            
+
             // If the texture creation fails, we can just return null to prevent
             // crashes during the drawing process.
             return null;

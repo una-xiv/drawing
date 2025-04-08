@@ -1,16 +1,8 @@
-﻿/* Una.Drawing                                                 ____ ___
- *   A declarative drawing library for FFXIV.                 |    |   \____ _____        ____                _
- *                                                            |    |   /    \\__  \      |    \ ___ ___ _ _ _|_|___ ___
- * By Una. Licensed under AGPL-3.                             |    |  |   |  \/ __ \_    |  |  |  _| .'| | | | |   | . |
- * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
- * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
-
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling;
-using Una.Drawing.Script;
 
 namespace Una.Drawing;
 
@@ -31,25 +23,18 @@ public partial class Node : IDisposable
     /// <summary>
     /// Defines a unique identifier for the node.
     /// </summary>
-    public string? Id
-    {
+    public string? Id {
         get => _id;
-        set
-        {
+        set {
             if (_id == value) return;
 
-            if (string.IsNullOrWhiteSpace(value))
-            {
+            if (string.IsNullOrWhiteSpace(value)) {
                 _id = null;
-            }
-            else if (!IdentifierNamingRule().Match(value).Success)
-            {
+            } else if (!IdentifierNamingRule().Match(value).Success) {
                 throw new ArgumentException(
                     $"The given ID \"{value}\" is invalid. Node IDs must match the regex \"{IdentifierNamingRule()}\"."
                 );
-            }
-            else
-            {
+            } else {
                 _id              = value;
                 _internalId      = null;
                 _internalIdCrc32 = null;
@@ -65,33 +50,27 @@ public partial class Node : IDisposable
     /// <summary>
     /// Defines the textual content of this node.
     /// </summary>
-    public object? NodeValue
-    {
+    public object? NodeValue {
         get => _nodeValue;
-        set
-        {
-            switch (_nodeValue)
-            {
+        set {
+            switch (_nodeValue) {
                 case null when value is null:
                     return;
-                case string oldStr when value is string newStr:
-                    {
-                        if (oldStr.Equals(newStr)) return;
-                        break;
-                    }
+                case string oldStr when value is string newStr: {
+                    if (oldStr.Equals(newStr)) return;
+                    break;
+                }
             }
 
-            switch (value)
-            {
+            switch (value) {
                 case SeString when ReferenceEquals(value, _nodeValue):
                     return;
-                case SeString seStr:
-                    {
-                        byte[] payload = seStr.Encode();
-                        if (_seStringPayload.SequenceEqual(payload)) return;
-                        _seStringPayload = payload;
-                        break;
-                    }
+                case SeString seStr: {
+                    byte[] payload = seStr.Encode();
+                    if (_seStringPayload.SequenceEqual(payload)) return;
+                    _seStringPayload = payload;
+                    break;
+                }
             }
 
             _nodeValue           = value;
@@ -117,11 +96,9 @@ public partial class Node : IDisposable
     /// <summary>
     /// Returns a list of class names applied to this node.
     /// </summary>
-    public ObservableHashSet<string> ClassList
-    {
+    public ObservableHashSet<string> ClassList {
         get => _classList;
-        set
-        {
+        set {
             if (_classList.SequenceEqual(value)) return;
 
             ClearCachedQuerySelectors();
@@ -141,11 +118,9 @@ public partial class Node : IDisposable
     /// A node with ID "example" and tags "active" and "hovered" can be queried
     /// using the following query: `example:active:hovered`.
     /// </example>
-    public ObservableHashSet<string> TagsList
-    {
+    public ObservableHashSet<string> TagsList {
         get => _tagsList;
-        set
-        {
+        set {
             if (_tagsList.SequenceEqual(value)) return;
 
             ClearCachedQuerySelectors();
@@ -155,7 +130,7 @@ public partial class Node : IDisposable
             OnPropertyChanged?.Invoke("TagsList", _tagsList);
         }
     }
-    
+
     /// <summary>
     /// <para>
     /// Whether to inherit tags from the parent node.
@@ -182,11 +157,9 @@ public partial class Node : IDisposable
     /// <summary>
     /// A list of child nodes of this node.
     /// </summary>
-    public ObservableCollection<Node> ChildNodes
-    {
+    public ObservableCollection<Node> ChildNodes {
         get => _childNodes;
-        set
-        {
+        set {
             if (_childNodes.SequenceEqual(value)) return;
 
             List<Node> toRemove = _childNodes.ToList();
@@ -207,11 +180,9 @@ public partial class Node : IDisposable
     /// Defines the sort index of this node. Nodes are sorted in ascending
     /// order in the parent's child nodes list based on this value.
     /// </summary>
-    public int SortIndex
-    {
+    public int SortIndex {
         get => _sortIndex;
-        set
-        {
+        set {
             if (_sortIndex == value) return;
 
             _sortIndex = value;
@@ -294,38 +265,6 @@ public partial class Node : IDisposable
     private readonly ObservableHashSet<string>  _tagsList   = [];
     private          ObservableCollection<Node> _childNodes = [];
 
-    /// <summary>
-    /// Constructs and returns a new node of the given type from the given code.
-    /// </summary>
-    /// <param name="code"></param>
-    /// <typeparam name="T">The root node type</typeparam>
-    /// <returns>An instance of the given node type</returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public static T FromCode<T>(string code) where T : Node, new()
-    {
-        ScriptSource src = ScriptSource.FromCode(code);
-        
-        if (src.RootNode is not T node) {
-            throw new InvalidOperationException(
-                $"The given code does not contain a {typeof(T).Name} root node."
-            );
-        }
-        
-        return node;
-    }
-
-    /// <summary>
-    /// Returns a new node from the given code. The type of the node is
-    /// determined by the root node of the code. Use `FromCode&lt;T&gt;` to
-    /// return a node of a specific type.
-    /// </summary>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    public static Node FromCode(string code)
-    {
-        return FromCode<Node>(code);
-    }
-    
     public Node()
     {
         ComputedStyle                     = ComputedStyleFactory.CreateDefault();
@@ -334,29 +273,25 @@ public partial class Node : IDisposable
 
         _childNodes.CollectionChanged += HandleChildListChanged;
 
-        _classList.ItemAdded += c =>
-        {
+        _classList.ItemAdded += c => {
             ClearCachedQuerySelectors();
             OnClassAdded?.Invoke(c);
             SignalReflow();
         };
 
-        _classList.ItemRemoved += c =>
-        {
+        _classList.ItemRemoved += c => {
             ClearCachedQuerySelectors();
             OnClassRemoved?.Invoke(c);
             SignalReflow();
         };
 
-        _tagsList.ItemAdded += t =>
-        {
+        _tagsList.ItemAdded += t => {
             ClearCachedQuerySelectors();
             OnTagAdded?.Invoke(t);
             SignalReflow();
         };
 
-        _tagsList.ItemRemoved += t =>
-        {
+        _tagsList.ItemRemoved += t => {
             ClearCachedQuerySelectors();
             OnTagRemoved?.Invoke(t);
             SignalReflow();
@@ -380,6 +315,7 @@ public partial class Node : IDisposable
         if (IsDisposed) return;
         IsDisposed = true;
 
+        OnDispose?.Invoke(this);
         OnDisposed();
 
         NodeValue = null;
@@ -419,6 +355,7 @@ public partial class Node : IDisposable
         OnTagRemoved        = null;
         OnSortIndexChanged  = null;
         OnPropertyChanged   = null;
+        OnDispose           = null;
 
         OnReflow           = null;
         BeforeDraw         = null;
@@ -431,7 +368,7 @@ public partial class Node : IDisposable
         ClearTextCache();
         ClearQuerySelectorCache();
         ClearCachedQuerySelectors();
-        
+
         _texture?.Dispose();
         _texture  = null;
         _snapshot = new();
@@ -448,12 +385,22 @@ public partial class Node : IDisposable
         _internalIdLastIndex  = 0;
         _internalIdLastParent = null;
 
-       
 
         MouseCursor.RemoveMouseOver(this);
         FontRegistry.FontChanged -= OnFontConfigurationChanged;
     }
 
+    /// <summary>
+    /// Invoked when the node is disposed. This event is meant to be used by
+    /// subscribers to perform any necessary cleanup when the node is disposed.
+    /// </summary>
+    public event Action<Node>? OnDispose;
+
+    /// <summary>
+    /// Lifecycle event that is invoked when the node is disposed. This method
+    /// is meant to be overridden by derived classes to perform any necessary
+    /// cleanup.
+    /// </summary>
     protected virtual void OnDisposed() { }
 
     /// <summary>
@@ -465,26 +412,17 @@ public partial class Node : IDisposable
     /// </summary>
     public void ToggleClass(string className, bool? enabled = null)
     {
-        if (enabled == null)
-        {
-            if (_classList.Contains(className))
-            {
+        if (enabled == null) {
+            if (_classList.Contains(className)) {
                 _classList.Remove(className);
-            }
-            else
-            {
+            } else {
                 _classList.Add(className);
             }
-        }
-        else
-        {
-            if (enabled.Value)
-            {
-                _classList.Add(className);
-            }
-            else
-            {
-                _classList.Remove(className);
+        } else {
+            if (enabled.Value) {
+                if (!_classList.Contains(className)) _classList.Add(className);
+            } else {
+                if (_classList.Contains(className)) _classList.Remove(className);
             }
         }
     }
@@ -498,25 +436,16 @@ public partial class Node : IDisposable
     /// </summary>
     private void ToggleTag(string tag, bool? enabled = null)
     {
-        if (enabled == null)
-        {
-            if (_tagsList.Contains(tag))
-            {
+        if (enabled == null) {
+            if (_tagsList.Contains(tag)) {
                 _tagsList.Remove(tag);
-            }
-            else
-            {
+            } else {
                 _tagsList.Add(tag);
             }
-        }
-        else
-        {
-            if (enabled.Value)
-            {
+        } else {
+            if (enabled.Value) {
                 _tagsList.Add(tag);
-            }
-            else
-            {
+            } else {
                 _tagsList.Remove(tag);
             }
         }
@@ -527,16 +456,16 @@ public partial class Node : IDisposable
     {
         if (IsDisposed) return;
         if (Style.IsVisible is false) return;
-    
+
         if (_inheritTags && ParentNode is not null) {
             TagsList = ParentNode.TagsList;
         }
-    
+
         foreach (Node child in _childNodes) {
             child.InheritTagsFromParent();
         }
     }
-    
+
     private void OnFontConfigurationChanged()
     {
         _texture?.Dispose();
@@ -553,30 +482,25 @@ public partial class Node : IDisposable
     private void HandleChildListChanged(object? _, NotifyCollectionChangedEventArgs e)
     {
         ClearCachedQuerySelectors();
-        
-        switch (e)
-        {
-            case { Action: NotifyCollectionChangedAction.Add, NewItems: not null }:
-                {
-                    foreach (Node node in e.NewItems) OnChildAddedToList(node);
-                    break;
-                }
-            case { Action: NotifyCollectionChangedAction.Remove, OldItems: not null }:
-                {
-                    foreach (Node node in e.OldItems) OnChildRemovedFromList(node);
-                    break;
-                }
-            case { Action: NotifyCollectionChangedAction.Replace, OldItems: not null, NewItems: not null }:
-                {
-                    foreach (Node node in e.OldItems!) OnChildRemovedFromList(node);
-                    foreach (Node node in e.NewItems!) OnChildAddedToList(node);
-                    break;
-                }
-            case { Action: NotifyCollectionChangedAction.Reset, OldItems: not null }:
-                {
-                    foreach (Node node in e.OldItems) OnChildRemovedFromList(node);
-                    break;
-                }
+
+        switch (e) {
+            case { Action: NotifyCollectionChangedAction.Add, NewItems: not null }: {
+                foreach (Node node in e.NewItems) OnChildAddedToList(node);
+                break;
+            }
+            case { Action: NotifyCollectionChangedAction.Remove, OldItems: not null }: {
+                foreach (Node node in e.OldItems) OnChildRemovedFromList(node);
+                break;
+            }
+            case { Action: NotifyCollectionChangedAction.Replace, OldItems: not null, NewItems: not null }: {
+                foreach (Node node in e.OldItems!) OnChildRemovedFromList(node);
+                foreach (Node node in e.NewItems!) OnChildAddedToList(node);
+                break;
+            }
+            case { Action: NotifyCollectionChangedAction.Reset, OldItems: not null }: {
+                foreach (Node node in e.OldItems) OnChildRemovedFromList(node);
+                break;
+            }
         }
 
         SignalReflow();
@@ -593,8 +517,7 @@ public partial class Node : IDisposable
     /// <param name="node">The node to append.</param>
     public void AppendChild(Node node)
     {
-        lock (_childNodes)
-        {
+        lock (_childNodes) {
             if (_childNodes.Contains(node)) return;
 
             node.ParentNode?.RemoveChild(this);
@@ -621,8 +544,7 @@ public partial class Node : IDisposable
     /// <param name="dispose">Whether the node should be disposed.</param>
     public void RemoveChild(Node node, bool dispose = false)
     {
-        lock (_childNodes)
-        {
+        lock (_childNodes) {
             if (!_childNodes.Contains(node)) return;
 
             _childNodes.Remove(node);
@@ -647,7 +569,7 @@ public partial class Node : IDisposable
 
         ClearQuerySelectorCache();
         ClearCachedQuerySelectors();
-        
+
         // Remove the new node from its parent if it has one.
         newChild.ParentNode?.RemoveChild(newChild);
 
@@ -687,7 +609,7 @@ public partial class Node : IDisposable
     {
         ClearQuerySelectorCache();
         ClearCachedQuerySelectors();
-        
+
         node.ParentNode         =  null;
         node.OnSortIndexChanged -= SortChildren;
 

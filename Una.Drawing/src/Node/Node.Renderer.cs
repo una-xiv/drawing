@@ -1,11 +1,4 @@
-﻿/* Una.Drawing                                                 ____ ___
- *   A declarative drawing library for FFXIV.                 |    |   \____ _____        ____                _
- *                                                            |    |   /    \\__  \      |    \ ___ ___ _ _ _|_|___ ___
- * By Una. Licensed under AGPL-3.                             |    |  |   |  \/ __ \_    |  |  |  _| .'| | | | |   | . |
- * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
- * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
-
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
@@ -95,6 +88,12 @@ public partial class Node
     /// </remarks>
     public uint ScrollHeight { get; private set; }
 
+    /// <summary>
+    /// A deterministic hash code based on the node's value and layout.
+    /// Used for caching purposes by the renderer.
+    /// </summary>
+    internal int RenderHash { get; private set; }
+    
     private uint _colorThemeVersion;
 
     private          IDalamudTextureWrap? _texture;
@@ -201,9 +200,13 @@ public partial class Node
         NodeSnapshot snapshot     = CreateSnapshot();
         bool         hasDrawables = ComputedStyle.HasDrawables() || NodeValue != null;
 
+        RenderHash = snapshot.GetHashCode();
+        
         if (hasDrawables && ((_texture is null || !snapshot.Equals(ref _snapshot)) && Width > 0 && Height > 0)) {
+            Vector2 padding = new(64, 64); // Optimization point: Only add padding when needed.
+            
             _texture?.Dispose();
-            _texture  = Renderer.CreateTexture(this);
+            _texture  = Renderer.CreateTexture(this, padding);
             _snapshot = snapshot;
             _consecutiveRedraws++;
         } else {
@@ -469,5 +472,12 @@ internal struct NodeSnapshot
         return MemoryMarshal
               .AsBytes(new ReadOnlySpan<NodeSnapshot>(in this))
               .SequenceEqual(MemoryMarshal.AsBytes(new ReadOnlySpan<NodeSnapshot>(in other)));
+    }
+    
+    public override int GetHashCode()
+    {
+        HashCode hash = new();
+        hash.AddBytes(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in this), 1)));
+        return hash.ToHashCode();
     }
 }

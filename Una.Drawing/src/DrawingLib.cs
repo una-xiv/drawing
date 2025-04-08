@@ -1,15 +1,10 @@
-﻿/* Una.Drawing                                                 ____ ___
- *   A declarative drawing library for FFXIV.                 |    |   \____ _____        ____                _
- *                                                            |    |   /    \\__  \      |    \ ___ ___ _ _ _|_|___ ___
- * By Una. Licensed under AGPL-3.                             |    |  |   |  \/ __ \_    |  |  |  _| .'| | | | |   | . |
- * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
- * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
-
-using Dalamud.Interface;
+﻿using Dalamud.Interface;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using Una.Drawing.Font;
+using Una.Drawing.NodeParser;
+using Una.Drawing.Templating.StyleParser;
 using Una.Drawing.Texture;
 
 namespace Una.Drawing;
@@ -94,6 +89,8 @@ public class DrawingLib
     /// </summary>
     public static void Dispose()
     {
+        DebugLogger.Log($"Shutting down {nameof(DrawingLib)}...");
+        
         DalamudServices.PluginInterface.UiBuilder.Draw -= OnDraw;
 
         Renderer.Dispose();
@@ -103,7 +100,13 @@ public class DrawingLib
         MouseCursor.Dispose();
         StylesheetRegistry.Dispose();
         ElementRegistry.Dispose();
+        StyleAttributeParser.Dispose();
+        NodeAttributeParser.Dispose();
         QuerySelectorParser.Dispose();
+        
+        // Force the GC to run to clean up any remaining resources.
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
     }
 
     private static void OnDraw()

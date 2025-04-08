@@ -1,11 +1,4 @@
-﻿/* Una.Drawing                                                 ____ ___
- *   A declarative drawing library for FFXIV.                 |    |   \____ _____        ____                _
- *                                                            |    |   /    \\__  \      |    \ ___ ___ _ _ _|_|___ ___
- * By Una. Licensed under AGPL-3.                             |    |  |   |  \/ __ \_    |  |  |  _| .'| | | | |   | . |
- * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
- * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
-
-using Lumina.Misc;
+﻿using Lumina.Misc;
 
 namespace Una.Drawing;
 
@@ -151,5 +144,13 @@ internal struct PaintStyleSnapshot
             UldPartId                     = style.UldPartId,
             UldStyle                      = style.UldStyle,
         };
+    }
+    
+    public override int GetHashCode()
+    {
+        HashCode hash = new();
+        hash.AddBytes(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in this), 1)));
+
+        return hash.ToHashCode();
     }
 }

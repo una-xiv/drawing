@@ -1,9 +1,6 @@
 ﻿using ImGuiNET;
 using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using Una.Drawing;
 
 namespace ExamplePlugin.Tests;
@@ -50,22 +47,12 @@ public abstract class DrawingTest
     /// <returns></returns>
     protected static Node CreateNodeFromFile(string templateFile)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var resource = assembly.GetManifestResourceNames()
-                               .FirstOrDefault(r => r.EndsWith(templateFile, StringComparison.OrdinalIgnoreCase));
+        UdtDocument doc = UdtLoader.LoadFromAssembly(Assembly.GetExecutingAssembly(), templateFile);
 
-        if (resource == null) {
-            throw new FileNotFoundException($"Template file '{templateFile}' not found in assembly resources.");
+        if (null == doc.RootNode) {
+            throw new Exception($"The UDT file \"{templateFile}\" has no root node.");
         }
 
-        using var stream = assembly.GetManifestResourceStream(resource);
-        if (stream == null) {
-            throw new FileNotFoundException($"Could not open template file '{templateFile}'.");
-        }
-
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        string    code   = reader.ReadToEnd();
-
-        return Node.FromCode(code);
+        return doc.RootNode;
     }
 }

@@ -34,6 +34,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="templates\**\*.tpl"/>
+        <EmbeddedResource Include="resources\**\*.*"/>
     </ItemGroup>
     
     <ItemGroup>

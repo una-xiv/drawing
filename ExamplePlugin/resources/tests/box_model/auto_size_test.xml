@@ -1,0 +1,19 @@
+﻿<udt>
+    <import from="tests.styles.xml"/>
+    
+    <![CDATA[
+    .header-text {
+        font-size: 14;
+        color: 0xfff0faff;
+        outline-size: 1;
+        outline-color: 0xc0000000;
+    }
+    ]]>
+    
+    <window theme="dark">
+        <n slot="header" class="header-text" value="This is the header!"/>
+        <n slot="footer" class="footer-text" value="This is the footer!"/>
+        
+        <n class="box body-box" value="This is a body box."/>
+    </window>
+</udt>

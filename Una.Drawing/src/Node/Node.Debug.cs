@@ -1,12 +1,3 @@
-/* Una.Drawing                                                 ____ ___
- *   A declarative drawing library for FFXIV.                 |    |   \____ _____        ____                _
- *                                                            |    |   /    \\__  \      |    \ ___ ___ _ _ _|_|___ ___
- * By Una. Licensed under AGPL-3.                             |    |  |   |  \/ __ \_    |  |  |  _| .'| | | | |   | . |
- * https://github.com/una-xiv/drawing                         |______/|___|  (____  / [] |____/|_| |__,|_____|_|_|_|_  |
- * ----------------------------------------------------------------------- \/ --- \/ ----------------------------- |__*/
-
-using Dalamud.Interface.Utility;
-using System.Diagnostics;
 using ImGuiNET;
 
 namespace Una.Drawing;
@@ -21,16 +12,11 @@ public partial class Node
     public override string ToString()
     {
         string type        = GetType().Name;
-        string id          = string.IsNullOrWhiteSpace(Id) ? "" : $" Id=\"{Id}\"";
-        string classes     = ClassList.Count == 0 ? "" : $" Class=\".{string.Join(".", ClassList)}\"";
-        string tags        = TagsList.Count == 0 ? "" : $" Tags=\":{string.Join(":", TagsList)}\"";
-        string disabled    = IsDisabled ? " Disabled" : "";
-        string inheritTags = InheritTags ? " InheritTags" : "";
-        string size = Bounds.PaddingSize.IsZero
-            ? ""
-            : $" Size=\"{Bounds.PaddingSize.Width} x {Bounds.PaddingSize.Width}\"";
+        string id          = string.IsNullOrWhiteSpace(Id) ? "" : $"#{Id}";
+        string classes     = ClassList.Count == 0 ? "" : $".{string.Join(".", ClassList)}";
+        string tags        = TagsList.Count == 0 ? "" : $":{string.Join(":", TagsList)}";
 
-        return $"<{type}{id}{classes}{tags}{disabled}{inheritTags}{size}/>";
+        return $"{type} {id}{classes}{tags}".Trim();
     }
 
     /// <summary>
