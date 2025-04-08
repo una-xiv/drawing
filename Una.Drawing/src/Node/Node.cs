@@ -340,7 +340,7 @@ public partial class Node : IDisposable
         DisposeEventHandlersOf(OnTagRemoved);
         DisposeEventHandlersOf(OnSortIndexChanged);
         DisposeEventHandlersOf(OnPropertyChanged);
-        DisposeEventHandlersOf(OnBeforeReflow);
+        DisposeEventHandlersOf(BeforeReflow);
         DisposeEventHandlersOf(OnReflow);
 
         OnClick             = null;
