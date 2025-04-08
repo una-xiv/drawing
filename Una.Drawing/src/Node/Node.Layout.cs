@@ -26,6 +26,20 @@ public partial class Node
     private bool     _mustReflow = true;
     private Vector2? _lastPosition;
 
+    /// <summary>
+    /// Computes the bounding size of this node and all its descendants. This method
+    /// is invoked automatically when the node is rendered when a reflow is required.
+    /// You can call this method if you need to know the size of the node before it
+    /// is being drawn.
+    /// </summary>
+    /// <remarks>
+    /// Only the bounding sizes are computed. The bounding rects are not.
+    /// </remarks>
+    public void ComputeBoundingSize()
+    {
+        Layout.ComputeBounds(this);
+    }
+    
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private void Reflow(Vector2? position = null)
     {
