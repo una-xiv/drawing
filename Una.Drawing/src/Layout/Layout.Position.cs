@@ -24,7 +24,19 @@ internal static partial class Layout
 
         int firstIndex = order is FlowOrder.Normal ? 0 : children.Count - 1;
         int lastIndex  = order is FlowOrder.Normal ? children.Count - 1 : 0;
-
+        int step       = (order is FlowOrder.Normal ? 1 : -1);
+        
+        while (!children[firstIndex].ComputedStyle.IsVisible && firstIndex < children.Count) {
+            firstIndex += step;
+        }
+        
+        while (!children[lastIndex].ComputedStyle.IsVisible && lastIndex >= 0) {
+            lastIndex -= step;
+        }
+        
+        // If all children are invisible, return.
+        if (firstIndex > lastIndex) return;
+        
         (float originX, float originY) = GetNodeOrigin(anchor, root, children);
 
         int   gap = root.ComputedStyle.Gap;
@@ -58,8 +70,6 @@ internal static partial class Layout
             }
         }
 
-        int step = (order is FlowOrder.Normal ? 1 : -1);
-
         for (var i = firstIndex; i <= lastIndex; i += step) {
             Node node = children[i];
 
@@ -88,6 +98,11 @@ internal static partial class Layout
             }
 
             Node nextNode = children[i + step];
+            while (!nextNode.ComputedStyle.IsVisible || i == lastIndex) {
+                i += step;
+                if (i == lastIndex) break;
+                nextNode = children[i + step];
+            }
 
             switch (flow) {
                 case Flow.Vertical:
@@ -166,12 +181,13 @@ internal static partial class Layout
 
     private static float GetChildrenWidth(Node root, List<Node> children)
     {
-        float width = children
-                     .Where(node => node is { IsDisposed: false, ComputedStyle.IsVisible: true })
-                     .Sum(node => node.OuterWidth);
+        var visibleChildren = children.Where(node => node is { IsDisposed: false, ComputedStyle.IsVisible: true });
+        var enumerable      = visibleChildren as Node[] ?? visibleChildren.ToArray();
+
+        float width = enumerable.Sum(node => node.OuterWidth);
 
         if (root.ComputedStyle.Flow == Flow.Horizontal) {
-            width += root.ComputedStyle.Gap > 0 ? (children.Count - 1) * root.ComputedStyle.Gap : 0;
+            width += root.ComputedStyle.Gap > 0 ? (enumerable.Length - 1) * root.ComputedStyle.Gap : 0;
         }
 
         return width;
@@ -179,12 +195,13 @@ internal static partial class Layout
 
     private static float GetChildrenHeight(Node root, List<Node> children)
     {
-        float height = children
-                      .Where(node => node is { IsDisposed: false, ComputedStyle.IsVisible: true })
-                      .Sum(node => node.OuterHeight);
+        var visibleChildren = children.Where(node => node is { IsDisposed: false, ComputedStyle.IsVisible: true });
+        var enumerable      = visibleChildren as Node[] ?? visibleChildren.ToArray();
+        
+        float height = enumerable.Sum(node => node.OuterHeight);
 
         if (root.ComputedStyle.Flow == Flow.Vertical) {
-            height += root.ComputedStyle.Gap > 0 ? (children.Count - 1) * root.ComputedStyle.Gap : 0;
+            height += root.ComputedStyle.Gap > 0 ? (enumerable.Length - 1) * root.ComputedStyle.Gap : 0;
         }
 
         return height;
