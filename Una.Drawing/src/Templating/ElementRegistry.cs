@@ -17,9 +17,12 @@ public static class ElementRegistry
     /// also be matched to "MyCustomElement".
     /// </para>
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">A type that extends from <see cref="Node"/>.</typeparam>
     public static void Register<T>() where T : Node
     {
+        // Add a shortcut for the default Node type.
+        if (typeof(T).Name == "Node") ElementTypes["n"] = typeof(Node);
+        
         ElementTypes[typeof(T).Name.ToLowerInvariant()] = typeof(T);
     }
     

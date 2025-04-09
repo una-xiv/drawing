@@ -29,12 +29,10 @@ public static class FontRegistry
     /// </example>
     /// <param name="id"></param>
     /// <param name="fontFamily"></param>
-    /// <param name="weight"></param>
     /// <param name="sizeOffset"></param>
     public static void SetNativeFontFamily(
         uint              id,
         string            fontFamily,
-        SKFontStyleWeight weight     = SKFontStyleWeight.Normal, // TODO: Remove me.
         float             sizeOffset = 0
     )
     {

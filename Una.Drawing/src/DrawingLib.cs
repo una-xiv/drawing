@@ -79,7 +79,7 @@ public class DrawingLib
             0
         );
 
-        FontRegistry.SetNativeFontFamily(3, "Arial", SKFontStyleWeight.ExtraBold);
+        FontRegistry.SetNativeFontFamily(3, "Arial");
 
         if (GameGlyphProvider.GlyphsFile.Exists) {
             FontRegistry.SetNativeFontFamily(4, GameGlyphProvider.GlyphsFile);

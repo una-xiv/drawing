@@ -8,17 +8,17 @@ internal sealed partial class UdtParser
     private void ParseImportNode(XmlElement node)
     {
         if (!node.HasAttribute("from")) {
-            throw new Exception($"Import node \"{node.Name}\" in \"{_filename}\" has no \"from\" attribute.");
+            throw new Exception($"Import node \"{node.Name}\" in \"{Filename}\" has no \"from\" attribute.");
         }
 
         string resourceName = node.GetAttribute("from");
         if (resourceName == "") {
-            throw new Exception($"Import node \"{node.Name}\" in \"{_filename}\" has an empty \"from\" attribute.");
+            throw new Exception($"Import node \"{node.Name}\" in \"{Filename}\" has an empty \"from\" attribute.");
         }
 
         if (_assembly == null) {
             throw new Exception(
-                $"UDT \"{_filename}\" has been loaded without an assembly. Cannot import \"{resourceName}\".");
+                $"UDT \"{Filename}\" has been loaded without an assembly. Cannot import \"{resourceName}\".");
         }
 
         UdtDocument doc = LoadFromAssembly(_assembly, resourceName);
@@ -37,7 +37,7 @@ internal sealed partial class UdtParser
             return UdtLoader.LoadFromAssembly(assembly, resourceName);
         } catch (Exception err) {
             throw new Exception(
-                $"Failed to load UDT \"{resourceName}\" from \"{assembly.GetName().Name}\", imported from \"{_filename}\".\n{err.Message}"
+                $"Failed to load UDT \"{resourceName}\" from \"{assembly.GetName().Name}\", imported from \"{Filename}\".\n{err.Message}"
             );
         }
     }
@@ -46,8 +46,8 @@ internal sealed partial class UdtParser
     {
         if (null == doc.Stylesheet) return;
 
-        _stylesheet ??= new([]);
-        _stylesheet.ImportFrom(doc.Stylesheet);
+        Stylesheet ??= new([]);
+        Stylesheet.ImportFrom(doc.Stylesheet);
     }
 
     private void MergeTemplatesFrom(UdtDocument doc)
@@ -55,12 +55,12 @@ internal sealed partial class UdtParser
         if (doc.Templates.Count == 0) return;
 
         foreach (var template in doc.Templates) {
-            if (_templates.ContainsKey(template.Key)) {
+            if (Templates.ContainsKey(template.Key)) {
                 throw new Exception(
-                    $"Template \"{template.Key}\" already exists or has already been imported in \"{_filename}\".");
+                    $"Template \"{template.Key}\" already exists or has already been imported in \"{Filename}\".");
             }
 
-            _templates.Add(template.Key, template.Value);
+            Templates.Add(template.Key, template.Value);
         }
     }
 }

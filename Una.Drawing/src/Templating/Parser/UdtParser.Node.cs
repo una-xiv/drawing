@@ -9,11 +9,11 @@ namespace Una.Drawing;
 
 internal sealed partial class UdtParser
 {
-    private Node ParseNode(XmlElement element)
+    internal Node ParseNode(XmlElement element)
     {
         string name = NormalizeElementName(element.Name);
 
-        if (_templates.TryGetValue(name, out var template)) {
+        if (Templates.TryGetValue(name, out var template)) {
             return ConstructNodeFromTemplate(element, template);
         }
 
@@ -49,10 +49,10 @@ internal sealed partial class UdtParser
         return node;
     }
 
-    private Node ConstructNode(string name, Dictionary<string, string> attributes, bool addStylesheet = false)
+    internal Node ConstructNode(string name, Dictionary<string, string> attributes, bool addStylesheet = false)
     {
         if (name is "template" or "import") {
-            throw new Exception($"Failed to parse UDT \"${_filename}\": Element \"{name}\" is prohibited here.");
+            throw new Exception($"Failed to parse UDT \"${Filename}\": Element \"{name}\" is prohibited here.");
         }
 
         Type  nodeType = GetNodeType(name);
@@ -60,11 +60,11 @@ internal sealed partial class UdtParser
 
         if (node == null) {
             throw new Exception(
-                $"Failed to create an instance of \"{nodeType.Name}\", referenced by element \"{name}\" in UDT \"{_filename}\".");
+                $"Failed to create an instance of \"{nodeType.Name}\", referenced by element \"{name}\" in UDT \"{Filename}\".");
         }
 
         if (addStylesheet) {
-            node.Stylesheet = _stylesheet;
+            node.Stylesheet = Stylesheet;
         }
 
         foreach (var attr in attributes) {
@@ -108,7 +108,7 @@ internal sealed partial class UdtParser
         try {
             return ElementRegistry.GetElementType(name);
         } catch (Exception ex) {
-            throw new Exception($"Failed to construct element \"{name}\" in UDT \"{_filename}\". {ex.Message}", ex);
+            throw new Exception($"Failed to construct element \"{name}\" in UDT \"{Filename}\". {ex.Message}", ex);
         }
     }
 

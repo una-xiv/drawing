@@ -92,8 +92,9 @@
     <template name="window">
         <argument name="width" default="640"/>
         <argument name="height" default="480"/>
+        <argument name="theme" default="light"/>
 
-        <n class="window light" style="size: ${width} ${height};">
+        <n class="window ${theme}" style="size: ${width} ${height};">
             <n class="header">
                 <n class="uld tl"/>
                 <n class="uld tc">

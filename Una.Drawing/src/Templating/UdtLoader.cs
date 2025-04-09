@@ -26,33 +26,35 @@ public static class UdtLoader
             throw new FileNotFoundException($"Resource '{resourceName}' not found in assembly resources.");
         }
 
-        if (!CircularReferences.Add(resource)) {
-            StringBuilder sb = new();
-            sb.AppendLine($"Circular reference detected while loading UDT \"{resourceName}\":");
-
-            sb.AppendLine($"  ---> \"{CircularReferences.ElementAt(0)}\":");
-            
-            for (var i = 1; i < CircularReferences.Count; i++) {
-                sb.AppendLine($"  |    \"{CircularReferences.ElementAt(i)}\"");
-            }
-            
-            sb.AppendLine($"  ---> \"{resource}\"");
-            
-            throw new InvalidOperationException(sb.ToString());
-        }
-
         using var stream = assembly.GetManifestResourceStream(resource);
         if (stream == null) {
             throw new FileNotFoundException($"Failed to load resource stream for '{resourceName}'.");
         }
 
-        using var   reader   = new StreamReader(stream);
-        string      code     = reader.ReadToEnd();
-        UdtDocument document = Parse(resourceName, code, assembly, throwOnFailure);
-        
-        CircularReferences.Remove(resource);
-        
-        return document;
+        if (!CircularReferences.Add(resource)) {
+            StringBuilder sb = new();
+            sb.AppendLine($"Circular reference detected while loading UDT \"{resourceName}\":");
+
+            sb.AppendLine($"  ---> \"{CircularReferences.ElementAt(0)}\":");
+
+            for (var i = 1; i < CircularReferences.Count; i++) {
+                sb.AppendLine($"  |    \"{CircularReferences.ElementAt(i)}\"");
+            }
+
+            sb.AppendLine($"  ---> \"{resource}\"");
+
+            throw new InvalidOperationException(sb.ToString());
+        }
+
+        try {
+            using var   reader   = new StreamReader(stream);
+            string      code     = reader.ReadToEnd();
+            UdtDocument document = Parse(resourceName, code, assembly, throwOnFailure);
+
+            return document;
+        } finally {
+            CircularReferences.Remove(resource);
+        }
     }
 
     /// <summary>
@@ -75,8 +77,8 @@ public static class UdtLoader
         } catch (Exception e) {
             DebugLogger.Error(e.Message);
             DebugLogger.Error(e.StackTrace ?? " - No stack trace available - ");
-            
-            return new(null, null, []);
+
+            return new(filename, null, null, []);
         }
     }
 }

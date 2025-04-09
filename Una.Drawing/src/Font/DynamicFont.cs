@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using System.Text;
-
-namespace Una.Drawing.Font;
+﻿namespace Una.Drawing.Font;
 
 internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphTypeface, float sizeOffset) : IFont
 {
@@ -61,7 +58,6 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
     public float GetLineHeight(int fontSize)
     {
         SKFontMetrics metrics = GetTextFont(fontSize).Metrics;
-
         return metrics.Descent - metrics.Ascent + metrics.Leading;
     }
 
@@ -73,16 +69,5 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
 
         TextFontCache.Clear();
         GlyphFontCache.Clear();
-    }
-
-    private float GetMiddleOfLineHeight(int fontSize, List<Chunk> chunks, Chunk.Kind kind)
-    {
-        StringBuilder sb = new();
-        foreach (var chunk in chunks.Where(c => c.Type == kind)) sb.Append(chunk.Text);
-
-        SKFont font = kind == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
-        font.MeasureText(sb.ToString(), out SKRect textBounds);
-
-        return textBounds.Height;
     }
 }

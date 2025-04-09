@@ -57,13 +57,13 @@ internal sealed partial class UdtParser
             case 0:
                 return;
             case > 1:
-                throw new Exception($"Found multiple root nodes in \"{_filename}\". Only one root node is allowed.");
+                throw new Exception($"Found multiple root nodes in \"{Filename}\". Only one root node is allowed.");
             default:
-                // Parse the root node.
                 _rootNode = ParseNode(rootNodeList.First());
                 if (_rootNode == null) {
-                    throw new Exception($"Failed to construct root node in \"${_filename}\".");
+                    throw new Exception($"Failed to construct root node in \"${Filename}\".");
                 }
+                _rootNode.Stylesheet = Stylesheet;
                 break;
         }
     }
@@ -75,11 +75,11 @@ internal sealed partial class UdtParser
             
         Stylesheet sheet = StyleParser.StylesheetFromCode(cdata.Data.Trim());
 
-        if (_stylesheet == null) {
-            _stylesheet = sheet;
+        if (Stylesheet == null) {
+            Stylesheet = sheet;
             return;
         }
 
-        _stylesheet.ImportFrom(sheet);
+        Stylesheet.ImportFrom(sheet);
     }
 }

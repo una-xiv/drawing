@@ -2,7 +2,7 @@
 
 namespace Una.Drawing.Font;
 
-internal class FontFactory
+internal static class FontFactory
 {
     internal static IFont CreateFromFontFamily(
         string fontFamily,
