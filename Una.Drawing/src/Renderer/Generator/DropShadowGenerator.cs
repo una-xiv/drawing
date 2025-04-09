@@ -25,7 +25,7 @@ internal class DropShadowGenerator : IGenerator
         Size size = node.Bounds.PaddingSize;
         int  rc   = node.ComputedStyle.BorderRadius;
 
-        canvas.DrawRect(origin.X + rc, origin.Y + rc, size.Width - rc, size.Height - rc, paint);
+        canvas.DrawRect(origin.X + rc, origin.Y + rc, size.Width - (rc * 2), size.Height - (rc * 2), paint);
         paint.ImageFilter?.Dispose();
 
         return true;
