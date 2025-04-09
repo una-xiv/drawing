@@ -7,9 +7,7 @@ internal partial class NodeDebugger
 {
     private static void RenderPropertiesTab()
     {
-        if (SelectedNode == null) return;
-
-        bool isVisible  = SelectedNode.ComputedStyle.IsVisible;
+        bool isVisible  = SelectedNode!.ComputedStyle.IsVisible;
         bool isDisabled = SelectedNode.IsDisabled;
 
         ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(4, 4));

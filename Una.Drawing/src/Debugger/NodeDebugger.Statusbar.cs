@@ -17,17 +17,16 @@ internal partial class NodeDebugger
         ImGui.TextUnformatted(GetRootNodeTimings());
         ImGui.SameLine();
         
-        
-        
         if (RootNode != null) {
             ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(8, 2));
             ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4);
-
-            string label = "Force reflow";
-            float width = ImGui.CalcTextSize(label).X + 16;
-            ImGui.SetNextItemWidth(width);
             ImGui.PushStyleColor(ImGuiCol.Button, 0xFF3A393A);
             ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xFF3F3E3F);
+            
+            string label = "Force reflow";
+            float width = ImGui.CalcTextSize(label).X + 16;
+
+            ImGui.SetNextItemWidth(width);
             ImGui.SetCursorPosX(ImGui.GetWindowWidth() - width - 4);
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 4);
             

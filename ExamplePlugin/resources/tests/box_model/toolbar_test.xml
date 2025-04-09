@@ -31,9 +31,9 @@
             &.center { anchor: middle-center; }
             &.right { anchor: middle-right; }
             
-            &.left > .cell { anchor: middle-left; }
-            &.center > .cell { anchor: middle-center; }
-            &.right > .cell { anchor: middle-right; }
+            &.left > .cell { anchor: bottom-left; }
+            &.center > .cell { anchor: bottom-center; }
+            &.right > .cell { anchor: bottom-right; }
         }
     }
     ]]>

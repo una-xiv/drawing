@@ -14,8 +14,6 @@ internal static partial class NodeDebugger
 
     private static void RenderLayoutTab()
     {
-        if (null == SelectedNode) return;
-
         RenderBoundingBox();
 
         ImGui.Dummy(new(0, 8));
@@ -30,7 +28,7 @@ internal static partial class NodeDebugger
         ImGui.TableHeadersRow();
 
         foreach (var property in typeof(ComputedStyle).GetFields(BindingFlags.Instance | BindingFlags.Public)) {
-            string? value = FormatObjectValue(property.GetValue(SelectedNode.ComputedStyle));
+            string? value = FormatObjectValue(property.GetValue(SelectedNode!.ComputedStyle));
             if (value == null) continue;
             ImGui.TableNextColumn();
             ImGui.TextUnformatted(property.Name);
@@ -39,7 +37,7 @@ internal static partial class NodeDebugger
         }
 
         foreach (var property in typeof(ComputedStyle).GetProperties(BindingFlags.Instance | BindingFlags.Public)) {
-            string? value = FormatObjectValue(property.GetValue(SelectedNode.ComputedStyle));
+            string? value = FormatObjectValue(property.GetValue(SelectedNode!.ComputedStyle));
             if (value == null) continue;
             ImGui.TableNextColumn();
             ImGui.TextUnformatted(property.Name);

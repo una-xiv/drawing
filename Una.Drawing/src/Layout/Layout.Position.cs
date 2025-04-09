@@ -60,7 +60,11 @@ internal static partial class Layout
         if (anchor.IsTop) {
             y = originY;
         } else if (anchor.IsBottom) {
-            y = originY - GetChildrenHeight(root, children);
+            if (flow == Flow.Vertical) {
+                y = originY - GetChildrenHeight(root, children);
+            } else {
+                y = originY - children[firstIndex].OuterHeight;
+            }
         } else if (anchor.IsMiddle) {
             middle = GetMiddle(root);
             if (flow == Flow.Horizontal) {
