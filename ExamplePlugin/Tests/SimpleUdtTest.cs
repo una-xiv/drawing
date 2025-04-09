@@ -183,10 +183,13 @@ internal abstract class SimpleUdtTest : DrawingTest
 
         bool isVisible = _selectedNode!.ComputedStyle.IsVisible;
         bool isDisabled = _selectedNode.IsDisabled;
+        bool isDebugWnd = _selectedNode.ShowDebugWindow;
         
         if (ImGui.Checkbox("Visible", ref isVisible)) _selectedNode.Style.IsVisible = isVisible;
         ImGui.SameLine();
         if (ImGui.Checkbox("Disabled", ref isDisabled)) _selectedNode.IsDisabled = isDisabled;
+        ImGui.SameLine();
+        if (ImGui.Checkbox("Open Debug Window", ref isDebugWnd)) _selectedNode.ShowDebugWindow = isDebugWnd;
         
         ImGui.Separator();
         

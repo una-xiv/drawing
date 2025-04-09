@@ -1,4 +1,6 @@
-﻿namespace Una.Drawing;
+﻿using System.Diagnostics;
+
+namespace Una.Drawing;
 
 public partial class Node
 {
@@ -20,11 +22,16 @@ public partial class Node
     public ReflowDelegate? BeforeReflow;
 
     public delegate bool ReflowDelegate(Node node);
-    
+
     internal Dictionary<Anchor.AnchorPoint, List<Node>> AnchorToChildNodes { get; } = [];
 
-    private bool     _mustReflow = true;
-    private Vector2? _lastPosition;
+    internal double ReflowTime { get; private set; } = 0f;
+    internal double LayoutTime { get; private set; } = 0f;
+    internal double DrawTime   { get; private set; } = 0f;
+
+    private bool      _mustReflow = true;
+    private Vector2?  _lastPosition;
+    private Stopwatch _metricStopwatch = new();
 
     /// <summary>
     /// Computes the bounding size of this node and all its descendants. This method
@@ -39,18 +46,26 @@ public partial class Node
     {
         Layout.ComputeBounds(this);
     }
-    
+
     public void Reflow(Vector2? position = null)
     {
         if (IsDisposed || !ComputedStyle.IsVisible) return;
         if (!_mustReflow && _lastPosition.Equals(position)) return;
 
-        _lastPosition = position ?? Vector2.Zero;
-        _mustReflow   = false;
-        
+        _mustReflow = false;
+
+        if (!UseThreadedStyleComputation) InheritTagsFromParent();
+
+        _metricStopwatch.Restart();
         Layout.ComputeBounds(this);
+        ReflowTime = _metricStopwatch.Elapsed.TotalMilliseconds;
+        
         InvokeReflowHook();
+
+        _lastPosition = position;
+        _metricStopwatch.Restart();
         Layout.ComputeLayout(this, position ?? new Vector2());
+        LayoutTime = _metricStopwatch.Elapsed.TotalMilliseconds;
     }
 
     private bool InvokeReflowHook()
@@ -70,13 +85,13 @@ public partial class Node
 
         return (BeforeReflow?.Invoke(this) ?? false) || changed;
     }
-    
+
     private void ReassignAnchorNodes()
     {
         lock (AnchorToChildNodes) {
             lock (_childNodes) {
                 AnchorToChildNodes.Clear();
-                
+
                 foreach (Node child in _childNodes) {
                     if (child.ComputedStyle.Anchor == Anchor.AnchorPoint.None) continue;
 

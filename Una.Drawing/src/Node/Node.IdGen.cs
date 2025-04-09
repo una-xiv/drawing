@@ -12,7 +12,7 @@ public partial class Node
     /// <summary>
     /// Returns the internal ID of this node.
     /// </summary>
-    private string InternalId
+    internal string InternalId
     {
         get
         {

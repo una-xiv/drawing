@@ -22,16 +22,16 @@ internal class TextGenerator : IGenerator
         var   lineHeight  = Math.Ceiling(font.GetLineHeight(fontSize));
         var   metrics     = font.GetMetrics(node.ComputedStyle.FontSize);
 
-        var y = origin.X + (metrics.CapHeight + node.ComputedStyle.TextOffset.Y + 1) + outlineSize;
-        var x = origin.Y + node.ComputedStyle.TextOffset.X + 1;
+        var y = origin.Y + (metrics.CapHeight + node.ComputedStyle.TextOffset.Y);
+        var x = origin.X + node.ComputedStyle.TextOffset.X + 1;
 
         y = (int)Math.Ceiling(y);
 
         if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
         if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;
         if (node.ComputedStyle.TextAlign.IsRight) x  += -(node.ComputedStyle.Padding.Right + outlineSize);
-        if (node.ComputedStyle.TextAlign.IsMiddle) y += (node.Height - size.Height) / 2 + outlineSize;
-        if (node.ComputedStyle.TextAlign.IsBottom) y =  origin.Y + (node.Height - size.Height - outlineSize);
+        if (node.ComputedStyle.TextAlign.IsMiddle) y += ((node.Height - size.Height) / 2f) + outlineSize;
+        if (node.ComputedStyle.TextAlign.IsBottom) y +=  (node.Height - size.Height) - outlineSize;
 
         foreach (string line in node.NodeValueMeasurement!.Value.Lines) {
             PrintLine(canvas, font, node, line, x, y);

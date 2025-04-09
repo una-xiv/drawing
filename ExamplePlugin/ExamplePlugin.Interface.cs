@@ -32,7 +32,7 @@ public sealed partial class ExamplePlugin
         } catch (Exception ex) {
             ImGui.TextWrapped(ex.Message);
         }
-        
+
         ImGui.EndChild();
         ImGui.PopStyleVar(2);
         ImGui.PopStyleColor(1);
@@ -41,12 +41,13 @@ public sealed partial class ExamplePlugin
     private void RenderTestRenderer()
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
-        ImGui.BeginChild("TestRenderer", new Vector2(ImGui.GetContentRegionMax().X - 500, 0), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
+        ImGui.BeginChild("TestRenderer", new Vector2(ImGui.GetContentRegionMax().X - 500, 0), false,
+            ImGuiWindowFlags.AlwaysUseWindowPadding);
         RunActiveTest();
         ImGui.EndChild();
         ImGui.PopStyleVar(1);
     }
-    
+
     #region Test Tabs
 
     private void RenderTestTabs()
@@ -106,7 +107,7 @@ public sealed partial class ExamplePlugin
     private readonly Dictionary<string, string> _actionButtons = new() {
         { "Console", "/xllog" }, { "Stats", "/xlstats" }, { "Data", "/xldata" },
     };
-    
+
     private void RenderToolbar()
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
@@ -132,7 +133,7 @@ public sealed partial class ExamplePlugin
         ImGui.PopStyleVar(2);
     }
 
-    private static void RenderScaleFactorInput()
+    private void RenderScaleFactorInput()
     {
         float scale = Node.ScaleFactor;
         ImGui.AlignTextToFramePadding();
@@ -140,7 +141,9 @@ public sealed partial class ExamplePlugin
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100);
         if (ImGui.DragFloat("##uiscale", ref scale, 0.01f, 0.1f, 4.0f)) {
-            Node.ScaleFactor = scale;
+            Node.ScaleFactor           = scale;
+            _configuration.ScaleFactor = scale;
+            _plugin.SavePluginConfig(_configuration);
         }
     }
 

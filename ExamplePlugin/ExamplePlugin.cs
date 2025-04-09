@@ -41,6 +41,7 @@ public sealed partial class ExamplePlugin : IDalamudPlugin
 
         Node.DrawDebugInfo               = false;
         Node.UseThreadedStyleComputation = true;
+        Node.ScaleFactor                 = _configuration.ScaleFactor;
 
         InitializeTests();
         InitializeMeasurements();

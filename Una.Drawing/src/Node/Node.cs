@@ -375,7 +375,7 @@ public partial class Node : IDisposable
 
         _texture?.Dispose();
         _texture  = null;
-        _snapshot = new();
+        Snapshot = new();
 
         ParentNode?.ChildNodes.Remove(this);
         ParentNode = null;
@@ -480,7 +480,7 @@ public partial class Node : IDisposable
         _textCachedWordWrap  = null;
         _textCachedNodeValue = null;
         _mustReflow          = true;
-        _snapshot            = new();
+        Snapshot            = new();
     }
 
     private void HandleChildListChanged(object? _, NotifyCollectionChangedEventArgs e)

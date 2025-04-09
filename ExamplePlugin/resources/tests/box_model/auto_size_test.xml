@@ -9,6 +9,11 @@
         outline-size: 1;
         outline-color: 0xc0000000;
     }
+    
+    .body-box {
+        margin: 16 10;
+        padding: 30;
+    }
     ]]>
     
     <window theme="dark">

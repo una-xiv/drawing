@@ -1,10 +1,16 @@
 using ImGuiNET;
+using Una.Drawing.Debugger;
 
 namespace Una.Drawing;
 
 public partial class Node
 {
     public static bool DrawDebugInfo { get; set; }
+    
+    /// <summary>
+    /// Shows the debug window for this node.
+    /// </summary>
+    public bool ShowDebugWindow { get; set; }
 
     /// <summary>
     /// Returns a string representation of this node.
@@ -19,6 +25,8 @@ public partial class Node
         return $"{type} {id}{classes}{tags}".Trim();
     }
 
+    private NodeDebugger? _debugWindow;
+    
     /// <summary>
     /// Returns a string representation of the node tree.
     /// </summary>
@@ -59,9 +67,16 @@ public partial class Node
     /// <summary>
     /// Draws debug information for this node.
     /// </summary>
-    // [Conditional("DEBUG")]
     private void DrawDebugBounds(ImDrawListPtr drawList)
     {
+        if (ShowDebugWindow) {
+            if (null == _debugWindow) _debugWindow = new NodeDebugger(this);
+            _debugWindow.Render(drawList);
+        } else if (null != _debugWindow) {
+            _debugWindow.Dispose();
+            _debugWindow = null;
+        }
+        
         if (!DrawDebugInfo) return;
 
         if (Bounds.ContentRect.IsEmpty) return;

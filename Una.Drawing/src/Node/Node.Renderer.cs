@@ -94,10 +94,11 @@ public partial class Node
     /// </summary>
     internal int RenderHash { get; private set; }
 
+    internal NodeSnapshot Snapshot;
+
     private uint _colorThemeVersion;
 
     private          IDalamudTextureWrap? _texture;
-    private          NodeSnapshot         _snapshot;
     private readonly List<ImDrawListPtr>  _drawLists = [];
 
     public void Render(ImDrawListPtr drawList, Vector2 position, bool forceSynchronousStyleComputation = false)
@@ -135,6 +136,7 @@ public partial class Node
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private void Draw(ImDrawListPtr drawList)
     {
+        _metricStopwatch.Restart();
         BeforeDraw?.Invoke(this);
 
         if (Color.ThemeVersion != _colorThemeVersion) {
@@ -143,10 +145,16 @@ public partial class Node
             _texture = null;
         }
 
-        if (Style.IsVisible is false) return;
+        if (Style.IsVisible is false) {
+            DrawTime = _metricStopwatch.Elapsed.TotalMilliseconds;
+            _metricStopwatch.Stop();
+            return;
+        }
 
         if (!IsVisible) {
             _isVisibleSince = 0;
+            DrawTime        = _metricStopwatch.Elapsed.TotalMilliseconds;
+            _metricStopwatch.Stop();
             return;
         }
 
@@ -173,10 +181,12 @@ public partial class Node
             );
         }
 
-        DrawDebugBounds(drawList);
-
         ImDrawListPtr? childDrawList = _drawLists.LastOrDefault();
-        if (null == childDrawList) return;
+        if (null == childDrawList) {
+            DrawTime = _metricStopwatch.Elapsed.TotalMilliseconds;
+            _metricStopwatch.Stop();
+            return;
+        }
 
         OnDraw(childDrawList.Value);
 
@@ -188,8 +198,11 @@ public partial class Node
         EndOverflowContainer();
 
         AfterDraw?.Invoke(this);
-
         PopDrawList();
+
+        DrawTime = _metricStopwatch.Elapsed.TotalMilliseconds;
+        _metricStopwatch.Stop();
+        DrawDebugBounds(drawList);
     }
 
     private bool UpdateTexture()
@@ -204,12 +217,12 @@ public partial class Node
 
         RenderHash = snapshot.GetHashCode();
 
-        if (hasDrawables && ((_texture is null || !snapshot.Equals(ref _snapshot)) && Width > 0 && Height > 0)) {
+        if (hasDrawables && ((_texture is null || !snapshot.Equals(ref Snapshot)) && Width > 0 && Height > 0)) {
             Vector2 padding = new(64, 64); // Optimization point: Only add padding when needed.
 
             _texture?.Dispose();
             _texture  = Renderer.CreateTexture(this, padding);
-            _snapshot = snapshot;
+            Snapshot = snapshot;
             _consecutiveRedraws++;
         } else {
             _consecutiveRedraws = 0;

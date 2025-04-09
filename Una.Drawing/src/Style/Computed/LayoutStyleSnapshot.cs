@@ -3,12 +3,13 @@
 [StructLayout(LayoutKind.Sequential)]
 internal struct LayoutStyleSnapshot
 {
-    internal Anchor.AnchorPoint   Anchor;
     internal bool                 IsVisible;
-    internal float                Width;
-    internal float                Height;
     internal Flow                 Flow;
     internal FlowOrder            FlowOrder;
+    internal Anchor.AnchorPoint   Anchor;
+    internal (AutoSize, AutoSize) AutoSize;
+    internal float                Width;
+    internal float                Height;
     internal int                  Gap;
     internal float                PaddingTop;
     internal float                PaddingRight;
@@ -24,7 +25,7 @@ internal struct LayoutStyleSnapshot
     internal float                LineHeight;
     internal bool                 TextOverflow;
     internal float?               MaxWidth;
-    internal (AutoSize, AutoSize) AutoSize;
+    
 
     internal static LayoutStyleSnapshot Create(ref ComputedStyle style)
     {
