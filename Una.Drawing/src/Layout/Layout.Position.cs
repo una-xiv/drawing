@@ -26,11 +26,11 @@ internal static partial class Layout
         int lastIndex  = order is FlowOrder.Normal ? children.Count - 1 : 0;
         int step       = (order is FlowOrder.Normal ? 1 : -1);
         
-        while (!children[firstIndex].ComputedStyle.IsVisible && firstIndex < children.Count) {
+        while (firstIndex < children.Count && !children[firstIndex].ComputedStyle.IsVisible) {
             firstIndex += step;
         }
         
-        while (!children[lastIndex].ComputedStyle.IsVisible && lastIndex >= 0) {
+        while (lastIndex >= 0 && !children[lastIndex].ComputedStyle.IsVisible) {
             lastIndex -= step;
         }
         
