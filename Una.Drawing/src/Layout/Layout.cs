@@ -50,7 +50,7 @@ internal static partial class Layout
 
     private static Vector2 ComputeAnchorPoint(Node node, Vector2 origin)
     {
-        Size   size   = node.Bounds.PaddingSize;
+        Size   size   = node.Bounds.MarginSize;
         Anchor anchor = node.ComputedStyle.Anchor;
 
         float x = origin.X;
