@@ -15,23 +15,22 @@ internal class TextGenerator : IGenerator
         MeasuredText? measurement = node.NodeValueMeasurement;
         if (null == measurement || measurement.Value.LineCount == 0) return false;
 
-        Size  size        = node.NodeValueMeasurement!.Value.Size;
-        IFont font        = FontRegistry.Fonts[node.ComputedStyle.Font];
-        var   outlineSize = node.ComputedStyle.OutlineSize;
-        int   fontSize    = node.ComputedStyle.FontSize;
-        var   lineHeight  = Math.Ceiling(font.GetLineHeight(fontSize));
-        var   metrics     = font.GetMetrics(node.ComputedStyle.FontSize);
+        Size  size       = node.NodeValueMeasurement!.Value.Size;
+        IFont font       = FontRegistry.Fonts[node.ComputedStyle.Font];
+        int   fontSize   = node.ComputedStyle.FontSize;
+        float lineHeight = font.GetLineHeight(fontSize);
+        var   metrics    = font.GetMetrics(node.ComputedStyle.FontSize);
 
-        var y = origin.Y + (metrics.CapHeight + node.ComputedStyle.TextOffset.Y);
+        var y = origin.Y + (lineHeight + node.ComputedStyle.TextOffset.Y) - metrics.Descent;
         var x = origin.X + node.ComputedStyle.TextOffset.X + 1;
 
         y = (int)Math.Ceiling(y);
 
-        if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
-        if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;
-        if (node.ComputedStyle.TextAlign.IsRight) x  += -(node.ComputedStyle.Padding.Right + outlineSize);
-        if (node.ComputedStyle.TextAlign.IsMiddle) y += ((node.Height - size.Height) / 2f) + outlineSize;
-        if (node.ComputedStyle.TextAlign.IsBottom) y +=  (node.Height - size.Height) - outlineSize;
+        if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top;
+        if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left;
+        if (node.ComputedStyle.TextAlign.IsRight) x  -= node.ComputedStyle.Padding.Right;
+        if (node.ComputedStyle.TextAlign.IsMiddle) y += (node.Height - size.Height) / 2f;
+        if (node.ComputedStyle.TextAlign.IsBottom) y += node.Height - size.Height;
 
         foreach (string line in node.NodeValueMeasurement!.Value.Lines) {
             PrintLine(canvas, font, node, line, x, y);
@@ -47,7 +46,8 @@ internal class TextGenerator : IGenerator
         float        lineWidth   = measurement.Size.Width;
 
         if (node.ComputedStyle.TextAlign.IsCenter) x += (node.Bounds.PaddingSize.Width - lineWidth) / 2;
-        if (node.ComputedStyle.TextAlign.IsRight) x  += (node.Bounds.PaddingSize.Width - lineWidth) + (node.ComputedStyle.OutlineSize * 2);
+        if (node.ComputedStyle.TextAlign.IsRight)
+            x += (node.Bounds.PaddingSize.Width - lineWidth) + (node.ComputedStyle.OutlineSize * 2);
 
         using SKPaint paint = new();
         SKPoint       point = new(x, y);

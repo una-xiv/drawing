@@ -21,10 +21,6 @@ internal partial class DynamicFont
         float totalHeight      = 0;
         var   lineBuffer       = new StringBuilder();
         
-        // Multiplies the given value with spaceWidth. No idea why this is needed,
-        // but without it, the text overflows the maximum width by a tiny bit.
-        const float lineEndOffsetMultiplier = 4.5f;
-
         foreach (var chunk in chunks) {
             SKFont chunkFont = GetFont(chunk, fontSize);
             string[] words =
@@ -39,8 +35,8 @@ internal partial class DynamicFont
 
                 widthWithNextWord += wordWidth;
 
-                if (lineBuffer.Length > 0 && (widthWithNextWord + (spaceWidth * lineEndOffsetMultiplier)) >= maxWidth) {
-                    string completedLine = lineBuffer.ToString().TrimStart();
+                if (lineBuffer.Length > 0 && widthWithNextWord + 1f >= maxWidth) {
+                    string completedLine = lineBuffer.ToString();
                     lines.Add(completedLine);
                     totalHeight  += (lineHeight * lineHeightFactor);
                     maxLineWidth =  MathF.Max(maxLineWidth, currentLineWidth);
@@ -61,7 +57,7 @@ internal partial class DynamicFont
         }
 
         if (lineBuffer.Length > 0) {
-            string lastLine = lineBuffer.ToString().TrimStart();
+            string lastLine = lineBuffer.ToString();
             lines.Add(lastLine);
             totalHeight  += (lineHeight * lineHeightFactor);
             maxLineWidth =  MathF.Max(maxLineWidth, currentLineWidth);
@@ -69,7 +65,7 @@ internal partial class DynamicFont
 
         return new() {
             Lines     = lines.ToArray(),
-            Size      = new((int)Math.Ceiling(maxLineWidth + (outlineSize * 2.0f)), (int)MathF.Ceiling(totalHeight)),
+            Size      = new(MathF.Ceiling(maxLineWidth), MathF.Ceiling(totalHeight)),
             LineCount = (uint)lines.Count,
         };
     }

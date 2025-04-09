@@ -12,10 +12,10 @@ internal partial class DynamicFont
     {
         List<Chunk> chunks = GenerateChunks(text);
         float       width  = 0;
-        float       height = (int)Math.Ceiling(GetLineHeight(fontSize) + (outlineSize * 2.0f)) + 1;
+        float       height = (int)Math.Ceiling(GetLineHeight(fontSize) + (outlineSize * 2.0f));
         var         buffer = string.Empty;
 
-        if (textOverflow || maxWidth == 0 || maxWidth == float.MaxValue) {
+        if (textOverflow || maxWidth == 0 || maxWidth >= float.MaxValue - 1f) {
             foreach (var chunk in chunks) {
                 // Allow overflowing text over max width if specified.
                 width  += GetChunkWidth(chunk, fontSize);
@@ -39,7 +39,7 @@ internal partial class DynamicFont
 
         return new() {
             Lines     = [buffer],
-            Size      = new((int)Math.Min(maxWidth, Math.Ceiling(width + (outlineSize * 2.0f))), (int)height),
+            Size      = new((int)Math.Min(maxWidth, Math.Ceiling(width)), (int)height),
             LineCount = 1,
         };
     }

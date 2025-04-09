@@ -74,6 +74,14 @@ internal sealed partial class UdtParser
 
         private Node ConstructNodeFrom(XmlElement element)
         {
+            // TODO: Detect self-referencing nodes.
+            string name = NormalizeElementName(element.Name);
+
+            if (_parser._templates.TryGetValue(name, out var template)) {
+                // TODO: We might lose slot information here from the source node. Needs verification.
+                return _parser.ConstructNodeFromTemplate(element, template);
+            }
+            
             Dictionary<string, string> attributes = [];
 
             foreach (var attr in element.Attributes.OfType<XmlAttribute>()) {
@@ -89,15 +97,12 @@ internal sealed partial class UdtParser
                 }
 
                 attributes.Add(attrName, attrValue);
-                
+
                 DebugLogger.Log(element.Name);
                 DebugLogger.Log($"{attrName} = {attrValue}");
             }
 
-            // TODO: Detect self-referencing nodes.
-            
-            string name = NormalizeElementName(element.Name);
-            Node   node = _parser.ConstructNode(name, attributes);
+            Node node = _parser.ConstructNode(name, attributes);
 
             foreach (XmlNode child in element.ChildNodes) {
                 if (child is not XmlElement childElement) {
@@ -107,9 +112,9 @@ internal sealed partial class UdtParser
 
                 string childName = NormalizeElementName(childElement.Name);
                 if (childName == "slot" && childElement.IsEmpty) {
-                    string slotName = childElement.GetAttribute("name");
+                    string     slotName        = childElement.GetAttribute("name");
                     List<Node> slottedElements = ExtractSlottedElementsFromSource(slotName);
-                    
+
                     foreach (Node slottedElement in slottedElements) {
                         node.ChildNodes.Add(slottedElement);
                     }
@@ -127,7 +132,7 @@ internal sealed partial class UdtParser
         private List<Node> ExtractSlottedElementsFromSource(string slotName)
         {
             List<Node> slottedElements = [];
-            
+
             foreach (XmlNode child in _sourceElement.ChildNodes) {
                 if (child is not XmlElement childElement) {
                     DebugLogger.Log($"WARNING: Child node \"{child.Name}\" is not an element. Skipping.");
@@ -135,12 +140,12 @@ internal sealed partial class UdtParser
                 }
 
                 string slot = childElement.GetAttribute("slot");
-                
+
                 if ((slotName == "" && slot == "") || (slotName != "" && slot == slotName)) {
                     slottedElements.Add(_parser.ParseNode(childElement));
                 }
             }
-            
+
             return slottedElements;
         }
 
@@ -156,7 +161,7 @@ internal sealed partial class UdtParser
                         $"The variable \"{variableName}\" was referenced in a template but was not defined as a template argument."
                     );
                 }
-                
+
                 string? argValue = _attributes.FirstOrDefault(x => x.Key == name).Value ?? attribute.DefaultValue;
                 if (argValue == null) {
                     throw new Exception(
@@ -164,7 +169,7 @@ internal sealed partial class UdtParser
                         $"Argument \"{name}\" is not defined and has no default value."
                     );
                 }
-                
+
                 result = result.Replace($"${{{variableName}}}", argValue);
             }
 

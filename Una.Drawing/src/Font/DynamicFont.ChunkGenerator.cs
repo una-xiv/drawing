@@ -1,31 +1,35 @@
-﻿namespace Una.Drawing.Font;
+﻿using System.Text;
+
+namespace Una.Drawing.Font;
 
 internal partial class DynamicFont
 {
     private static List<Chunk> GenerateChunks(string text)
     {
-        var         buffer   = string.Empty;
-        var         chunks   = new List<Chunk>();
-        Chunk.Kind? lastKind = null;
+        var chunks = new List<Chunk>();
 
-        foreach (char c in text) {
-            Chunk.Kind kind = CharIsGlyph(c) ? Chunk.Kind.Glyph : Chunk.Kind.Text;
+        if (string.IsNullOrEmpty(text)) return chunks;
 
-            if (lastKind != kind) {
-                if (lastKind != null && buffer.Length > 0) {
-                    chunks.Add(new(lastKind.Value, buffer));
-                }
+        var buffer = new StringBuilder();
 
-                buffer   = string.Empty;
-                lastKind = kind;
+        Chunk.Kind lastKind = CharIsGlyph(text[0]) ? Chunk.Kind.Glyph : Chunk.Kind.Text;
+        buffer.Append(text[0]);
+
+        for (int i = 1; i < text.Length; i++) {
+            char c = text[i];
+
+            Chunk.Kind currentKind = CharIsGlyph(c) ? Chunk.Kind.Glyph : Chunk.Kind.Text;
+
+            if (currentKind != lastKind) {
+                chunks.Add(new(lastKind, buffer.ToString()));
+                buffer.Clear();
+                lastKind = currentKind;
             }
 
-            buffer += c;
+            buffer.Append(c);
         }
 
-        if (buffer.Length > 0) {
-            chunks.Add(new(lastKind ?? Chunk.Kind.Text, buffer));
-        }
+        if (buffer.Length > 0) chunks.Add(new(lastKind, buffer.ToString()));
 
         return chunks;
     }
@@ -34,8 +38,6 @@ internal partial class DynamicFont
     {
         return c >= 0xE020 && c <= 0xE0DB;
     }
-
-    // [GeneratedRegex(@"[\uE020-\uE0DB]")]
 
     internal readonly struct Chunk(Chunk.Kind kind, string text)
     {

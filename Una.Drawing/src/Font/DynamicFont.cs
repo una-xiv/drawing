@@ -1,4 +1,7 @@
-﻿namespace Una.Drawing.Font;
+﻿using System.Linq;
+using System.Text;
+
+namespace Una.Drawing.Font;
 
 internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphTypeface, float sizeOffset) : IFont
 {
@@ -41,15 +44,9 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         float x = pos.X;
 
         foreach (var chunk in chunks) {
-            SKFont        font    = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
-            SKFontMetrics metrics = font.Metrics;
+            SKFont font = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
 
-            // The glyph font from SE seems to have some weird metrics.
-            float yOffset = chunk.Type == Chunk.Kind.Text
-                ? metrics.Leading + metrics.Descent
-                : metrics.Descent + 1f;
-            
-            canvas.DrawText(chunk.Text, x, pos.Y + yOffset, font, paint);
+            canvas.DrawText(chunk.Text, x, pos.Y, font, paint);
             x += font.MeasureText(chunk.Text);
         }
     }
@@ -63,7 +60,9 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
     /// <inheritdoc/>
     public float GetLineHeight(int fontSize)
     {
-        return (96f / 72f) * GetTextFont(fontSize).Size;
+        SKFontMetrics metrics = GetTextFont(fontSize).Metrics;
+
+        return metrics.Descent - metrics.Ascent + metrics.Leading;
     }
 
     /// <inheritdoc/>
@@ -74,5 +73,16 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
 
         TextFontCache.Clear();
         GlyphFontCache.Clear();
+    }
+
+    private float GetMiddleOfLineHeight(int fontSize, List<Chunk> chunks, Chunk.Kind kind)
+    {
+        StringBuilder sb = new();
+        foreach (var chunk in chunks.Where(c => c.Type == kind)) sb.Append(chunk.Text);
+
+        SKFont font = kind == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
+        font.MeasureText(sb.ToString(), out SKRect textBounds);
+
+        return textBounds.Height;
     }
 }
