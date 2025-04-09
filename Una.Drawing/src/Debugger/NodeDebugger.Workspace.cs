@@ -4,9 +4,9 @@ namespace Una.Drawing.Debugger;
 
 internal partial class NodeDebugger
 {
-    private WorkspaceTab _activeTab = WorkspaceTab.Layout;
+    private static WorkspaceTab _activeTab = WorkspaceTab.ComputedStyle;
     
-    private void RenderWorkspace()
+    private static void RenderWorkspace()
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
 
@@ -34,7 +34,7 @@ internal partial class NodeDebugger
         ImGui.BeginChild("DebugTab", new(width, height), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
         
         switch (_activeTab) {
-            case WorkspaceTab.Layout:
+            case WorkspaceTab.ComputedStyle:
                 RenderLayoutTab();
                 break;
             case WorkspaceTab.Properties:
@@ -56,8 +56,8 @@ internal partial class NodeDebugger
 
     private enum WorkspaceTab
     {
-        Layout,
         Properties,
+        ComputedStyle,
         Stylesheet,
     }
 }

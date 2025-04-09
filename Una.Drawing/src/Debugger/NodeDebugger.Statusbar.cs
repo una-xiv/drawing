@@ -1,19 +1,44 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using Dalamud.Game.Text;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 
 namespace Una.Drawing.Debugger;
 
 internal partial class NodeDebugger
 {
-    private void RenderStatusBar()
+    private static void RenderStatusBar()
     {
         ImGui.SetCursorPosY(ImGui.GetWindowHeight() - 30);
         ImGui.PushStyleColor(ImGuiCol.ChildBg, 0xFF212021);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(10, 0));
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 0));
         ImGui.BeginChild("Statusbar", new(-1, 29), false, ImGuiWindowFlags.AlwaysUseWindowPadding | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoSavedSettings);
         ImGui.AlignTextToFramePadding();
         ImGui.PushStyleColor(ImGuiCol.Text, 0xFFACACAC);
         ImGui.TextUnformatted(GetRootNodeTimings());
+        ImGui.SameLine();
+        
+        
+        
+        if (RootNode != null) {
+            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(8, 2));
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4);
+
+            string label = "Force reflow";
+            float width = ImGui.CalcTextSize(label).X + 16;
+            ImGui.SetNextItemWidth(width);
+            ImGui.PushStyleColor(ImGuiCol.Button, 0xFF3A393A);
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xFF3F3E3F);
+            ImGui.SetCursorPosX(ImGui.GetWindowWidth() - width - 4);
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 4);
+            
+            if (ImGui.Button(label)) {
+                RootNode.Reflow();
+            }
+            
+            ImGui.PopStyleColor(2);
+            ImGui.PopStyleVar(2);
+        }
+
         ImGui.PopStyleColor(1);
         ImGui.EndChild();
         ImGui.PopStyleVar(1);

@@ -44,7 +44,12 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
             SKFont        font    = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
             SKFontMetrics metrics = font.Metrics;
 
-            canvas.DrawText(chunk.Text, x, pos.Y + metrics.Leading + metrics.Descent, font, paint);
+            // The glyph font from SE seems to have some weird metrics.
+            float yOffset = chunk.Type == Chunk.Kind.Text
+                ? metrics.Leading + metrics.Descent
+                : metrics.Descent + 1f;
+            
+            canvas.DrawText(chunk.Text, x, pos.Y + yOffset, font, paint);
             x += font.MeasureText(chunk.Text);
         }
     }

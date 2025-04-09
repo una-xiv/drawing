@@ -5,7 +5,7 @@ namespace Una.Drawing.Debugger;
 
 internal partial class NodeDebugger
 {
-    private void RenderStylesheetTab()
+    private static void RenderStylesheetTab()
     {
         HoveredQuery = null;
         

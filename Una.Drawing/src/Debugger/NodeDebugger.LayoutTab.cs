@@ -1,19 +1,21 @@
 ﻿using ImGuiNET;
+using System.Collections;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 namespace Una.Drawing.Debugger;
 
-internal partial class NodeDebugger
+internal static partial class NodeDebugger
 {
-    private bool _mRectHovered;
-    private bool _pRectHovered;
-    private bool _cRectHovered;
-    
-    private void RenderLayoutTab()
+    private static bool _mRectHovered;
+    private static bool _pRectHovered;
+    private static bool _cRectHovered;
+
+    private static void RenderLayoutTab()
     {
         if (null == SelectedNode) return;
-        
+
         RenderBoundingBox();
 
         ImGui.Dummy(new(0, 8));
@@ -27,11 +29,22 @@ internal partial class NodeDebugger
         ImGui.TableSetupColumn("Value");
         ImGui.TableHeadersRow();
 
-        foreach (var property in typeof(LayoutStyleSnapshot).GetRuntimeFields()) {
+        foreach (var property in typeof(ComputedStyle).GetFields(BindingFlags.Instance | BindingFlags.Public)) {
+            string? value = FormatObjectValue(property.GetValue(SelectedNode.ComputedStyle));
+            if (value == null) continue;
             ImGui.TableNextColumn();
             ImGui.TextUnformatted(property.Name);
             ImGui.TableNextColumn();
-            ImGui.TextWrapped(property.GetValue(SelectedNode.Snapshot.Layout)?.ToString() ?? "null");
+            ImGui.TextWrapped(value);
+        }
+
+        foreach (var property in typeof(ComputedStyle).GetProperties(BindingFlags.Instance | BindingFlags.Public)) {
+            string? value = FormatObjectValue(property.GetValue(SelectedNode.ComputedStyle));
+            if (value == null) continue;
+            ImGui.TableNextColumn();
+            ImGui.TextUnformatted(property.Name);
+            ImGui.TableNextColumn();
+            ImGui.TextWrapped(value);
         }
 
         ImGui.EndTable();
@@ -39,7 +52,30 @@ internal partial class NodeDebugger
         ImGui.PopStyleVar(2);
     }
 
-    private void RenderBoundingBox()
+    private static string? FormatObjectValue(object? value)
+    {
+        return value switch {
+            null                          => null,
+            Vector2 v                     => $"{v.X} x {v.Y}",
+            Size s                        => $"{s.Width}, {s.Height}",
+            Point p                       => $"{p.X}, {p.Y}",
+            EdgeSize es                   => $"EdgeSize<{es.Top}, {es.Left}, {es.Right}, {es.Bottom}>",
+            Rect r                        => $"Rect<{FormatObjectValue(r.TopLeft)}, {FormatObjectValue(r.BottomRight)}>",
+            NodeBounds nb                 => $"NodeBounds:\n\tContentSize: {FormatObjectValue(nb.ContentSize)}\n\tPaddingSize: {FormatObjectValue(nb.PaddingSize)}\n\tMarginSize: {FormatObjectValue(nb.MarginSize)}\n\tContentRect: {FormatObjectValue(nb.ContentRect)}\n\tPaddingRect: {FormatObjectValue(nb.PaddingRect)}\n\tMarginRect: {FormatObjectValue(nb.MarginRect)}",
+            Color c                       => $"Color<(#{c.ToUInt():x8})>",
+            string str                    => str,
+            bool b                        => b.ToString(),
+            float f                       => f.ToString(CultureInfo.InvariantCulture),
+            int i                         => i.ToString(CultureInfo.InvariantCulture),
+            double d                      => d.ToString(CultureInfo.InvariantCulture),
+            decimal m                     => m.ToString(CultureInfo.InvariantCulture),
+            ObservableHashSet<string> set => string.Join(", ", set),
+            IEnumerable enumerable        => string.Join(", ", enumerable.Cast<object>().Select(FormatObjectValue)),
+            _                             => value.ToString()
+        };
+    }
+
+    private static void RenderBoundingBox()
     {
         EdgeSize padding = SelectedNode!.ComputedStyle.Padding;
         EdgeSize margin  = SelectedNode.ComputedStyle.Margin;
@@ -55,7 +91,7 @@ internal partial class NodeDebugger
         string mLeft   = margin.Left == 0 ? "-" : margin.Left.ToString(CultureInfo.InvariantCulture);
         string mRight  = margin.Right == 0 ? "-" : margin.Right.ToString(CultureInfo.InvariantCulture);
         string mBottom = margin.Bottom == 0 ? "-" : margin.Bottom.ToString(CultureInfo.InvariantCulture);
-        
+
         bool mEnabled = margin.Top != 0 || margin.Left != 0 || margin.Right != 0 || margin.Bottom != 0;
         bool pEnabled = padding.Top != 0 || padding.Left != 0 || padding.Right != 0 || padding.Bottom != 0;
 
@@ -64,7 +100,7 @@ internal partial class NodeDebugger
         ImGui.BeginChild("BoundingBox", new(-1, 200), true, ImGuiWindowFlags.AlwaysUseWindowPadding);
 
         ImGui.SetCursorPosX((ImGui.GetWindowWidth() / 2f) - 200);
-        
+
         ImGui.PushStyleColor(ImGuiCol.ChildBg, _mRectHovered ? 0x50A5F7FA : 0xFF25373A);
         ImGui.BeginChild("MarginBox", new(400, -1), true, ImGuiWindowFlags.AlwaysUseWindowPadding);
 
@@ -72,7 +108,7 @@ internal partial class NodeDebugger
         PrintTextAligned(mBottom, new(0.5f, 0.96f));
         PrintTextAligned(mLeft, new(0.1f, 0.5f));
         PrintTextAligned(mRight, new(0.9f, 0.5f));
-        
+
         if (mEnabled && ImGui.IsWindowHovered()) {
             _mRectHovered = true;
             ImGui.GetForegroundDrawList().AddRectFilled(mRect.TopLeft, mRect.BottomRight, 0x50A5F7FA);
@@ -80,10 +116,10 @@ internal partial class NodeDebugger
         } else {
             _mRectHovered = false;
         }
-        
+
         ImGui.PushStyleColor(ImGuiCol.ChildBg, _pRectHovered ? 0x50A9FAA9 : 0xFF495A49);
         ImGui.BeginChild("PaddingBox", new(-1, -1), true, ImGuiWindowFlags.AlwaysUseWindowPadding);
-        
+
         PrintTextAligned(pTop, new(0.5f, 0.05f));
         PrintTextAligned(pBottom, new(0.5f, 0.94f));
         PrintTextAligned(pLeft, new(0.13f, 0.5f));
@@ -97,7 +133,7 @@ internal partial class NodeDebugger
         } else {
             _pRectHovered = false;
         }
-        
+
         ImGui.PushStyleColor(ImGuiCol.ChildBg, _cRectHovered ? 0x50FAA9A9 : 0xFF5A4949);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
         ImGui.BeginChild("ContentBox", new(-1, -1), true, ImGuiWindowFlags.AlwaysUseWindowPadding);
@@ -128,7 +164,7 @@ internal partial class NodeDebugger
         ImGui.PopStyleVar();
     }
 
-    private void PrintTextAligned(string text, Vector2 align)
+    private static void PrintTextAligned(string text, Vector2 align)
     {
         Vector2 textSize = ImGui.CalcTextSize(text);
         Vector2 pos = ImGui.GetWindowPos() + new Vector2(

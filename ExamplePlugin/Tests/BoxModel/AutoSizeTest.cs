@@ -13,11 +13,6 @@ internal sealed class AutoSizeTest : SimpleUdtTest
 
     private UldStyle _selectedUldStyle = UldStyle.Default;
 
-    protected override void OnDocumentLoaded()
-    {
-        Document!.RootNode!.ShowDebugWindow = true;
-    }
-
     protected override void OnRenderConfig()
     {
         ImGui.TextWrapped("Tests the functionality of the auto-size style attribute.\n\nThe layout algorithm automatically expands nodes on either horizontal or vertical or both axis based on the available space in the parent node. The window drawn in this test consists of a typical 9-slice layout, which is a common pattern in UI design. The 9-slice layout allows for flexible resizing of the node while maintaining the integrity of the corners and edges.\n\nThe middle sections of the header and footer are set to grow horizontally, while the left and right portions of the 'body' section grow vertically.");

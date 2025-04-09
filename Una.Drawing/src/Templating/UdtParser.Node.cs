@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using Dalamud.Game.Text;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Una.Drawing.NodeParser;
 using Una.Drawing.Templating.StyleParser;
@@ -87,7 +89,7 @@ internal sealed partial class UdtParser
                     node.Style = StyleParser.StyleFromCode(attrValue);
                     break;
                 case "value":
-                    node.NodeValue = attrValue;
+                    node.NodeValue = ParseAttributeValue(attrValue);
                     break;
                 default:
                     NodeAttributeParser.ApplyProperty(node, name, attrName, attrValue);
@@ -109,4 +111,32 @@ internal sealed partial class UdtParser
             throw new Exception($"Failed to construct element \"{name}\" in UDT \"{_filename}\". {ex.Message}", ex);
         }
     }
+
+    /// <summary>
+    /// <para>
+    /// Parses the value of a node.
+    /// </para>
+    /// <para>
+    /// At this point, template values have already been processed, so we can
+    /// focus on parsing the value itself.
+    /// </para>
+    /// </summary>
+    private static string ParseAttributeValue(string value)
+    {
+        while (SeIconCharRegex().IsMatch(value)) {
+            Match match = SeIconCharRegex().Match(value);
+            string icon = match.Groups[1].Value;
+
+            // Replace the match with the icon character
+            value = value.Replace(
+                match.Value,
+                Enum.TryParse<SeIconChar>(icon, out var iconChar) ? iconChar.ToIconChar().ToString() : "?"
+            );
+        }
+
+        return value;
+    }
+    
+    [GeneratedRegex(@"SeIcon\(([A-Za-z0-9]+)\)")]
+    private static partial Regex SeIconCharRegex();
 }

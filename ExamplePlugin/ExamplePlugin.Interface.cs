@@ -3,6 +3,7 @@ using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Una.Drawing;
 using Node = Una.Drawing.Node;
 
 namespace ExamplePlugin;
@@ -164,6 +165,14 @@ public sealed partial class ExamplePlugin
             Node.DrawDebugInfo = !Node.DrawDebugInfo;
         ImGui.PopStyleColor(3);
 
+        ImGui.SameLine();
+        ImGui.PushStyleColor(ImGuiCol.Button, DrawingLib.ShowDebugWindow ? aButtonColor : cButtonColor);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, DrawingLib.ShowDebugWindow ? aButtonColorH : cButtonColorH);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, DrawingLib.ShowDebugWindow ? aButtonColorA : cButtonColorA);
+        if (ImGui.Button(DrawingLib.ShowDebugWindow ? "Close Node Debugger" : "Open Node Debugger"))
+            DrawingLib.ShowDebugWindow = !DrawingLib.ShowDebugWindow;
+        ImGui.PopStyleColor(3);
+        
         ImGui.SameLine();
         ImGui.PushStyleColor(ImGuiCol.Button, Node.ScaleAffectsBorders ? aButtonColor : cButtonColor);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, Node.ScaleAffectsBorders ? aButtonColorH : cButtonColorH);

@@ -2,6 +2,7 @@
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using Una.Drawing.Debugger;
 using Una.Drawing.Font;
 using Una.Drawing.NodeParser;
 using Una.Drawing.Templating.StyleParser;
@@ -11,6 +12,8 @@ namespace Una.Drawing;
 
 public class DrawingLib
 {
+    public static bool ShowDebugWindow { get; set; } = true;
+
     /// <summary>
     /// Set up the drawing library. Make sure to call this method in your
     /// plugin before using any of the drawing library's features.
@@ -22,11 +25,14 @@ public class DrawingLib
         DalamudServices.UiBuilder       = pluginInterface.UiBuilder;
 
         ElementRegistry.Register<Node>();
-        
+
+        DalamudServices.CommandManager.AddHandler("/una-drawing",
+            new(OnChatCommand) { HelpMessage = "Una.Drawing Commands", ShowInHelp = false }
+        );
+
         pluginInterface.UiBuilder.Draw += OnDraw;
 
-        if (downloadGameGlyphs)
-        {
+        if (downloadGameGlyphs) {
             await GameGlyphProvider.DownloadGameGlyphs();
             FontRegistry.SetupGlyphFont();
         }
@@ -90,7 +96,7 @@ public class DrawingLib
     public static void Dispose()
     {
         DebugLogger.Log($"Shutting down {nameof(DrawingLib)}...");
-        
+
         DalamudServices.PluginInterface.UiBuilder.Draw -= OnDraw;
 
         Renderer.Dispose();
@@ -103,7 +109,8 @@ public class DrawingLib
         StyleAttributeParser.Dispose();
         NodeAttributeParser.Dispose();
         QuerySelectorParser.Dispose();
-        
+        NodeDebugger.Dispose();
+
         // Force the GC to run to clean up any remaining resources.
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -112,6 +119,41 @@ public class DrawingLib
     private static void OnDraw()
     {
         MouseCursor.Update();
+
+        if (ShowDebugWindow) {
+            NodeDebugger.Render();
+        }
+    }
+
+    private static void OnChatCommand(string command, string args)
+    {
+        if (command != "/una-drawing") return;
+        
+        if (args == String.Empty) {
+            Print("Available commands: debug, bounds.");
+            return;
+        }
+
+        switch (args.ToLower()) {
+            case "debug":
+                ShowDebugWindow = !ShowDebugWindow;
+                break;
+            case "bounds":
+                Node.DrawDebugInfo = !Node.DrawDebugInfo;
+                break;
+            default:
+                Print($"Unknown command: {args}. Available commands: debug, bounds.");
+                break;
+        }
+    }
+
+    private static void Print(string msg)
+    {
+        if (DalamudServices.ClientState.IsLoggedIn) {
+            DalamudServices.ChatGui.Print(msg);   
+        } else {
+            DalamudServices.PluginLog.Info(msg);
+        }
     }
 }
 
@@ -121,6 +163,9 @@ internal class DalamudServices
     [PluginService] public static ITextureProvider             TextureProvider             { get; set; } = null!;
     [PluginService] public static ITextureSubstitutionProvider TextureSubstitutionProvider { get; set; } = null!;
     [PluginService] public static IPluginLog                   PluginLog                   { get; set; } = null!;
+    [PluginService] public static ICommandManager              CommandManager              { get; set; } = null!;
+    [PluginService] public static IChatGui                     ChatGui                     { get; set; } = null!;
+    [PluginService] public static IClientState                 ClientState                 { get; set; } = null!;
 
     public static IDalamudPluginInterface PluginInterface { get; set; } = null!;
     public static IUiBuilder              UiBuilder       { get; set; } = null!;

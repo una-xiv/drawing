@@ -136,6 +136,8 @@ public partial class Node
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private void Draw(ImDrawListPtr drawList)
     {
+        TrackNodeRef(this);
+        
         _metricStopwatch.Restart();
         BeforeDraw?.Invoke(this);
 

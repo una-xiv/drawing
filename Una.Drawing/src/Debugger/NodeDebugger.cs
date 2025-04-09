@@ -1,33 +1,36 @@
 ﻿using ImGuiNET;
+using System.Linq;
 using System.Text;
 
 namespace Una.Drawing.Debugger;
 
-internal partial class NodeDebugger : IDisposable
+internal static partial class NodeDebugger
 {
-    private Node    Node         { get; set; }
-    private Node    RootNode     { get; set; }
-    private Node?   SelectedNode { get; set; }
-    private Node?   HoveredNode  { get; set; }
-    private string? HoveredQuery { get; set; }
+    private static Node?   RootNode     { get; set; }
+    private static Node?   SelectedNode { get; set; }
+    private static Node?   HoveredNode  { get; set; }
+    private static string? HoveredQuery { get; set; }
 
-    internal NodeDebugger(Node node)
+    internal static void SetActiveNode(Node node)
     {
-        Node         = node;
         RootNode     = node.RootNode;
         SelectedNode = node;
-
-        Node.OnDispose += _ => Dispose();
     }
 
-    public void Dispose()
+    public static void Dispose()
     {
-        Node     = null!;
-        RootNode = null!;
+        RootNode     = null!;
+        SelectedNode = null;
+        HoveredNode  = null;
     }
 
-    internal void Render(ImDrawListPtr drawListPtr)
+    internal static void Render()
     {
+        if ((RootNode == null || RootNode.IsDisposed) && Node.InMemoryNodes.Count > 0) {
+            RootNode     = Node.InMemoryNodes.First(n => !n.IsDisposed);
+            SelectedNode = RootNode;
+        }
+        
         bool isOpen = true;
 
         ImGui.PushStyleColor(ImGuiCol.WindowBg, 0xFF212021);
@@ -53,8 +56,8 @@ internal partial class NodeDebugger : IDisposable
         ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, 6f);
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
 
-        ImGui.SetNextWindowSizeConstraints(new(800, 310), new(1200, 900));
-        ImGui.Begin($"Node Debugger##{Node.InternalId}", ref isOpen,
+        ImGui.SetNextWindowSizeConstraints(new(950, 500), new(1200, 1000));
+        ImGui.Begin("Node Debugger", ref isOpen,
             ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
         RenderNodeTree();
@@ -69,20 +72,25 @@ internal partial class NodeDebugger : IDisposable
         if (HoveredNode != null) {
             RenderBoundingBoxes(HoveredNode);
         }
-        
-        if (SelectedNode != null && HoveredQuery != null) {
+
+        if (RootNode != null && SelectedNode != null && HoveredQuery != null) {
+            QuerySelector? qs = QuerySelectorParser.Parse(HoveredQuery).FirstOrDefault();
+            if (qs != null && qs.Matches(RootNode)) RenderBoundingBoxes(RootNode);
+            
             foreach (var node in RootNode.QuerySelectorAll(HoveredQuery)) {
                 RenderBoundingBoxes(node);
             }
         }
-        
+
         if (!isOpen) {
-            Node.ShowDebugWindow = false;
+            DrawingLib.ShowDebugWindow = false;
         }
     }
 
-    private string GetRootNodeTimings()
+    private static string GetRootNodeTimings()
     {
+        if (RootNode == null) return "Select a node to inspect.";
+        
         StringBuilder sb = new();
 
         sb.Append($"Reflow: {RootNode.ReflowTime.ToString("F2")} ms \t");
@@ -92,12 +100,12 @@ internal partial class NodeDebugger : IDisposable
         return sb.ToString();
     }
 
-    private void RenderBoundingBoxes(Node node)
+    private static void RenderBoundingBoxes(Node node)
     {
         Rect cRect = node.Bounds.ContentRect;
         Rect pRect = node.Bounds.PaddingRect;
         Rect mRect = node.Bounds.MarginRect;
-                
+
         ImGui.GetForegroundDrawList().AddRectFilled(cRect.TopLeft, cRect.BottomRight, 0x40FAA9A9);
         ImGui.GetForegroundDrawList().AddRect(mRect.TopLeft, mRect.BottomRight, 0xFFA5F7FA);
         ImGui.GetForegroundDrawList().AddRect(pRect.TopLeft, pRect.BottomRight, 0xFFA9FAA9);
