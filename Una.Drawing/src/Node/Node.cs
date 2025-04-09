@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling;
+using System.Collections.Immutable;
 
 namespace Una.Drawing;
 
@@ -310,13 +311,15 @@ public partial class Node : IDisposable
 
     public void Dispose()
     {
-        foreach (var child in _childNodes.ToArray()) child.Dispose();
-
         if (IsDisposed) return;
         IsDisposed = true;
 
         OnDispose?.Invoke(this);
         OnDisposed();
+
+        lock (_childNodes) {
+            foreach (var child in _childNodes.ToImmutableArray()) child.Dispose();
+        }
 
         NodeValue = null;
         Tooltip   = null;
@@ -380,15 +383,14 @@ public partial class Node : IDisposable
         ParentNode?.ChildNodes.Remove(this);
         ParentNode = null;
 
-        _childNodes = [];
-        _classList.Clear();
-        _tagsList.Clear();
+        lock(_childNodes) _childNodes = [];
+        lock(_classList) _classList.Clear();
+        lock(_tagsList) _tagsList.Clear();
 
         _internalId           = null;
         _internalIdCrc32      = 0;
         _internalIdLastIndex  = 0;
         _internalIdLastParent = null;
-
 
         MouseCursor.RemoveMouseOver(this);
         FontRegistry.FontChanged -= OnFontConfigurationChanged;

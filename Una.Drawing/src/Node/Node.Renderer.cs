@@ -136,6 +136,8 @@ public partial class Node
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private void Draw(ImDrawListPtr drawList)
     {
+        if (IsDisposed) return;
+        
         TrackNodeRef(this);
         
         _metricStopwatch.Restart();
@@ -190,10 +192,14 @@ public partial class Node
             return;
         }
 
-        OnDraw(childDrawList.Value);
-
-        foreach (var childNode in ChildNodes.ToImmutableArray()) {
-            childNode.Draw(childDrawList.Value);
+        lock (_childNodes) {
+            if (!IsDisposed) {
+                OnDraw(childDrawList.Value);
+                
+                foreach (var childNode in _childNodes.ToImmutableArray()) {
+                    childNode.Draw(childDrawList.Value);
+                }
+            }
         }
 
         EndInteractive();
