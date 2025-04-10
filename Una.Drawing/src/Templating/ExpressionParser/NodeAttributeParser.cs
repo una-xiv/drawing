@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using Dalamud.Interface;
 using System.Reflection;
 
 namespace Una.Drawing.NodeParser;
@@ -20,11 +20,21 @@ internal static class NodeAttributeParser
             PropertyCache.Add(type, properties);
         }
 
-        if (false == properties!.TryGetValue(name, out PropertyInfo? property)) {
+        if (false == properties.TryGetValue(name, out PropertyInfo? property)) {
             throw new Exception($"Node type \"{obj.GetType().Name}\" has no public property named \"{name}\".");
         }
 
+        Type propType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+        
         if (!(value.StartsWith('{') && value.EndsWith('}'))) {
+            if (propType == typeof(FontAwesomeIcon)) {
+                if (!Enum.TryParse<FontAwesomeIcon>(value, true, out var icon)) {
+                    throw new Exception($"Invalid FontAwesomeIcon: {value}.");
+                }
+                property.SetValue(obj, icon);
+                return;
+            }
+            
             object convertedValue = Convert.ChangeType(value, property.PropertyType);
             property.SetValue(obj, convertedValue);
             return;
@@ -37,10 +47,8 @@ internal static class NodeAttributeParser
                 $"Empty expression in attribute \"{name}\" of element \"{elementName}\" in UDT \"{obj.UdtFilename}\".");
         }
 
-        Type propType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
-
         dynamic? parsedValue = ExpressionParser.ExpressionParser.Parse(value);
-        
+
         try {
             property.SetValue(obj, Convert.ChangeType(parsedValue, propType));
         } catch (InvalidCastException) {

@@ -64,7 +64,7 @@ internal sealed partial class UdtParser
                 $"Failed to create an instance of \"{nodeType.Name}\", referenced by element \"{name}\" in UDT \"{Filename}\".");
         }
 
-        if (addStylesheet) {
+        if (addStylesheet && node.Stylesheet == null) {
             node.Stylesheet = Stylesheet;
         }
 
