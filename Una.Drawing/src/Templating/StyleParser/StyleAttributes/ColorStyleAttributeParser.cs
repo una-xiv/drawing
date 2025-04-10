@@ -14,11 +14,6 @@ internal class ColorStyleAttributeParser : IStyleAttributeParser
 
         Token token = tokens.First();
 
-        if (token.Type != TokenType.Identifier && token.Type != TokenType.String && token.Type != TokenType.UInt) {
-            throw new Exception(
-                $"Expected an identifier, string or uint token for a Color attribute, but got {token.Type}.");
-        }
-
         try {
             property.SetValue(style, token.Type switch {
                 TokenType.Identifier or TokenType.String => new Color(token.Value),

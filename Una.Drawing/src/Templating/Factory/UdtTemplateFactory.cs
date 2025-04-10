@@ -211,10 +211,11 @@ internal class UdtTemplateFactory
                 throw new Exception(
                     $"Template \"{TemplateName}\" has an argument in \"{_parser.Filename}\" with no \"name\" attribute.");
 
-            string? defaultValue                 = el.GetAttribute("default");
-            if (defaultValue == "") defaultValue = null;
-
-            templateArguments.Add(NormalizeElementName(name), new TemplateArgument(defaultValue));
+            string? value = el.HasAttribute("default")
+                ? el.GetAttribute("default")
+                : null;
+            
+            templateArguments.Add(NormalizeElementName(name), new TemplateArgument(value));
         }
 
         return templateArguments;

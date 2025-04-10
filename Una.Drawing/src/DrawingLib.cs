@@ -87,6 +87,8 @@ public class DrawingLib
 
         GfdIconRepository.Setup();
         Renderer.Setup();
+
+        UdtLoader.RegisterAttributeValueParser(new DefaultAttributeValueParser());
     }
 
     /// <summary>
@@ -110,6 +112,7 @@ public class DrawingLib
         NodeAttributeParser.Dispose();
         QuerySelectorParser.Dispose();
         NodeDebugger.Dispose();
+        UdtLoader.Dispose();
 
         // Force the GC to run to clean up any remaining resources.
         GC.Collect();

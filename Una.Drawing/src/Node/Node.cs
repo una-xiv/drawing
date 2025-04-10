@@ -440,7 +440,7 @@ public partial class Node : IDisposable
     /// is added to the tags list. If it is set to `false`, the tag is removed
     /// from the tags list.
     /// </summary>
-    private void ToggleTag(string tag, bool? enabled = null)
+    public void ToggleTag(string tag, bool? enabled = null)
     {
         if (enabled == null) {
             if (_tagsList.Contains(tag)) {
@@ -529,6 +529,18 @@ public partial class Node : IDisposable
             node.ParentNode?.RemoveChild(this);
 
             _childNodes.Add(node);
+            node.ParentNode = this;
+        }
+    }
+
+    public void PrependChild(Node node)
+    {
+        lock (_childNodes) {
+            if (_childNodes.Contains(node)) return;
+
+            node.ParentNode?.RemoveChild(this);
+
+            _childNodes.Insert(0, node);
             node.ParentNode = this;
         }
     }

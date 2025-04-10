@@ -172,7 +172,7 @@ public partial class Node
             MouseCursor.RemoveMouseOver(this);
         }
 
-        if (IsDragging) {
+        if (IsDraggable && IsDragging) {
             if (!wasDragging) {
                 RaiseEvent(OnDragStart);
                 ToggleTag("dragging", true);

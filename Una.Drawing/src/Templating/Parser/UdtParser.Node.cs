@@ -68,9 +68,13 @@ internal sealed partial class UdtParser
             node.Stylesheet = Stylesheet;
         }
 
-        foreach (var attr in attributes) {
-            string attrName  = attr.Key;
-            string attrValue = attr.Value.Trim();
+        foreach (var (attrName, value) in attributes) {
+            string attrValue = ParseAttributeValue(value.Trim());
+
+            if (UdtLoader.DirectiveParsers.TryGetValue(attrName, out List<IUdtDirectiveParser>? parsers)) {
+                foreach (var p in parsers) p.Parse(node, attrValue);
+                continue;
+            }
 
             switch (attrName) {
                 case "id":
@@ -90,7 +94,7 @@ internal sealed partial class UdtParser
                     node.Style = StyleParser.StyleFromCode(attrValue);
                     break;
                 case "value":
-                    node.NodeValue = ParseAttributeValue(attrValue);
+                    node.NodeValue = attrValue;
                     break;
                 default:
                     NodeAttributeParser.ApplyProperty(node, name, attrName, attrValue);
@@ -112,45 +116,13 @@ internal sealed partial class UdtParser
             throw new Exception($"Failed to construct element \"{name}\" in UDT \"{Filename}\". {ex.Message}", ex);
         }
     }
-
-    /// <summary>
-    /// <para>
-    /// Parses the value of a node.
-    /// </para>
-    /// <para>
-    /// At this point, template values have already been processed, so we can
-    /// focus on parsing the value itself.
-    /// </para>
-    /// </summary>
-    private static string ParseAttributeValue(string value)
+    
+    private static string ParseAttributeValue(string str)
     {
-        while (SeIconCharRegex().IsMatch(value)) {
-            Match match = SeIconCharRegex().Match(value);
-            string icon = match.Groups[1].Value;
-
-            // Replace the match with the icon character
-            value = value.Replace(
-                match.Value,
-                Enum.TryParse<SeIconChar>(icon, true, out var se) ? se.ToIconChar().ToString() : "?"
-            );
-        }
-
-        while (FontAwesomeRegex().IsMatch(value)) {
-            Match  match = FontAwesomeRegex().Match(value);
-            string icon  = match.Groups[1].Value;
-            
-            value = value.Replace(
-                match.Value,
-                Enum.TryParse<FontAwesomeIcon>(icon, true, out var fa) ? fa.ToIconChar().ToString() : "?"
-            );
+        foreach (var parser in UdtLoader.AttributeValueParsers) {
+            str = parser.Parse(str);
         }
         
-        return value;
+        return str;
     }
-    
-    [GeneratedRegex(@"SeIcon\(([A-Za-z0-9]+)\)")]
-    private static partial Regex SeIconCharRegex();
-
-    [GeneratedRegex(@"FA\(([A-Za-z0-9]+)\)")]
-    private static partial Regex FontAwesomeRegex();
 }

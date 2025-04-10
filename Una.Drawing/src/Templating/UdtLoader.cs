@@ -6,7 +6,10 @@ namespace Una.Drawing;
 
 public static class UdtLoader
 {
-    private static readonly HashSet<string> CircularReferences = [];
+    private static readonly HashSet<string>                CircularReferences    = [];
+    
+    internal static readonly List<IUdtAttributeValueParser>                AttributeValueParsers = [];
+    internal static readonly Dictionary<string, List<IUdtDirectiveParser>> DirectiveParsers      = []; 
 
     /// <summary>
     /// Loads a UDT XML file from embedded resources in the given assembly.
@@ -80,5 +83,37 @@ public static class UdtLoader
 
             return new(filename, null, null, []);
         }
+    }
+
+    /// <summary>
+    /// Registers an <see cref="IUdtAttributeValueParser"/> that takes in an
+    /// attribute value and returns a modified version of it if needed.
+    /// </summary>
+    /// <param name="parser"></param>
+    public static void RegisterAttributeValueParser(IUdtAttributeValueParser parser)
+    {
+        if (AttributeValueParsers.Contains(parser)) return;
+        AttributeValueParsers.Add(parser);
+    }
+
+    /// <summary>
+    /// Registers a <see cref="IUdtDirectiveParser"/> that can act on a custom
+    /// attribute and modify a node if needed.
+    /// </summary>
+    /// <param name="parser"></param>
+    public static void RegisterDirectiveParser(IUdtDirectiveParser parser)
+    {
+        if (!DirectiveParsers.TryGetValue(parser.Name, out var parserList)) {
+            DirectiveParsers.Add(parser.Name, parserList = ([]));
+        }
+        
+        if (parserList.Contains(parser)) return;
+        parserList.Add(parser);
+    }
+
+    internal static void Dispose()
+    {
+        foreach (var p in AttributeValueParsers) p.Dispose();
+        AttributeValueParsers.Clear();
     }
 }
