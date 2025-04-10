@@ -12,7 +12,7 @@ public partial class Node
     private float?   _textCachedFontSize;
     private bool?    _textCachedWordWrap;
     private Size?    _textCachedNodeSize;
-    private int?     _textCachedMaxWidth;
+    private float?   _textCachedMaxWidth;
 
     internal MeasuredText? NodeValueMeasurement { get; private set; }
 

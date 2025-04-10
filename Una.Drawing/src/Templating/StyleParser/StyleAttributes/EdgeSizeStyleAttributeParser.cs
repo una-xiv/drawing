@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 
 namespace Una.Drawing.Templating.StyleParser;
 
@@ -12,11 +13,11 @@ internal class EdgeSizeStyleAttributeParser : IStyleAttributeParser
         }
         
         // Convert rawValues to integers.
-        var values = new int[tokens.Count];
+        var values = new float[tokens.Count];
         
         for (var i = 0; i < tokens.Count; i++) {
             try {
-                values[i] = Convert.ToInt32(tokens[i].Value);
+                values[i] = Convert.ToSingle(tokens[i].Value, CultureInfo.InvariantCulture);
             } catch (Exception) {
                 throw new Exception($"Invalid value '{tokens[i].Value}' at index #{i + 1} for EdgeSize attribute.");
             }

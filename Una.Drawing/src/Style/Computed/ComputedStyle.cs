@@ -22,7 +22,7 @@ public partial struct ComputedStyle
     public FlowOrder FlowOrder;
 
     /// <inheritdoc cref="Style.Gap"/>
-    public int Gap;
+    public float Gap;
 
     /// <inheritdoc cref="Style.Padding"/>
     public EdgeSize Padding;
@@ -58,7 +58,7 @@ public partial struct ComputedStyle
     public bool TextOverflow;
 
     /// <inheritdoc cref="Style.MaxWidth"/>
-    public int? MaxWidth;
+    public float? MaxWidth;
 
     /// <inheritdoc cref="Style.BackgroundColor"/>
     public Color? BackgroundColor;
@@ -70,7 +70,7 @@ public partial struct ComputedStyle
     public EdgeSize BorderInset;
 
     /// <inheritdoc cref="Style.BorderRadius"/>
-    public int BorderRadius;
+    public float BorderRadius;
 
     /// <inheritdoc cref="Style.BorderWidth"/>
     public EdgeSize BorderWidth;
@@ -79,7 +79,7 @@ public partial struct ComputedStyle
     public Color? StrokeColor;
 
     /// <inheritdoc cref="Style.StrokeWidth"/>
-    public int StrokeWidth;
+    public float StrokeWidth;
 
     /// <inheritdoc cref="Style.StrokeInset"/>
     public float StrokeInset;

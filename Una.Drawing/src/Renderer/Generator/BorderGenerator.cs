@@ -5,34 +5,49 @@ internal class BorderGenerator : IGenerator
     /// <inheritdoc/>
     public int RenderOrder => 10;
 
+    /// <summary>
+    /// Returns the actual line-width to use.
+    /// </summary>
+    /// <remarks>
+    /// When antialiasing is enabled and the width is set to 1, we need to set
+    /// it to 0 to tell Skia to render a hairline. A 1px value would get centered
+    /// across 2 pixels, which would cause the border to become 50% transparent
+    /// due to pixel grid alignment.
+    /// </remarks>
+    private float GetLineWidth(float width, ComputedStyle style)
+    {
+        return Math.Abs(width - 1f) < 1.5f && style.IsAntialiased ? 0 : width;
+    }
+    
     /// <inheritdoc/>
     public bool Generate(SKCanvas canvas, Node node, Vector2 origin)
     {
         Size          size  = node.Bounds.PaddingSize;
         ComputedStyle style = node.ComputedStyle;
 
-        DrawStroke(canvas, size, style, origin);
+        bool hasDrawn = DrawStroke(canvas, size, style, origin);
 
-        if (null == style.BorderColor) return false;
-        if (style.BorderWidth is { HorizontalSize: 0, VerticalSize: 0 }) return false;
+        if (null == style.BorderColor) return hasDrawn;
+        if (style.BorderWidth is { HorizontalSize: 0, VerticalSize: 0 }) return hasDrawn;
 
         EdgeSize inset       = style.BorderInset;
-        float    topWidth    = style.BorderWidth.Top;
-        float    rightWidth  = style.BorderWidth.Right;
-        float    bottomWidth = style.BorderWidth.Bottom;
-        float    leftWidth   = style.BorderWidth.Left;
+        float    topWidth    = GetLineWidth(style.BorderWidth.Top, node.ComputedStyle);
+        float    rightWidth  = GetLineWidth(style.BorderWidth.Right, node.ComputedStyle);
+        float    bottomWidth = GetLineWidth(style.BorderWidth.Bottom, node.ComputedStyle);
+        float    leftWidth   = GetLineWidth(style.BorderWidth.Left, node.ComputedStyle);
 
-        // FIXME: This isn't right. Corner radius should respect individual edge sizes now.
         float topCornerRadius    = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Top));
         float rightCornerRadius  = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Right));
         float bottomCornerRadius = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Bottom));
         float leftCornerRadius   = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Left));
 
+        float alignmentOffset = style.IsAntialiased ? 0.5f : 0f;
+        
         var rect = new SKRect(
-            origin.X + inset.Left,
-            origin.Y + inset.Top,
-            origin.X + size.Width - inset.Right,
-            origin.Y + size.Height - inset.Bottom
+            origin.X + inset.Left + alignmentOffset,
+            origin.Y + inset.Top + alignmentOffset,
+            origin.X + size.Width - inset.Right - alignmentOffset,
+            origin.Y + size.Height - inset.Bottom - alignmentOffset
         );
 
         Color? topColor    = style.BorderColor.Value.Top;
@@ -45,14 +60,16 @@ internal class BorderGenerator : IGenerator
         paint.IsStroke    = true;
         paint.Style       = SKPaintStyle.Stroke;
 
-        if (topWidth > 0 && topColor is not null) {
+        float fill = style.IsAntialiased ? 0.5f : 0f;
+
+        if (style.BorderWidth.Top > 0 && topColor is not null) {
             paint.Color       = Color.ToSkColor(topColor);
             paint.StrokeWidth = topWidth;
 
             canvas.DrawLine(
-                rect.Left + (style.RoundedCorners.HasFlag(RoundedCorners.TopLeft) ? topCornerRadius : 0),
+                rect.Left + (style.RoundedCorners.HasFlag(RoundedCorners.TopLeft) ? topCornerRadius : 0) - fill,
                 rect.Top,
-                rect.Right - (style.RoundedCorners.HasFlag(RoundedCorners.TopRight) ? topCornerRadius : 0),
+                rect.Right - (style.RoundedCorners.HasFlag(RoundedCorners.TopRight) ? topCornerRadius : 0) + fill,
                 rect.Top,
                 paint
             );
@@ -78,15 +95,15 @@ internal class BorderGenerator : IGenerator
             }
         }
 
-        if (rightWidth > 0 && rightColor is not null) {
+        if (style.BorderWidth.Right > 0 && rightColor is not null) {
             paint.Color       = Color.ToSkColor(rightColor);
             paint.StrokeWidth = rightWidth;
 
             canvas.DrawLine(
                 rect.Right,
-                rect.Top + (style.RoundedCorners.HasFlag(RoundedCorners.TopRight) ? topCornerRadius : 0),
+                rect.Top + (style.RoundedCorners.HasFlag(RoundedCorners.TopRight) ? topCornerRadius : 0) - fill,
                 rect.Right,
-                rect.Bottom - (style.RoundedCorners.HasFlag(RoundedCorners.BottomRight) ? bottomCornerRadius : 0),
+                rect.Bottom - (style.RoundedCorners.HasFlag(RoundedCorners.BottomRight) ? bottomCornerRadius : 0) + fill,
                 paint
             );
 
@@ -116,14 +133,14 @@ internal class BorderGenerator : IGenerator
             }
         }
 
-        if (bottomWidth > 0 && bottomColor is not null) {
+        if (style.BorderWidth.Bottom > 0 && bottomColor is not null) {
             paint.Color       = Color.ToSkColor(bottomColor);
             paint.StrokeWidth = bottomWidth;
 
             canvas.DrawLine(
-                rect.Left + (style.RoundedCorners.HasFlag(RoundedCorners.BottomLeft) ? leftCornerRadius : 0),
+                rect.Left + (style.RoundedCorners.HasFlag(RoundedCorners.BottomLeft) ? leftCornerRadius : 0) - fill,
                 rect.Bottom,
-                rect.Right - (style.RoundedCorners.HasFlag(RoundedCorners.BottomRight) ? bottomCornerRadius : 0),
+                rect.Right - (style.RoundedCorners.HasFlag(RoundedCorners.BottomRight) ? bottomCornerRadius : 0) + fill,
                 rect.Bottom,
                 paint
             );
@@ -154,15 +171,15 @@ internal class BorderGenerator : IGenerator
             }
         }
 
-        if (leftWidth > 0 && leftColor is not null) {
+        if (style.BorderWidth.Left > 0 && leftColor is not null) {
             paint.Color       = Color.ToSkColor(leftColor);
             paint.StrokeWidth = leftWidth;
 
             canvas.DrawLine(
                 rect.Left,
-                rect.Top + (style.RoundedCorners.HasFlag(RoundedCorners.TopLeft) ? topCornerRadius : 0),
+                rect.Top + (style.RoundedCorners.HasFlag(RoundedCorners.TopLeft) ? topCornerRadius : 0) - fill,
                 rect.Left,
-                rect.Bottom - (style.RoundedCorners.HasFlag(RoundedCorners.BottomLeft) ? bottomCornerRadius : 0),
+                rect.Bottom - (style.RoundedCorners.HasFlag(RoundedCorners.BottomLeft) ? bottomCornerRadius : 0) + fill,
                 paint
             );
 
@@ -202,7 +219,7 @@ internal class BorderGenerator : IGenerator
         paint.IsAntialias = style.IsAntialiased;
         paint.Color       = Color.ToSkColor(style.StrokeColor);
         paint.Style       = SKPaintStyle.Stroke;
-        paint.StrokeWidth = style.StrokeWidth;
+        paint.StrokeWidth = Math.Abs(style.StrokeWidth - 1f) < 1f && style.IsAntialiased ? 0 : style.StrokeWidth;
 
         if (style.BorderRadius == 0) {
             canvas.DrawRect(rect, paint);

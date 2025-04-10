@@ -34,5 +34,5 @@ public partial class Style
     /// <summary>
     /// Defines the gap between nodes.
     /// </summary>
-    public int? Gap { get; set; }
+    public float? Gap { get; set; }
 }

@@ -48,7 +48,7 @@ internal static partial class Layout
 
         (float originX, float originY) = GetNodeOrigin(anchor, root, children);
 
-        int   gap = root.ComputedStyle.Gap;
+        float gap = root.ComputedStyle.Gap;
         float x   = originX, y = originY;
 
         float center = 0f;

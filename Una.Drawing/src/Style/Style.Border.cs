@@ -22,7 +22,7 @@ public partial class Style
     /// <summary>
     /// Defines the roundness of the corners of the node.
     /// </summary>
-    public int? BorderRadius { get; set; }
+    public float? BorderRadius { get; set; }
 
     /// <summary>
     /// Defines the inset of the border around the node, allowing the border to
@@ -55,7 +55,7 @@ public partial class Style
     /// inset value.
     /// </para>
     /// </summary>
-    public int? StrokeWidth { get; set; }
+    public float? StrokeWidth { get; set; }
 
     /// <summary>
     /// Similar to <see cref="BorderInset"/>, this property defines the inset

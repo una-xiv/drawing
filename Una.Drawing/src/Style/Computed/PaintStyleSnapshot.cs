@@ -18,13 +18,13 @@ internal struct PaintStyleSnapshot
     internal float              BorderInsetRight;
     internal float              BorderInsetBottom;
     internal float              BorderInsetLeft;
-    internal int                BorderRadius;
+    internal float              BorderRadius;
     internal float              BorderTopWidth;
     internal float              BorderRightWidth;
     internal float              BorderBottomWidth;
     internal float              BorderLeftWidth;
     internal uint?              StrokeColor;
-    internal int                StrokeWidth;
+    internal float              StrokeWidth;
     internal float              StrokeInset;
     internal float?             StrokeRadius;
     internal RoundedCorners?    RoundedCorners;

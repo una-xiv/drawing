@@ -10,7 +10,7 @@ internal struct LayoutStyleSnapshot
     internal (AutoSize, AutoSize) AutoSize;
     internal float                Width;
     internal float                Height;
-    internal int                  Gap;
+    internal float                Gap;
     internal float                PaddingTop;
     internal float                PaddingRight;
     internal float                PaddingBottom;

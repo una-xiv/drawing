@@ -22,7 +22,7 @@ internal class TextGenerator : IGenerator
         var   metrics    = font.GetMetrics(node.ComputedStyle.FontSize);
 
         var y = origin.Y + (lineHeight + node.ComputedStyle.TextOffset.Y) - metrics.Descent;
-        var x = origin.X + node.ComputedStyle.TextOffset.X + 1;
+        var x = origin.X + node.ComputedStyle.TextOffset.X;
 
         y = (int)Math.Ceiling(y);
 

@@ -89,7 +89,7 @@ public partial class Style
     /// and higher than 0 will implicitly disable <see cref="TextOverflow"/>
     /// and <see cref="WordWrap"/>.
     /// </summary>
-    public int? MaxWidth { get; set; }
+    public float? MaxWidth { get; set; }
 
     /// <summary>
     /// <para>
