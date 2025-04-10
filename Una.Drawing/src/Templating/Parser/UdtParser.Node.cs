@@ -1,4 +1,5 @@
 ﻿using Dalamud.Game.Text;
+using Dalamud.Interface;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -130,13 +131,26 @@ internal sealed partial class UdtParser
             // Replace the match with the icon character
             value = value.Replace(
                 match.Value,
-                Enum.TryParse<SeIconChar>(icon, out var iconChar) ? iconChar.ToIconChar().ToString() : "?"
+                Enum.TryParse<SeIconChar>(icon, true, out var se) ? se.ToIconChar().ToString() : "?"
             );
         }
 
+        while (FontAwesomeRegex().IsMatch(value)) {
+            Match  match = FontAwesomeRegex().Match(value);
+            string icon  = match.Groups[1].Value;
+            
+            value = value.Replace(
+                match.Value,
+                Enum.TryParse<FontAwesomeIcon>(icon, true, out var fa) ? fa.ToIconChar().ToString() : "?"
+            );
+        }
+        
         return value;
     }
     
     [GeneratedRegex(@"SeIcon\(([A-Za-z0-9]+)\)")]
     private static partial Regex SeIconCharRegex();
+
+    [GeneratedRegex(@"FA\(([A-Za-z0-9]+)\)")]
+    private static partial Regex FontAwesomeRegex();
 }
