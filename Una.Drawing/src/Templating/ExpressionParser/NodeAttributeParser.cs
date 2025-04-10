@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface;
+using System.Globalization;
 using System.Reflection;
 
 namespace Una.Drawing.NodeParser;
@@ -25,23 +26,24 @@ internal static class NodeAttributeParser
         }
 
         Type propType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
-        
+
         if (!(value.StartsWith('{') && value.EndsWith('}'))) {
             if (propType == typeof(FontAwesomeIcon)) {
                 if (!Enum.TryParse<FontAwesomeIcon>(value, true, out var icon)) {
                     throw new Exception($"Invalid FontAwesomeIcon: {value}.");
                 }
+
                 property.SetValue(obj, icon);
                 return;
             }
 
             try {
-                object convertedValue = Convert.ChangeType(value, property.PropertyType);
-                property.SetValue(obj, convertedValue);
+                property.SetValue(obj, ConvertValue(propType, value));
             } catch (Exception e) {
-                throw new Exception($"Failed to set property \"{name}\" of element \"{elementName}\". {e.InnerException?.Message ?? e.Message} @ {e.InnerException?.StackTrace}");
+                throw new Exception(
+                    $"Failed to set property \"{name}\" of element \"{elementName}\". {e.InnerException?.Message ?? e.Message} @ {e.InnerException?.StackTrace}");
             }
-            
+
             return;
         }
 
@@ -81,5 +83,30 @@ internal static class NodeAttributeParser
         }
 
         return properties;
+    }
+
+    private static dynamic ConvertValue(Type type, string value)
+    {
+        if (type == typeof(string)) return value;
+        
+        if (type == typeof(bool)) {
+            return value switch {
+                "true" or "1"  => true,
+                "false" or "0" => false,
+                _              => throw new Exception($"Invalid boolean value: {value}.")
+            };
+        }
+
+        if (type == typeof(uint)) return Convert.ToUInt32(value);
+        if (type == typeof(int)) return Convert.ToInt32(value);
+        if (type == typeof(float)) return Convert.ToSingle(value, CultureInfo.InvariantCulture);
+        if (type == typeof(double)) return Convert.ToDouble(value, CultureInfo.InvariantCulture);
+        if (type == typeof(long)) return Convert.ToInt64(value);
+        if (type == typeof(ulong)) return Convert.ToUInt64(value);
+        if (type == typeof(byte)) return Convert.ToByte(value);
+        if (type == typeof(sbyte)) return Convert.ToSByte(value);
+        if (type == typeof(short)) return Convert.ToInt16(value);
+        
+        return value;
     }
 }

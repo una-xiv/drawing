@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using Dalamud.Game.Text.SeStringHandling;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Dalamud.Game.Text.SeStringHandling;
-using System.Collections.Immutable;
 
 namespace Una.Drawing;
 
@@ -124,8 +124,6 @@ public partial class Node : IDisposable
         set {
             if (_tagsList.SetEquals(value)) return;
 
-            DalamudServices.PluginLog.Info($"Modified tags: ({string.Join(", ", _tagsList)}) -> ({string.Join(", ", value)}) ON {this}");
-            
             ClearCachedQuerySelectors(false);
             _tagsList.Clear();
             
