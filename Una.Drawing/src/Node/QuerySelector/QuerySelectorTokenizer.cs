@@ -36,6 +36,11 @@ internal static class QuerySelectorTokenizer
             currentChar = selector[i];
 
             switch (currentChar) {
+                case '*':
+                    tokens.Add(new QuerySelectorToken(QuerySelectorTokenType.All, "*"));
+                    i++;
+                    expectingSelector = true;
+                    continue;
                 case '>':
                     tokens.Add(new QuerySelectorToken(QuerySelectorTokenType.Child, ">"));
                     i++;

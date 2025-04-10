@@ -100,7 +100,15 @@ public partial class Node
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public IEnumerable<T> QuerySelectorAll<T>(string querySelectorString) where T : Node
     {
-        return QuerySelectorAll(querySelectorString).Cast<T>().ToList();
+        List<T> nodeList = [];
+
+        foreach (var node in QuerySelectorAll(querySelectorString)) {
+            if (node is T tNode) {
+                nodeList.Add(tNode);
+            }
+        }
+
+        return nodeList;
     }
 
     /// <summary>

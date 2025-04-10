@@ -34,9 +34,14 @@ internal static class NodeAttributeParser
                 property.SetValue(obj, icon);
                 return;
             }
+
+            try {
+                object convertedValue = Convert.ChangeType(value, property.PropertyType);
+                property.SetValue(obj, convertedValue);
+            } catch (Exception e) {
+                throw new Exception($"Failed to set property \"{name}\" of element \"{elementName}\". {e.InnerException?.Message ?? e.Message} @ {e.InnerException?.StackTrace}");
+            }
             
-            object convertedValue = Convert.ChangeType(value, property.PropertyType);
-            property.SetValue(obj, convertedValue);
             return;
         }
 

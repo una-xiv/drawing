@@ -84,12 +84,6 @@ public partial class Node
         }
 
         lock (_lockObject) {
-            if (UseThreadedStyleComputation) {
-                lock (TagsList) {
-                    InheritTagsFromParent();
-                }
-            }
-
             if (IsDisposed) return false;
 
             var  style     = ComputedStyleFactory.Create(this);
@@ -159,14 +153,14 @@ public partial class Node
         _texture = null;
     }
 
-    private void ClearCachedQuerySelectors()
+    private void ClearCachedQuerySelectors(bool signalReflow = true)
     {
         CachedQuerySelectorResults.Clear();
-        SignalReflow();
+        if (signalReflow) SignalReflow();
         
         lock (_childNodes) {
             foreach (var node in _childNodes) {
-                node.ClearCachedQuerySelectors();
+                node.ClearCachedQuerySelectors(signalReflow);
             }
         }
     }

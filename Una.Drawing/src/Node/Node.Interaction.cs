@@ -111,13 +111,10 @@ public partial class Node
     {
         _didStartInteractive = false;
 
-        switch (IsDisabled) {
-            case true when !_tagsList.Contains("disabled"):
-                _tagsList.Add("disabled");
-                break;
-            case false when _tagsList.Contains("disabled"):
-                _tagsList.Remove("disabled");
-                break;
+        ToggleTag("disabled", IsDisabled);
+        
+        if (!InheritTags && HasTag("hover") && IsDisabled) {
+            RemoveTag("hover");
         }
 
         if (IsDisabled || !IsInteractive || !IsVisible) {
@@ -195,29 +192,29 @@ public partial class Node
         }
 
         switch (!IsDragging && IsMouseOver && HasPrimaryInteraction && EnableHoverTag) {
-            case true when !_tagsList.Contains("hover"):
-                _tagsList.Add("hover");
+            case true when !HasTag("hover"):
+                AddTag("hover");
                 break;
-            case false when _tagsList.Contains("hover"):
-                _tagsList.Remove("hover");
+            case false when HasTag("hover"):
+                RemoveTag("hover");
                 break;
         }
 
         switch (IsFocused) {
-            case true when !_tagsList.Contains("focus"):
-                _tagsList.Add("focus");
+            case true when !HasTag("focus"):
+                AddTag("focus");
                 break;
-            case false when _tagsList.Contains("focus"):
-                _tagsList.Remove("focus");
+            case false when HasTag("focus"):
+                RemoveTag("focus");
                 break;
         }
 
         switch (IsMouseDown && !IsDragging) {
-            case true when !_tagsList.Contains("active"):
-                _tagsList.Add("active");
+            case true when !HasTag("active"):
+                AddTag("active");
                 break;
-            case false when _tagsList.Contains("active"):
-                _tagsList.Remove("active");
+            case false when HasTag("active"):
+                RemoveTag("active");
                 break;
         }
 

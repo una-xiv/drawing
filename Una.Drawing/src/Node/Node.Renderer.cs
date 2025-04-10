@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Dalamud.Interface.Textures.TextureWraps;
+﻿using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Threading.Tasks;
 using Una.Drawing.Texture;
 
 namespace Una.Drawing;
@@ -108,6 +108,8 @@ public partial class Node
         if (ParentNode is not null)
             throw new InvalidOperationException("Cannot render a node that has a parent or is not a root node.");
 
+        lock(_tagsList) InheritTagsFromParent();
+        
         if (!_mustReflow && _hasComputedStyle && !forceSynchronousStyleComputation && UseThreadedStyleComputation) {
             Task.Run(ComputeStyle);
         } else {

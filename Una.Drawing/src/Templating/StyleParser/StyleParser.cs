@@ -2,12 +2,12 @@
 
 namespace Una.Drawing.Templating.StyleParser;
 
-internal class StyleParser
+public class StyleParser
 {
     /// <summary>
     /// Constructs a <see cref="Stylesheet"/> from the given code.
     /// </summary>
-    internal static Stylesheet StylesheetFromCode(string code)
+    public static Stylesheet StylesheetFromCode(string code)
     {
         return (new StyleParser(Tokenizer.Tokenize(code))).ParseStylesheet();
     }
@@ -15,7 +15,7 @@ internal class StyleParser
     /// <summary>
     /// Constructs a <see cref="Style"/> from the given code.
     /// </summary>
-    internal static Style StyleFromCode(string code)
+    public static Style StyleFromCode(string code)
     {
         return (new StyleParser(Tokenizer.Tokenize(code))).ParseStyle();
     }

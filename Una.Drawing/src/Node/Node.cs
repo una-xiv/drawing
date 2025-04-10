@@ -122,11 +122,13 @@ public partial class Node : IDisposable
     public ObservableHashSet<string> TagsList {
         get => _tagsList;
         set {
-            if (_tagsList.SequenceEqual(value)) return;
+            if (_tagsList.SetEquals(value)) return;
 
-            ClearCachedQuerySelectors();
+            DalamudServices.PluginLog.Info($"Modified tags: ({string.Join(", ", _tagsList)}) -> ({string.Join(", ", value)}) ON {this}");
+            
+            ClearCachedQuerySelectors(false);
             _tagsList.Clear();
-
+            
             foreach (string v in value) _tagsList.Add(v);
             OnPropertyChanged?.Invoke("TagsList", _tagsList);
         }
@@ -377,15 +379,15 @@ public partial class Node : IDisposable
         ClearCachedQuerySelectors();
 
         _texture?.Dispose();
-        _texture  = null;
+        _texture = null;
         Snapshot = new();
 
         ParentNode?.ChildNodes.Remove(this);
         ParentNode = null;
 
-        lock(_childNodes) _childNodes = [];
-        lock(_classList) _classList.Clear();
-        lock(_tagsList) _tagsList.Clear();
+        lock (_childNodes) _childNodes = [];
+        lock (_classList) _classList.Clear();
+        lock (_tagsList) _tagsList.Clear();
 
         _internalId           = null;
         _internalIdCrc32      = 0;
@@ -442,19 +444,42 @@ public partial class Node : IDisposable
     /// </summary>
     public void ToggleTag(string tag, bool? enabled = null)
     {
+        if (InheritTags) return;
+        
         if (enabled == null) {
             if (_tagsList.Contains(tag)) {
-                _tagsList.Remove(tag);
+                RemoveTag(tag);
             } else {
-                _tagsList.Add(tag);
+                AddTag(tag);
             }
         } else {
             if (enabled.Value) {
-                _tagsList.Add(tag);
+                AddTag(tag);
             } else {
-                _tagsList.Remove(tag);
+                RemoveTag(tag);
             }
         }
+    }
+
+    public bool HasTag(string tag)
+    {
+        return _tagsList.Contains(tag);
+    }
+    
+    public void AddTag(string tag)
+    {
+        if (InheritTags) return;
+        
+        if (_tagsList.Contains(tag)) return;
+        _tagsList.Add(tag);
+    }
+    
+    public void RemoveTag(string tag)
+    {
+        if (InheritTags) return;
+        
+        if (!_tagsList.Contains(tag)) return;
+        _tagsList.Remove(tag);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -463,7 +488,7 @@ public partial class Node : IDisposable
         if (IsDisposed) return;
         if (Style.IsVisible is false) return;
 
-        if (_inheritTags && ParentNode is not null) {
+        if (_inheritTags && ParentNode is not null && !ParentNode.TagsList.SetEquals(_tagsList)) {
             TagsList = ParentNode.TagsList;
         }
 
@@ -482,7 +507,7 @@ public partial class Node : IDisposable
         _textCachedWordWrap  = null;
         _textCachedNodeValue = null;
         _mustReflow          = true;
-        Snapshot            = new();
+        Snapshot             = new();
     }
 
     private void HandleChildListChanged(object? _, NotifyCollectionChangedEventArgs e)

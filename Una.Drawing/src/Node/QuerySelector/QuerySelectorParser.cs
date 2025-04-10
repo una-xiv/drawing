@@ -36,7 +36,19 @@ internal static class QuerySelectorParser
 
         foreach (QuerySelectorToken token in tokens) {
             switch (token.Type) {
+                case QuerySelectorTokenType.All:
+                    if (currentScope.Identifier != null) {
+                        currentScope = currentScope.NestedChild = new() { MatchAll = true, };
+                    } else {
+                        currentScope.MatchAll = true;
+                    }
+
+                    continue; // Token processed
                 case QuerySelectorTokenType.Identifier:
+                    if (currentScope.MatchAll) {
+                        throw new Exception("Unexpected identifier after '*' in selector.");
+                    }
+                    
                     // If the current scope already has an identifier,
                     // assume a descendant combinator (' ') was intended.
                     if (currentScope.Identifier != null) {

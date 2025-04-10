@@ -93,7 +93,7 @@ internal sealed partial class UdtParser
                 case "style":
                     node.Style = StyleParser.StyleFromCode(attrValue);
                     break;
-                case "value":
+                case "value" when node.GetType().GetProperty("Value") is null:
                     node.NodeValue = attrValue;
                     break;
                 default:
