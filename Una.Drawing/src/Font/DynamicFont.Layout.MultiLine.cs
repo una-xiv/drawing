@@ -7,7 +7,6 @@ internal partial class DynamicFont
     private MeasuredText MeasureMultiLine(
         string text,
         int    fontSize,
-        float  outlineSize,
         float  maxWidth,
         float  lineHeightFactor
     )

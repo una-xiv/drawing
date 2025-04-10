@@ -34,7 +34,7 @@ internal class TextGenerator : IGenerator
 
         foreach (string line in node.NodeValueMeasurement!.Value.Lines) {
             PrintLine(canvas, font, node, line, x, y);
-            y += (float)(lineHeight * node.ComputedStyle.LineHeight);
+            y += (lineHeight * node.ComputedStyle.LineHeight);
         }
 
         return true;
@@ -42,12 +42,11 @@ internal class TextGenerator : IGenerator
 
     private static void PrintLine(SKCanvas canvas, IFont font, Node node, string line, float x, float y)
     {
-        MeasuredText measurement = font.MeasureText(line, node.ComputedStyle.FontSize, node.ComputedStyle.OutlineSize);
+        MeasuredText measurement = font.MeasureText(line, node.ComputedStyle.FontSize);
         float        lineWidth   = measurement.Size.Width;
 
         if (node.ComputedStyle.TextAlign.IsCenter) x += (node.Bounds.PaddingSize.Width - lineWidth) / 2;
-        if (node.ComputedStyle.TextAlign.IsRight)
-            x += (node.Bounds.PaddingSize.Width - lineWidth) + (node.ComputedStyle.OutlineSize * 2);
+        if (node.ComputedStyle.TextAlign.IsRight) x += (node.Bounds.PaddingSize.Width - lineWidth);
 
         using SKPaint paint = new();
         SKPoint       point = new(x, y);

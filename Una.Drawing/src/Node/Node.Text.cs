@@ -77,7 +77,6 @@ public partial class Node
         NodeValueMeasurement = font.MeasureText(
             str,
             ComputedStyle.FontSize,
-            ComputedStyle.OutlineSize,
             maxLineWidth,
             ComputedStyle.WordWrap,
             ComputedStyle.TextOverflow,
@@ -119,7 +118,6 @@ public partial class Node
                         measurement = font.MeasureText(
                             text.Text,
                             ComputedStyle.FontSize,
-                            ComputedStyle.OutlineSize,
                             null,
                             false,
                             false,

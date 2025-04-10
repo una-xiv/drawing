@@ -10,7 +10,6 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
     public MeasuredText MeasureText(
         string text,
         int    fontSize     = 14,
-        float  outlineSize  = 0,
         float? maxLineWidth = null,
         bool   wordWrap     = false,
         bool   textOverflow = true,
@@ -25,10 +24,10 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         }
 
         if (wordWrap == false || maxLineWidth is null or 0) {
-            return MeasureSingleLine(text, fontSize, outlineSize, maxLineWidth ?? 0, textOverflow);
+            return MeasureSingleLine(text, fontSize, maxLineWidth ?? 0, textOverflow);
         }
 
-        return MeasureMultiLine(text, fontSize, outlineSize, maxLineWidth.Value, lineHeight);
+        return MeasureMultiLine(text, fontSize, maxLineWidth.Value, lineHeight);
     }
 
     /// <inheritdoc/>

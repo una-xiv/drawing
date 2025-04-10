@@ -5,14 +5,13 @@ internal partial class DynamicFont
     private MeasuredText MeasureSingleLine(
         string text,
         int    fontSize,
-        float  outlineSize,
         float  maxWidth,
         bool   textOverflow
     )
     {
         List<Chunk> chunks = GenerateChunks(text);
         float       width  = 0;
-        float       height = (int)Math.Ceiling(GetLineHeight(fontSize) + (outlineSize * 2.0f));
+        float       height = (int)Math.Ceiling(GetLineHeight(fontSize));
         var         buffer = string.Empty;
 
         if (textOverflow || maxWidth == 0 || maxWidth >= float.MaxValue - 1f) {
