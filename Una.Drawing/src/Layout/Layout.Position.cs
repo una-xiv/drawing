@@ -17,26 +17,35 @@ internal static partial class Layout
 
     private static void PositionNodesWithSameAnchor(Anchor anchor, Node root, List<Node> children)
     {
-        if (children.Count == 0) return;
+        int count = children.Count;
+        if (count == 0) return;
 
         FlowOrder order = root.ComputedStyle.FlowOrder;
         Flow      flow  = root.ComputedStyle.Flow;
 
-        int firstIndex = order is FlowOrder.Normal ? 0 : children.Count - 1;
-        int lastIndex  = order is FlowOrder.Normal ? children.Count - 1 : 0;
-        int step       = (order is FlowOrder.Normal ? 1 : -1);
-        
-        while (firstIndex < children.Count && !children[firstIndex].ComputedStyle.IsVisible) {
+        int firstIndex = (order == FlowOrder.Normal) ? 0 : count - 1;
+        int lastIndex  = (order == FlowOrder.Normal) ? count - 1 : 0;
+        int step       = (order == FlowOrder.Normal) ? 1 : -1;
+
+        bool firstFound = false;
+        while ((step == 1 && firstIndex < count) || (step == -1 && firstIndex >= 0)) {
+            if (children[firstIndex].ComputedStyle.IsVisible) {
+                firstFound = true;
+                break;
+            }
+
             firstIndex += step;
         }
-        
-        while (lastIndex >= 0 && !children[lastIndex].ComputedStyle.IsVisible) {
+
+        if (!firstFound) return;
+
+        while ((step == 1 && lastIndex >= firstIndex) || (step == -1 && lastIndex <= firstIndex)) {
+            if (lastIndex < 0 || lastIndex >= count) break;
+            if (children[lastIndex].ComputedStyle.IsVisible) break;
+
             lastIndex -= step;
         }
-        
-        // If all children are invisible, return.
-        if (firstIndex > lastIndex) return;
-        
+
         (float originX, float originY) = GetNodeOrigin(anchor, root, children);
 
         int   gap = root.ComputedStyle.Gap;
@@ -74,10 +83,26 @@ internal static partial class Layout
             }
         }
 
-        for (var i = firstIndex; i <= lastIndex; i += step) {
+        if (order == FlowOrder.Reverse) {
+            DalamudServices.PluginLog.Info(
+                $"ChildCount: {count}, FirstIndex: {firstIndex}, LastIndex: {lastIndex}, Step: {step}");
+        }
+
+        int i = firstIndex;
+        while (true) {
+            // Boundary check: Stop if we've gone past the end index for the current direction.
+            if ((step == 1 && i > lastIndex) || (step == -1 && i < lastIndex)) break;
+
+            if (order == FlowOrder.Reverse) {
+                DalamudServices.PluginLog.Info($"ChildIndex: {i}, Step: {step}, X: {x}, Y: {y}");
+            }
+
             Node node = children[i];
 
-            if (node.IsDisposed || !node.IsVisible) continue;
+            if (node.IsDisposed || !node.IsVisible) {
+                i += step;
+                continue;
+            }
 
             // Prohibit sub-pixel positioning to prevent blurry images.
             x = MathF.Round(x);
@@ -140,6 +165,7 @@ internal static partial class Layout
             }
 
             ComputePositions(node);
+            i += step;
         }
     }
 
@@ -201,7 +227,7 @@ internal static partial class Layout
     {
         var visibleChildren = children.Where(node => node is { IsDisposed: false, ComputedStyle.IsVisible: true });
         var enumerable      = visibleChildren as Node[] ?? visibleChildren.ToArray();
-        
+
         float height = enumerable.Sum(node => node.OuterHeight);
 
         if (root.ComputedStyle.Flow == Flow.Vertical) {
