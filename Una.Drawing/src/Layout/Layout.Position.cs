@@ -83,19 +83,10 @@ internal static partial class Layout
             }
         }
 
-        if (order == FlowOrder.Reverse) {
-            DalamudServices.PluginLog.Info(
-                $"ChildCount: {count}, FirstIndex: {firstIndex}, LastIndex: {lastIndex}, Step: {step}");
-        }
-
         int i = firstIndex;
         while (true) {
             // Boundary check: Stop if we've gone past the end index for the current direction.
             if ((step == 1 && i > lastIndex) || (step == -1 && i < lastIndex)) break;
-
-            if (order == FlowOrder.Reverse) {
-                DalamudServices.PluginLog.Info($"ChildIndex: {i}, Step: {step}, X: {x}, Y: {y}");
-            }
 
             Node node = children[i];
 
