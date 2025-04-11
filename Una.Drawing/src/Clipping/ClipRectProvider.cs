@@ -1,6 +1,5 @@
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
 using System.Linq;
 using Vector2 = System.Numerics.Vector2;
 
@@ -13,8 +12,6 @@ public static class ClipRectProvider
     internal static unsafe void UpdateRects()
     {
         RectList.Clear();
-
-        float y = 0;
 
         ForEachAtkUnit(
             (uPtr, _) => {
@@ -71,49 +68,6 @@ public static class ClipRectProvider
         }
 
         return new ClipRect();
-    }
-
-    private static unsafe void RenderBoundsOf(AtkResNode* node, Vector2 scale)
-    {
-        Vector2 pos  = new(node->ScreenX, node->ScreenY);
-        Vector2 size = new Vector2(node->Width, node->Height) * scale;
-
-        ClipRect clipRect = new(pos, pos + size);
-        clipRect.RenderToScreen();
-
-        for (var i = 0; i < node->ChildCount; i++) {
-            RenderBoundsOf(&node->ChildNode[i], scale);
-        }
-    }
-
-    private static unsafe List<ClipRect> GetAtkImageRects(AtkResNode* node, Vector2 scale, int depth = 0)
-    {
-        List<ClipRect> rects = [];
-        depth++;
-
-        if (depth > 100) {
-            ImGui.GetForegroundDrawList().AddText(new(10, 10), 0xFFFF00FF, "Recursion limit reached");
-            return rects;
-        }
-
-        // if (node->Type == NodeType.Image) {
-        Vector2  size        = new Vector2(node->Width, node->Height) * scale;
-        Vector2  topLeft     = new(node->ScreenX, node->ScreenY);
-        Vector2  bottomRight = topLeft + size;
-        ClipRect clipRect    = new ClipRect(topLeft, bottomRight);
-        if (clipRect.IsValid()) {
-            rects.Add(clipRect);
-            clipRect.RenderToScreen();
-        }
-        // }
-
-        var prevNode = node->PrevSiblingNode;
-        while (prevNode != null) {
-            rects.AddRange(GetAtkImageRects(prevNode, scale, depth + 1));
-            prevNode = prevNode->PrevSiblingNode;
-        }
-
-        return rects;
     }
 
     public static List<ClipRect> FindClipRectsIntersectingWith(ClipRect clipRect)
