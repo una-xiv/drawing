@@ -133,7 +133,7 @@ public class DrawingLib
     private static void OnChatCommand(string command, string args)
     {
         if (command != "/una-drawing") return;
-        
+
         if (args == String.Empty) {
             Print("Available commands: debug, bounds.");
             return;
@@ -155,7 +155,7 @@ public class DrawingLib
     private static void Print(string msg)
     {
         if (DalamudServices.ClientState.IsLoggedIn) {
-            DalamudServices.ChatGui.Print(msg);   
+            DalamudServices.ChatGui.Print(msg);
         } else {
             DalamudServices.PluginLog.Info(msg);
         }
@@ -171,6 +171,7 @@ internal class DalamudServices
     [PluginService] public static ICommandManager              CommandManager              { get; set; } = null!;
     [PluginService] public static IChatGui                     ChatGui                     { get; set; } = null!;
     [PluginService] public static IClientState                 ClientState                 { get; set; } = null!;
+    [PluginService] public static IFramework                   Framework                   { get; set; } = null!;
 
     public static IDalamudPluginInterface PluginInterface { get; set; } = null!;
     public static IUiBuilder              UiBuilder       { get; set; } = null!;

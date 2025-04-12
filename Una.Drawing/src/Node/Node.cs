@@ -344,6 +344,7 @@ public partial class Node : IDisposable
         DisposeEventHandlersOf(OnSortIndexChanged);
         DisposeEventHandlersOf(OnPropertyChanged);
         DisposeEventHandlersOf(OnReflow);
+        DisposeEventHandlersOf(OnSorted);
 
         OnClick             = null;
         OnMouseDown         = null;

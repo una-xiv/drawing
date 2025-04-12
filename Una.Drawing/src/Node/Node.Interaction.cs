@@ -101,6 +101,12 @@ public partial class Node
     /// </summary>
     public Vector2 DragDelta { get; private set; }
 
+    /// <summary>
+    /// The node that is currently being dragged by the user, or NULL if there
+    /// is no drag operation in progress.
+    /// </summary>
+    public static Node? DraggedNode { get; private set; }
+    
     private bool _isInWindowOrInteractiveParent;
     private bool _didStartInteractive;
     private bool _didStartDelayedMouseEnter;
@@ -177,8 +183,10 @@ public partial class Node
                 IsMouseOver = false;
                 IsDragging  = true;
                 DragDelta   = ImGui.GetIO().MouseDelta;
+                DraggedNode = this;
             } else {
-                DragDelta += ImGui.GetIO().MouseDelta;
+                DragDelta   += ImGui.GetIO().MouseDelta;
+                DraggedNode =  this;
                 RaiseEvent(OnDragMove);
                 RenderDragGhost();
             }
@@ -187,8 +195,9 @@ public partial class Node
         if (ImGui.IsMouseReleased(ImGuiMouseButton.Left) && IsDragging) {
             RaiseEvent(OnDragEnd);
             ToggleTag("dragging", false);
-            IsDragging = false;
-            DragDelta  = Vector2.Zero;
+            DraggedNode = null;
+            IsDragging  = false;
+            DragDelta   = Vector2.Zero;
         }
 
         switch (!IsDragging && IsMouseOver && HasPrimaryInteraction && EnableHoverTag) {

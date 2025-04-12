@@ -1,9 +1,18 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Interface.Utility;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using ImGuiNET;
+using System.Linq;
+using Task = System.Threading.Tasks.Task;
 
 namespace Una.Drawing;
 
 public partial class Node
 {
+    /// <summary>
+    /// Invoked when the user has sorted child nodes after dragging them around.
+    /// </summary>
+    public event Action<Node>? OnSorted;
+    
     /// <summary>
     /// <para>
     /// Enables or disables sorting behavior for this node.
@@ -27,10 +36,19 @@ public partial class Node
         }
     }
 
+    /// <summary>
+    /// Specifies a group identifier for sortable nodes. This is used to
+    /// allow dragging and dropping between different sortable nodes. For
+    /// example, if you have two sortable nodes with the same group ID, you
+    /// can drag a child node from one to the other.
+    /// </summary>
+    public string? SortableGroupId { get; set; }
+
     private bool  _isSortingEnabled;
     private Node? _sortableHoveredNode;
     private Node? _sortableDraggedNode;
     private int   _sortableDraggedNodeIndex;
+    private Node? _trackedDroppableNode;
 
     private void EnableSorting()
     {
@@ -84,6 +102,51 @@ public partial class Node
         child.OnDragEnd   -= OnSortableChildDragEnd;
     }
 
+    private void CheckDroppableNode()
+    {
+        if (!Sortable || null == SortableGroupId || null == DraggedNode) return; // Not a droppable container.
+        if (SortableGroupId != DraggedNode.ParentNode?.SortableGroupId) return;  // Not the same group.
+        if (DraggedNode.ParentNode == this) return;                              // Already in this node.
+
+        if (!IsMouseInNodeBounds(this)) {
+            ToggleTag("droppable", false);
+            UntrackDroppableNode();
+            return;
+        }
+
+        ToggleTag("droppable", true);
+        TrackDroppableNode();
+    }
+
+    private void TrackDroppableNode()
+    {
+        if (_trackedDroppableNode == DraggedNode) return;
+
+        // Safety check.
+        if ((DraggedNode == null && _trackedDroppableNode != null) || DraggedNode != _trackedDroppableNode) {
+            UntrackDroppableNode();
+        }
+
+        if (DraggedNode == null) return;
+
+        _sortableDraggedNode              =  DraggedNode;
+        _trackedDroppableNode             =  DraggedNode;
+        _trackedDroppableNode.OnDragStart += OnSortableChildDragStart;
+        _trackedDroppableNode.OnDragMove  += OnSortableChildDragMove;
+        _trackedDroppableNode.OnDragEnd   += OnSortableChildDragEnd;
+    }
+
+    private void UntrackDroppableNode()
+    {
+        if (_trackedDroppableNode == null) return;
+
+        _trackedDroppableNode.OnDragStart -= OnSortableChildDragStart;
+        _trackedDroppableNode.OnDragMove  -= OnSortableChildDragMove;
+        _trackedDroppableNode.OnDragEnd   -= OnSortableChildDragEnd;
+        _trackedDroppableNode             =  null;
+        _sortableDraggedNode              =  null;
+    }
+
     private void OnSortableChildDragStart(Node child)
     {
         _sortableDraggedNode = child;
@@ -91,19 +154,31 @@ public partial class Node
 
     private void OnSortableChildDragMove(Node child)
     {
-        if (!IsMouseInNodeBounds()) return;
-
-        _sortableHoveredNode = FindNodeAtMousePos();
-        if (null == _sortableHoveredNode || _sortableHoveredNode == child) {
+        _sortableDraggedNode = child;
+        
+        if (!IsMouseInNodeBounds(this)) {
+            UntrackDroppableNode();
             return;
         }
+        
+        TrackDroppableNode();
 
+        _sortableHoveredNode = FindNodeAtMousePos();
+        
+        if (_sortableHoveredNode == child) return;
+        
+        if (null == _sortableHoveredNode && ChildNodes.Last().Bounds.MarginRect.Center.Y + ScrollY < ImGui.GetMousePos().Y) {
+            _sortableHoveredNode = ChildNodes.Last();
+        }
+        
+        if (_sortableHoveredNode == null || _sortableHoveredNode == child) return;
+        
         Vector2 startPos;
         Vector2 endPos;
         bool    isAbove;
 
         if (ComputedStyle.Flow == Flow.Vertical) {
-            isAbove = ImGui.GetMousePos().Y < _sortableHoveredNode.Bounds.MarginRect.Center.Y;
+            isAbove = ImGui.GetMousePos().Y < _sortableHoveredNode.Bounds.MarginRect.Center.Y + ScrollY;
             startPos = isAbove
                 ? _sortableHoveredNode.Bounds.MarginRect.TopLeft
                 : _sortableHoveredNode.Bounds.MarginRect.BottomLeft;
@@ -117,7 +192,7 @@ public partial class Node
                 endPos.Y   =  startPos.Y;
             }
         } else {
-            isAbove = ImGui.GetMousePos().X < _sortableHoveredNode.Bounds.MarginRect.Center.X;
+            isAbove = ImGui.GetMousePos().X < _sortableHoveredNode.Bounds.MarginRect.Center.X + ScrollX;
 
             startPos = isAbove
                 ? _sortableHoveredNode.Bounds.MarginRect.TopLeft
@@ -146,12 +221,91 @@ public partial class Node
 
     private void OnSortableChildDragEnd(Node child)
     {
-        if (_sortableDraggedNode == null || _sortableHoveredNode == null || _sortableDraggedNodeIndex < 0) {
+        ToggleTag("droppable", false);
+
+        StabilizeSortIndices();
+        
+        if (_sortableDraggedNode == null || _sortableDraggedNodeIndex < 0) {
             _sortableDraggedNode      = null;
             _sortableHoveredNode      = null;
             _sortableDraggedNodeIndex = -1;
             return;
         }
+
+        if (_trackedDroppableNode != null && _trackedDroppableNode.ParentNode != this) {
+            _trackedDroppableNode.SortIndex = _sortableHoveredNode?.SortIndex ?? _sortableDraggedNodeIndex;
+            _sortableDraggedNode            = _trackedDroppableNode;
+            AppendChild(_trackedDroppableNode);
+            StabilizeSortIndices();
+        }
+
+        // Run delayed to allow the Node itself to update based on SortIndex changes.
+        DalamudServices.Framework.RunOnTick(() => {
+            UpdateSortedChildIndices();
+            StabilizeSortIndices();
+            RaiseEvent(OnSorted);
+        });
+    }
+    
+    private bool IsMouseInNodeBounds(Node node, EdgeSize expand = default, bool useScrollOffset = true)
+    {
+        Rect rect = node.Bounds.MarginRect.Copy();
+        rect.Expand(expand);
+
+        return rect.Contains(ImGui.GetMousePos() - (useScrollOffset ? GetScrollPos() : Vector2.Zero));
+    }
+
+    private Node? FindNodeAtMousePos()
+    {
+        float g  = ComputedStyle.Gap;
+        float ph = ComputedStyle.Padding.HorizontalSize;
+        float pv = ComputedStyle.Padding.VerticalSize;
+
+        EdgeSize expand = ComputedStyle.Flow == Flow.Vertical ? new(g, ph) : new(pv, g);
+
+        lock (_childNodes) {
+            foreach (Node node in _childNodes) {
+                if (_sortableDraggedNode != null && node == _sortableDraggedNode) continue;
+                if (IsMouseInNodeBounds(node, expand, false)) return node;
+            }
+        }
+
+        return null;
+    }
+
+    private Vector2 GetScrollPos()
+    {
+        var node = this;
+
+        while (node != null) {
+            if (node.Overflow == false) {
+                return new Vector2(node.ScrollX, node.ScrollY);
+            }
+
+            node = node.ParentNode;
+        }
+
+        return new Vector2(0, 0);
+    }
+
+    /// <summary>
+    /// Updates the sort indices of the child nodes based on the current
+    /// dropped node.
+    /// </summary>
+    /// <remarks>
+    /// This method runs on the framework thread and should therefore not
+    /// invoke any ImGui or other rendering methods.
+    /// </remarks>
+    private void UpdateSortedChildIndices()
+    {
+        if (_sortableDraggedNode == null) return;
+        
+        if (_sortableHoveredNode == null) {
+            _sortableHoveredNode           = ChildNodes.Last();
+            _sortableDraggedNode.SortIndex = _sortableHoveredNode.SortIndex + 1;
+        }
+
+        if (_sortableDraggedNodeIndex == _sortableDraggedNode.SortIndex) return;
 
         int  calculatedTargetSlot = _sortableDraggedNodeIndex;
         Node hoveredNode          = _sortableHoveredNode;
@@ -184,6 +338,7 @@ public partial class Node
                 _sortableDraggedNode      = null;
                 _sortableHoveredNode      = null;
                 _sortableDraggedNodeIndex = -1;
+                StabilizeSortIndices();
                 return;
             }
 
@@ -198,7 +353,7 @@ public partial class Node
                 }
 
                 if (draggedIndex < targetIndex) {
-                    newSortIndex[currentNode] = i > draggedIndex && i <= targetIndex ? i - 1 : 1;
+                    newSortIndex[currentNode] = i > draggedIndex && i <= targetIndex ? i - 1 : i;
                     continue;
                 }
 
@@ -211,44 +366,32 @@ public partial class Node
             }
 
             foreach (var (node, index) in newSortIndex) {
-                if (node.SortIndex != index) {
-                    node.SortIndex = index;
-                }
+                if (index == node.SortIndex) continue;
+                node.SortIndex = index;
             }
         }
-
+        
         _sortableDraggedNode      = null;
         _sortableHoveredNode      = null;
         _sortableDraggedNodeIndex = -1;
+        StabilizeSortIndices();
     }
 
-    private bool IsMouseInNodeBounds(EdgeSize expand = default)
+    private void StabilizeSortIndices()
     {
-        Rect rect = Bounds.MarginRect.Copy();
-        rect.Expand(expand);
-        
-        return rect.Contains(ImGui.GetMousePos());
-    }
-
-    private Node? FindNodeAtMousePos()
-    {
-        float    g      = ComputedStyle.Gap;
-        float    ph     = ComputedStyle.Padding.HorizontalSize;
-        float    pv     = ComputedStyle.Padding.VerticalSize;
-        EdgeSize expand = ComputedStyle.Flow == Flow.Vertical ? new(g, ph) : new(pv, g);
-
         lock (_childNodes) {
-            foreach (Node node in _childNodes) {
-                if (_sortableDraggedNode != null && node == _sortableDraggedNode) {
-                    continue;
-                }
+            Dictionary<Node, int> newSortIndex = [];
 
-                if (node.IsMouseInNodeBounds(expand)) {
-                    return node;
-                }
+            for (var i = 0; i < _childNodes.Count; i++) {
+                Node node = _childNodes[i];
+                if (node.SortIndex != i) newSortIndex[node] = i;
+            }
+
+            // Apply the new sort indices outside the original iteration, since
+            // the original list updates when sort index is changed.
+            foreach (var (node, index) in newSortIndex) {
+                node.SortIndex = index;
             }
         }
-
-        return null;
     }
 }

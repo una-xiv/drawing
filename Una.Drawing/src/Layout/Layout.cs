@@ -38,10 +38,17 @@ internal static partial class Layout
     {
         pos = ComputeAnchorPoint(node, pos);
         
-        node.Bounds.PaddingRect = new Rect(pos, node.Bounds.PaddingSize);
+        node.Bounds.MarginRect = new Rect(pos, node.Bounds.MarginSize);
+        
+        node.Bounds.PaddingRect = new Rect(
+            (int)Math.Ceiling(pos.X) + node.ComputedStyle.Margin.Left,
+            (int)Math.Ceiling(pos.Y) + node.ComputedStyle.Margin.Top,
+            node.Bounds.PaddingSize
+        );
+        
         node.Bounds.ContentRect = new Rect(
-            (int)Math.Ceiling(pos.X) + node.ComputedStyle.Padding.Left,
-            (int)Math.Ceiling(pos.Y) + node.ComputedStyle.Padding.Top,
+            (int)Math.Ceiling(pos.X) + node.ComputedStyle.Margin.Left + node.ComputedStyle.Padding.Left,
+            (int)Math.Ceiling(pos.Y) + node.ComputedStyle.Margin.Top + node.ComputedStyle.Padding.Top,
             node.Bounds.ContentSize
         );
         
