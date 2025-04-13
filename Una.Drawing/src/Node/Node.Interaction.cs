@@ -165,7 +165,7 @@ public partial class Node
 
         ImGui.SetCursorScreenPos(Bounds.PaddingRect.TopLeft);
         ImGui.InvisibleButton($"{imGuiId}##Button", Bounds.PaddingSize.ToVector2());
-        IsMouseOver = ImGui.IsItemHovered();
+        IsMouseOver = ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenOverlapped);
         IsFocused   = ImGui.IsItemFocused();
         IsDragging  = IsDragging || (IsMouseOver && ImGui.IsMouseDragging(ImGuiMouseButton.Left));
 

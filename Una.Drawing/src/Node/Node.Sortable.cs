@@ -167,8 +167,8 @@ public partial class Node
         
         if (_sortableHoveredNode == child) return;
         
-        if (null == _sortableHoveredNode && ChildNodes.Last().Bounds.MarginRect.Center.Y + ScrollY < ImGui.GetMousePos().Y) {
-            _sortableHoveredNode = ChildNodes.Last();
+        if (null == _sortableHoveredNode && ChildNodes.LastOrDefault()?.Bounds.MarginRect.Center.Y + ScrollY < ImGui.GetMousePos().Y) {
+            _sortableHoveredNode = ChildNodes.LastOrDefault();
         }
         
         if (_sortableHoveredNode == null || _sortableHoveredNode == child) return;
@@ -225,7 +225,7 @@ public partial class Node
 
         StabilizeSortIndices();
         
-        if (_sortableDraggedNode == null || _sortableDraggedNodeIndex < 0) {
+        if (_sortableDraggedNode == null) {
             _sortableDraggedNode      = null;
             _sortableHoveredNode      = null;
             _sortableDraggedNodeIndex = -1;
@@ -301,12 +301,17 @@ public partial class Node
         if (_sortableDraggedNode == null) return;
         
         if (_sortableHoveredNode == null) {
-            _sortableHoveredNode           = ChildNodes.Last();
-            _sortableDraggedNode.SortIndex = _sortableHoveredNode.SortIndex + 1;
+            _sortableHoveredNode           = ChildNodes.LastOrDefault();
+            _sortableDraggedNode.SortIndex = _sortableHoveredNode?.SortIndex + 1 ?? 0;
         }
 
         if (_sortableDraggedNodeIndex == _sortableDraggedNode.SortIndex) return;
 
+        if (_sortableHoveredNode == null) {
+            StabilizeSortIndices();
+            return;
+        }
+        
         int  calculatedTargetSlot = _sortableDraggedNodeIndex;
         Node hoveredNode          = _sortableHoveredNode;
         Node draggedNode          = _sortableDraggedNode;
