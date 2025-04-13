@@ -7,15 +7,6 @@ namespace Una.Drawing;
 public partial class Node
 {
     /// <summary>
-    /// Signals the listener that a property that affects the layout of this
-    /// node or any of its descendants been modified. This event can be
-    /// triggered multiple times during a single reflow operation. It is up
-    /// to the listener to keep track of the changes and perform the reflow
-    /// operation as efficiently as possible.
-    /// </summary>
-    public event Action? OnReflow;
-
-    /// <summary>
     /// Defines the properties that specify the visual representation of this
     /// element.
     /// </summary>
@@ -43,7 +34,7 @@ public partial class Node
             SignalReflow();
         }
     }
-    
+
     /// <summary>
     /// A lookup table of query selectors of which the match result has been
     /// performed and cached. This is used to avoid re-evaluating the same
@@ -68,7 +59,7 @@ public partial class Node
     private int           _lastStyleHash;
 
     private readonly Lock _lockObject = new();
-    
+
     public static bool UseThreadedStyleComputation { get; set; }
 
     /// <summary>
@@ -103,18 +94,38 @@ public partial class Node
             }
 
             if (_animation is { IsPlaying: true }) {
-                _intermediateStyle = _animation.Update(DrawDeltaTime);
+                style = _animation.Update(DrawDeltaTime);
+            } else if (_animation != null) {
+                _animation = null;
+
+                if (style.TransitionAddClass != null) {
+                    ToggleClass(style.TransitionAddClass, true);
+                }
+                
+                if (style.TransitionRemoveClass != null) {
+                    ToggleClass(style.TransitionRemoveClass, false);
+                }
             } else {
-                _intermediateStyle = style;
-                _animation         = null;
+                if (style.TransitionAddClass != null) {
+                    ToggleClass(style.TransitionAddClass, true);
+                }
+                
+                if (style.TransitionRemoveClass != null) {
+                    ToggleClass(style.TransitionRemoveClass, false);
+                }
             }
 
-            bool isUpdated = result > 0;
+            _intermediateStyle = style;
+
+            bool isLayoutUpdated = false;
 
             lock (_childNodes) {
                 foreach (Node child in _childNodes.ToImmutableArray()) {
-                    if (!child.IsDisposed && child.ComputeStyle()) {
-                        // isUpdated = true;
+                    if (child.IsDisposed) continue;
+
+                    if (child.ComputeStyle()) {
+                        result          |= ComputedStyle.CommitResult.LayoutUpdated;
+                        isLayoutUpdated =  true;
                     }
                 }
             }
@@ -130,6 +141,7 @@ public partial class Node
             if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
                 SignalReflow();
                 ReassignAnchorNodes();
+                isLayoutUpdated = true;
             }
 
             if (_previousRenderHash != RenderHash) {
@@ -140,7 +152,7 @@ public partial class Node
             // Release lock.
             Interlocked.Exchange(ref _computeStyleLock, 0);
 
-            return isUpdated;
+            return isLayoutUpdated;
         }
     }
 
@@ -150,19 +162,8 @@ public partial class Node
     /// </summary>
     private void SignalReflow()
     {
-        OnReflow?.Invoke();
         _mustReflow = true;
     }
-
-    /// <summary>
-    /// Forces a repaint of the texture for this node on the next frame.
-    /// </summary>
-    internal void SignalRepaint()
-    {
-        // _mustRepaint = true;
-    }
-
-    private bool _mustRepaint;
 
     private void ClearCachedQuerySelectors()
     {

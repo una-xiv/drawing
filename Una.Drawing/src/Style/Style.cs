@@ -21,6 +21,18 @@ public sealed partial class Style
     public TransitionType? TransitionType { get; set; }
     
     /// <summary>
+    /// A class name to add to the node when the current transition is done.
+    /// This effectively allows you to ping-pong between two classes to keep
+    /// animations going.
+    /// </summary>
+    public string? TransitionAddClass { get; set; }
+    
+    /// <summary>
+    /// Removes the given class from this node when the transition is done.
+    /// </summary>
+    public string? TransitionRemoveClass { get; set; }
+    
+    /// <summary>
     /// Specifies the opacity of the node. Must be a value between 0 and 1.
     /// </summary>
     public float? Opacity { get; set; }

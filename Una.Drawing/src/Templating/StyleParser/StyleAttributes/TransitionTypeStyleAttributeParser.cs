@@ -20,7 +20,9 @@ internal class TransitionTypeStyleAttributeParser : IStyleAttributeParser
         }
 
         try {
-            property.SetValue(style, Enum.Parse<TransitionType>(token.Value, true));
+            string val = token.Value.Replace("-", "").Trim();
+            
+            property.SetValue(style, Enum.Parse<TransitionType>(val, true));
         } catch (Exception) {
             throw new Exception($"Invalid value '{token.Value}' for TransitionType attribute.");
         }

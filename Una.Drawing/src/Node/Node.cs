@@ -298,9 +298,6 @@ public partial class Node : IDisposable
             // SignalReflow();
         };
 
-        OnChildAdded   += child => child.OnReflow += SignalReflow;
-        OnChildRemoved += child => child.OnReflow -= SignalReflow;
-
         FontRegistry.FontChanged += OnFontConfigurationChanged;
     }
 
@@ -343,7 +340,6 @@ public partial class Node : IDisposable
         DisposeEventHandlersOf(OnTagRemoved);
         DisposeEventHandlersOf(OnSortIndexChanged);
         DisposeEventHandlersOf(OnPropertyChanged);
-        DisposeEventHandlersOf(OnReflow);
         DisposeEventHandlersOf(OnSorted);
 
         OnClick             = null;
@@ -364,7 +360,6 @@ public partial class Node : IDisposable
         OnPropertyChanged   = null;
         OnDispose           = null;
 
-        OnReflow           = null;
         BeforeReflow       = null;
         BeforeDraw         = null;
         AfterDraw          = null;

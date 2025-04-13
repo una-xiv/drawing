@@ -12,6 +12,12 @@ public partial struct ComputedStyle
     /// <inheritdoc cref="Style.TransitionType"/>
     public TransitionType TransitionType;
     
+    /// <inheritdoc cref="Style.TransitionAddClass"/>
+    public string? TransitionAddClass;
+    
+    /// <inheritdoc cref="Style.TransitionRemoveClass"/>
+    public string? TransitionRemoveClass;
+    
     /// <inheritdoc cref="Style.Anchor"/>
     public Anchor Anchor;
 

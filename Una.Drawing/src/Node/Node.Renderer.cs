@@ -97,9 +97,9 @@ public partial class Node
     /// </summary>
     internal int RenderHash { get; private set; }
 
-    private int _previousRenderHash;
-
+    private int  _previousRenderHash;
     private uint _colorThemeVersion;
+    private bool _mustRepaint;
 
     private          IDalamudTextureWrap? _texture;
     private readonly List<ImDrawListPtr>  _drawLists = [];
@@ -160,7 +160,7 @@ public partial class Node
 
         if (Color.ThemeVersion != _colorThemeVersion) {
             _colorThemeVersion = Color.ThemeVersion;
-            SignalRepaint();
+            _mustRepaint       = true;
         }
 
         if (Style.IsVisible is false) {
@@ -240,7 +240,7 @@ public partial class Node
 
         if (_mustRepaint && hasDrawables && Width > 0 && Height > 0) {
             Vector2 padding = new(64, 64); // Optimization point: Only add padding when needed.
-            
+
             _texture?.Dispose();
             _texture = Renderer.CreateTexture(this, padding);
             _consecutiveRedraws++;

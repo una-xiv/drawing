@@ -7,7 +7,7 @@ internal static class ComputedStyleFactory
         if (node.IsDisposed) return (0, new());
 
         var computedStyle = CreateDefault();
-        var hashCode            = new HashCode();
+        var hashCode      = new HashCode();
 
         if (node.Stylesheet is not null) {
             foreach ((Stylesheet.Rule rule, Style style) in node.Stylesheet.Rules) {
@@ -35,6 +35,8 @@ internal static class ComputedStyleFactory
         cs.IsVisible                 = style.IsVisible ?? cs.IsVisible;
         cs.TransitionDuration        = style.TransitionDuration ?? cs.TransitionDuration;
         cs.TransitionType            = style.TransitionType ?? cs.TransitionType;
+        cs.TransitionAddClass        = style.TransitionAddClass ?? cs.TransitionAddClass;
+        cs.TransitionRemoveClass     = style.TransitionRemoveClass ?? cs.TransitionRemoveClass;
         cs.Anchor                    = style.Anchor ?? cs.Anchor;
         cs.Size                      = style.Size ?? cs.Size;
         cs.AutoSize                  = style.AutoSize ?? cs.AutoSize;
