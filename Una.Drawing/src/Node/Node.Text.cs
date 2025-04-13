@@ -56,8 +56,7 @@ public partial class Node
             return NodeValueMeasurement?.Size ?? new();
         }
 
-        _texture?.Dispose();
-        _texture = null;
+        // SignalRepaint();
 
         _textCachedNodeValue = _nodeValue;
         _textCachedWordWrap  = ComputedStyle.WordWrap;

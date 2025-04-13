@@ -22,38 +22,41 @@
     
     <![CDATA[
     #main {
-        size: 672;
+        size: 1190 900;
         background-color: 0xff000000;
         gap: 4;
         flow: vertical;
+        padding: 20;
         
         & > .row {
             gap: 4;
+            auto-size: grow fit;
         }
         
         .box {
             anchor: middle-center;
-            size: 32;
-            transition-duration: 1000;
-            transition-type: EaseInOutSine;
+            transition-duration: 500;
+            transition-type: EaseOutSine;
             
             text-align: middle-center;
             font-size: 11;
             color: 0xFFFFFFFF;
-            size: 64;
-            // margin: 8;
-            // padding: 8;
+            margin: 8;
+            padding: 8;
             background-gradient-inset: 4;
+            size: 100 64;
             
             &:hover {
-                transition-duration: 1;
-                transition-type: EaseInOutSine;
+                transition-duration: 25;
+                transition-type: linear;
                 background-gradient: vertical 0xFF0000FF 0xFF00FFFF;
                 color: 0xFF00FFFF;
-                // padding: 16;
-                // margin: 0;
+                margin: 0;
+                padding: 32;
             }
         }
     }
+    
+    #main.with-layout .box:hover { size: 120 84; }
     ]]>
 </udt>

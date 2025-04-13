@@ -64,7 +64,7 @@ internal sealed partial class UdtParser
                 $"Failed to create an instance of \"{nodeType.Name}\", referenced by element \"{name}\" in UDT \"{Filename}\".");
         }
 
-        if (addStylesheet) {
+        if (addStylesheet && node.Stylesheet == null) {
             node.Stylesheet = Stylesheet;
         }
 
@@ -93,7 +93,7 @@ internal sealed partial class UdtParser
                 case "style":
                     node.Style = StyleParser.StyleFromCode(attrValue);
                     break;
-                case "value":
+                case "value" when node.GetType().GetProperty("Value") is null:
                     node.NodeValue = attrValue;
                     break;
                 default:

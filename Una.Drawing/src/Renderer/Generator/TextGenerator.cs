@@ -21,7 +21,7 @@ internal class TextGenerator : IGenerator
         float lineHeight = font.GetLineHeight(fontSize);
         var   metrics    = font.GetMetrics(node.ComputedStyle.FontSize);
 
-        var y = origin.Y + (lineHeight + node.ComputedStyle.TextOffset.Y) - metrics.Descent;
+        var y = origin.Y + (lineHeight + node.ComputedStyle.TextOffset.Y) - metrics.Descent - 1.5f;
         var x = origin.X + node.ComputedStyle.TextOffset.X;
 
         y = (int)Math.Ceiling(y);

@@ -54,8 +54,6 @@ public partial class Node
 
         _mustReflow = false;
 
-        if (!UseThreadedStyleComputation) InheritTagsFromParent();
-
         _metricStopwatch.Restart();
         Layout.ComputeBounds(this);
         ReflowTime = _metricStopwatch.Elapsed.TotalMilliseconds;

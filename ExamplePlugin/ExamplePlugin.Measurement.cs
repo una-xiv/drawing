@@ -8,6 +8,7 @@ namespace ExamplePlugin;
 public sealed partial class ExamplePlugin
 {
     private const double AverageIntervalMilliseconds = 500.0;
+    private const int    HistorySize                 = 120;
 
     private Stopwatch? _stopwatch;
     private Stopwatch? _loopTimer;
@@ -21,6 +22,9 @@ public sealed partial class ExamplePlugin
     private double         _elapsedAverageTimeMilliseconds;
     private double         _testTime;
     private double         _testPeakTime;
+    private float[]        _fpsHistory       = new float[HistorySize];
+    private float[]        _frameTimeHistory = new float[HistorySize];
+    private int            _dataIndex        = 0; // Current position in the circular buffer
 
     private void InitializeMeasurements()
     {
@@ -54,19 +58,23 @@ public sealed partial class ExamplePlugin
             _averageFrameTimeMilliseconds = sum / _frameTimes.Count;
             _frameTimes.Clear();
             _elapsedAverageTimeMilliseconds -= AverageIntervalMilliseconds;
-            _fps = 1000.0 / _averageFrameTimeMilliseconds;
+            _fps                            =  1000.0 / _averageFrameTimeMilliseconds;
         }
+
+        _fpsHistory[_dataIndex]       = (float)(1000.0f / _lastFrameTimeMilliseconds);
+        _frameTimeHistory[_dataIndex] = (float)_lastFrameTimeMilliseconds;
+        _dataIndex                    = (_dataIndex + 1) % HistorySize;
     }
 
     private string GetMetricsString()
     {
         StringBuilder sb = new();
-        
+
         sb.Append($"FPS: {_fps:F2}\t");
         sb.AppendLine($"Frame Time: {_averageFrameTimeMilliseconds:F2} ms\t\t");
         sb.Append($"Draw Time: {_testTime:F2} ms\t");
         sb.Append($"Peak: {_testPeakTime:F2} ms");
-        
+
         return sb.ToString();
     }
 }

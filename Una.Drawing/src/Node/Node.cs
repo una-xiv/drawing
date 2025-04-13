@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using Dalamud.Game.Text.SeStringHandling;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Dalamud.Game.Text.SeStringHandling;
-using System.Collections.Immutable;
 
 namespace Una.Drawing;
 
@@ -77,11 +77,9 @@ public partial class Node : IDisposable
             _nodeValue           = value;
             _textCachedNodeValue = null;
 
-            _texture?.Dispose();
-            _texture = null;
-
             OnPropertyChanged?.Invoke("NodeValue", _nodeValue);
-            SignalReflowRecursive();
+            _mustRepaint = true;
+            SignalReflow();
         }
     }
 
@@ -122,11 +120,11 @@ public partial class Node : IDisposable
     public ObservableHashSet<string> TagsList {
         get => _tagsList;
         set {
-            if (_tagsList.SequenceEqual(value)) return;
+            if (_tagsList.SetEquals(value)) return;
 
             ClearCachedQuerySelectors();
             _tagsList.Clear();
-
+            
             foreach (string v in value) _tagsList.Add(v);
             OnPropertyChanged?.Invoke("TagsList", _tagsList);
         }
@@ -163,10 +161,12 @@ public partial class Node : IDisposable
         set {
             if (_childNodes.SequenceEqual(value)) return;
 
-            List<Node> toRemove = _childNodes.ToList();
+            lock (_childNodes) {
+                List<Node> toRemove = _childNodes.ToList();
 
-            foreach (var node in toRemove) node.Remove(true);
-            foreach (var node in value) AppendChild(node);
+                foreach (var node in toRemove) node.Remove(true);
+                foreach (var node in value.ToImmutableArray()) AppendChild(node);
+            }
 
             OnPropertyChanged?.Invoke("ChildNodes", _childNodes);
         }
@@ -289,13 +289,13 @@ public partial class Node : IDisposable
         _tagsList.ItemAdded += t => {
             ClearCachedQuerySelectors();
             OnTagAdded?.Invoke(t);
-            SignalReflow();
+            // SignalReflow();
         };
 
         _tagsList.ItemRemoved += t => {
             ClearCachedQuerySelectors();
             OnTagRemoved?.Invoke(t);
-            SignalReflow();
+            // SignalReflow();
         };
 
         OnChildAdded   += child => child.OnReflow += SignalReflow;
@@ -344,6 +344,7 @@ public partial class Node : IDisposable
         DisposeEventHandlersOf(OnSortIndexChanged);
         DisposeEventHandlersOf(OnPropertyChanged);
         DisposeEventHandlersOf(OnReflow);
+        DisposeEventHandlersOf(OnSorted);
 
         OnClick             = null;
         OnMouseDown         = null;
@@ -377,15 +378,14 @@ public partial class Node : IDisposable
         ClearCachedQuerySelectors();
 
         _texture?.Dispose();
-        _texture  = null;
-        Snapshot = new();
+        _texture = null;
 
         ParentNode?.ChildNodes.Remove(this);
         ParentNode = null;
 
-        lock(_childNodes) _childNodes = [];
-        lock(_classList) _classList.Clear();
-        lock(_tagsList) _tagsList.Clear();
+        lock (_childNodes) _childNodes = [];
+        lock (_classList) _classList.Clear();
+        lock (_tagsList) _tagsList.Clear();
 
         _internalId           = null;
         _internalIdCrc32      = 0;
@@ -442,19 +442,42 @@ public partial class Node : IDisposable
     /// </summary>
     public void ToggleTag(string tag, bool? enabled = null)
     {
+        if (InheritTags) return;
+        
         if (enabled == null) {
             if (_tagsList.Contains(tag)) {
-                _tagsList.Remove(tag);
+                RemoveTag(tag);
             } else {
-                _tagsList.Add(tag);
+                AddTag(tag);
             }
         } else {
             if (enabled.Value) {
-                _tagsList.Add(tag);
+                AddTag(tag);
             } else {
-                _tagsList.Remove(tag);
+                RemoveTag(tag);
             }
         }
+    }
+
+    public bool HasTag(string tag)
+    {
+        return _tagsList.Contains(tag);
+    }
+    
+    public void AddTag(string tag)
+    {
+        if (InheritTags) return;
+        
+        if (_tagsList.Contains(tag)) return;
+        _tagsList.Add(tag);
+    }
+    
+    public void RemoveTag(string tag)
+    {
+        if (InheritTags) return;
+        
+        if (!_tagsList.Contains(tag)) return;
+        _tagsList.Remove(tag);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -463,7 +486,7 @@ public partial class Node : IDisposable
         if (IsDisposed) return;
         if (Style.IsVisible is false) return;
 
-        if (_inheritTags && ParentNode is not null) {
+        if (_inheritTags && ParentNode is not null && !ParentNode.TagsList.SetEquals(_tagsList)) {
             TagsList = ParentNode.TagsList;
         }
 
@@ -474,15 +497,14 @@ public partial class Node : IDisposable
 
     private void OnFontConfigurationChanged()
     {
-        _texture?.Dispose();
-        _texture             = null;
         _textCachedFontId    = null;
         _textCachedFontSize  = null;
         _textCachedNodeSize  = null;
         _textCachedWordWrap  = null;
         _textCachedNodeValue = null;
         _mustReflow          = true;
-        Snapshot            = new();
+        
+        // SignalRepaint();
     }
 
     private void HandleChildListChanged(object? _, NotifyCollectionChangedEventArgs e)

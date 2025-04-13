@@ -55,9 +55,18 @@ public static class UdtLoader
             UdtDocument document = Parse(resourceName, code, assembly, throwOnFailure);
 
             return document;
+        } catch (Exception e) {
+            DalamudServices.PluginLog.Error($"An exception occurred while loading UDT \"{resourceName}\":\n{e.Message}");
+            DalamudServices.PluginLog.Error(e.StackTrace ?? " - No stack trace available - ");
+            
+            if (throwOnFailure) {
+                throw;
+            }
         } finally {
             CircularReferences.Remove(resource);
         }
+        
+        return new(resourceName, null, null, []);
     }
 
     /// <summary>

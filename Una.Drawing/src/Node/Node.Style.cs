@@ -1,5 +1,4 @@
-﻿using Dalamud.Utility;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 
@@ -44,7 +43,7 @@ public partial class Node
             SignalReflow();
         }
     }
-
+    
     /// <summary>
     /// A lookup table of query selectors of which the match result has been
     /// performed and cached. This is used to avoid re-evaluating the same
@@ -58,21 +57,19 @@ public partial class Node
     /// <summary>
     /// Defines the final computed style of this node.
     /// </summary>
-    public ComputedStyle ComputedStyle;
+    public ComputedStyle ComputedStyle = ComputedStyleFactory.CreateDefault();
 
     private ComputedStyle _intermediateStyle;
     private Style         _style = new();
     private Stylesheet?   _stylesheet;
     private bool          _isUpdatingStyle;
-    private bool          _hasComputedStyle;
     private int           _computeStyleLock;
+    private Animation?    _animation;
+    private int           _lastStyleHash;
 
     private readonly Lock _lockObject = new();
-
+    
     public static bool UseThreadedStyleComputation { get; set; }
-
-    private Animation? _animation;
-    private int        _lastStyleHash;
 
     /// <summary>
     /// Generates the computed style of this node and its descendants.
@@ -88,23 +85,16 @@ public partial class Node
         }
 
         lock (_lockObject) {
-            if (UseThreadedStyleComputation) {
-                lock (TagsList) {
-                    InheritTagsFromParent();
-                }
-            }
-
             if (IsDisposed) return false;
 
             (int hash, ComputedStyle style) = ComputedStyleFactory.Create(this);
-            int result = style.Commit(ref _intermediateStyle);
+            ComputedStyle.CommitResult result = style.Commit(ref _intermediateStyle);
 
             if (_lastStyleHash != hash) {
                 _lastStyleHash = hash;
 
                 if (_animation is { IsPlaying: true }) {
-                    _intermediateStyle = _animation.SourceStyle;
-                    _animation         = null;
+                    _animation = null;
                 }
 
                 _animation ??= _intermediateStyle.TransitionDuration > 0
@@ -113,33 +103,39 @@ public partial class Node
             }
 
             if (_animation is { IsPlaying: true }) {
-                style = _animation.Update(DrawDeltaTime);
+                _intermediateStyle = _animation.Update(DrawDeltaTime);
             } else {
-                _animation = null;
+                _intermediateStyle = style;
+                _animation         = null;
             }
 
             bool isUpdated = result > 0;
 
-            _intermediateStyle = style;
-
             lock (_childNodes) {
                 foreach (Node child in _childNodes.ToImmutableArray()) {
                     if (!child.IsDisposed && child.ComputeStyle()) {
-                        isUpdated = true;
+                        // isUpdated = true;
                     }
                 }
             }
 
-            if (isUpdated) {
+            // Update snapshot.
+            _intermediateStyle.LayoutStyleSnapshot = LayoutStyleSnapshot.Create(ref _intermediateStyle);
+            _intermediateStyle.PaintStyleSnapshot  = PaintStyleSnapshot.Create(ref _intermediateStyle);
+
+            ComputedStyle    = _intermediateStyle;
+            RenderHash       = _intermediateStyle.GetHash();
+            _isUpdatingStyle = false;
+
+            if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
+                SignalReflow();
                 ReassignAnchorNodes();
             }
 
-            if (result is 1 or 3) SignalReflowRecursive();
-            if (result is 2 or 3) SignalRepaint();
-
-            ComputedStyle     = _intermediateStyle;
-            _isUpdatingStyle  = false;
-            _hasComputedStyle = true;
+            if (_previousRenderHash != RenderHash) {
+                // TODO: Replace with SignalRepaint() once whatever is causing that to spam is fixed.
+                _mustRepaint = true;
+            }
 
             // Release lock.
             Interlocked.Exchange(ref _computeStyleLock, 0);
@@ -159,34 +155,18 @@ public partial class Node
     }
 
     /// <summary>
-    /// Performs a recursive reflow to all ancestor nodes.
-    /// </summary>
-    private void SignalReflowRecursive(bool signalParent = true)
-    {
-        _mustReflow = true;
-
-        if (signalParent) ParentNode?.SignalReflowRecursive();
-
-        if (_childNodes.Count > 0) {
-            foreach (Node child in _childNodes.ToImmutableArray()) {
-                child.SignalReflowRecursive(false);
-            }
-        }
-    }
-
-    /// <summary>
     /// Forces a repaint of the texture for this node on the next frame.
     /// </summary>
     internal void SignalRepaint()
     {
-        _texture?.Dispose();
-        _texture = null;
+        // _mustRepaint = true;
     }
+
+    private bool _mustRepaint;
 
     private void ClearCachedQuerySelectors()
     {
         CachedQuerySelectorResults.Clear();
-        SignalReflow();
 
         lock (_childNodes) {
             foreach (var node in _childNodes) {

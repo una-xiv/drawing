@@ -94,7 +94,7 @@ public class Anchor(Anchor.AnchorPoint point)
 
     public override int GetHashCode() => Point.GetHashCode();
 
-    public enum AnchorPoint
+    public enum AnchorPoint : byte
     {
         None,
         TopLeft,

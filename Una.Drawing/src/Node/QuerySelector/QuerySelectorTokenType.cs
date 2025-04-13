@@ -13,6 +13,11 @@ internal enum QuerySelectorTokenType
     Class,
 
     /// <summary>
+    /// An asterisk, implying to match all nodes.
+    /// </summary>
+    All,
+    
+    /// <summary>
     /// The next tokens represent direct children of the current node.
     /// </summary>
     Child,

@@ -17,19 +17,19 @@ public partial struct ComputedStyle
             || (!string.IsNullOrWhiteSpace(UldResource) && UldPartsId.HasValue && UldPartId.HasValue);
     }
 
-    internal int Commit(ref ComputedStyle previous)
+    internal CommitResult Commit(ref ComputedStyle previous)
     {
         PaintStyleSnapshot  = PaintStyleSnapshot.Create(ref this);
         LayoutStyleSnapshot = LayoutStyleSnapshot.Create(ref this);
 
-        var result = 0;
+        CommitResult result = CommitResult.None;
 
         if (!AreStructsEqual(ref LayoutStyleSnapshot, ref previous.LayoutStyleSnapshot)) {
-            result = 1;
+            result |= CommitResult.LayoutUpdated;
         }
 
         if (!AreStructsEqual(ref PaintStyleSnapshot, ref previous.PaintStyleSnapshot)) {
-            result += 2;
+            result |= CommitResult.PaintUpdated;
         }
         
         return result;
@@ -41,5 +41,15 @@ public partial struct ComputedStyle
         return MemoryMarshal
             .AsBytes(new ReadOnlySpan<T>(in a))
             .SequenceEqual(MemoryMarshal.AsBytes(new ReadOnlySpan<T>(in b)));
+    }
+
+
+    [Flags] 
+    internal enum CommitResult
+    {
+        None,
+        LayoutUpdated,
+        PaintUpdated,
+        BothUpdated,
     }
 }

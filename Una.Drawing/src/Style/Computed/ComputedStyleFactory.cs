@@ -4,7 +4,7 @@ internal static class ComputedStyleFactory
 {
     internal static (int, ComputedStyle) Create(Node node)
     {
-        if (node.IsDisposed) return new();
+        if (node.IsDisposed) return (0, new());
 
         var computedStyle = CreateDefault();
         var hashCode            = new HashCode();

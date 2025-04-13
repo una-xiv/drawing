@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Dalamud.Interface.Textures.TextureWraps;
+﻿using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Threading.Tasks;
 using Una.Drawing.Texture;
 
 namespace Una.Drawing;
@@ -62,7 +62,7 @@ public partial class Node
     /// <remarks>
     /// Only applicable when <see cref="Overflow"/> is set to <c>false</c>.
     /// </remarks>
-    public uint ScrollX { get; private set; }
+    public float ScrollX { get; private set; }
 
     /// <summary>
     /// Represents the current vertical scroll position of the node.
@@ -70,7 +70,7 @@ public partial class Node
     /// <remarks>
     /// Only applicable when <see cref="Overflow"/> is set to <c>false</c>.
     /// </remarks>
-    public uint ScrollY { get; private set; }
+    public float ScrollY { get; private set; }
 
     /// <summary>
     /// Represents the current width of the scroll area of the node.
@@ -78,7 +78,7 @@ public partial class Node
     /// <remarks>
     /// Only applicable when <see cref="Overflow"/> is set to <c>false</c>.
     /// </remarks>
-    public uint ScrollWidth { get; private set; }
+    public float ScrollWidth { get; private set; }
 
     /// <summary>
     /// Represents the current height of the scroll area of the node.
@@ -86,8 +86,8 @@ public partial class Node
     /// <remarks>
     /// Only applicable when <see cref="Overflow"/> is set to <c>false</c>.
     /// </remarks>
-    public uint ScrollHeight { get; private set; }
-    
+    public float ScrollHeight { get; private set; }
+
     public double DrawDeltaTime { get; private set; }
     public double DrawTotalTime { get; private set; }
 
@@ -97,7 +97,7 @@ public partial class Node
     /// </summary>
     internal int RenderHash { get; private set; }
 
-    internal NodeSnapshot Snapshot;
+    private int _previousRenderHash;
 
     private uint _colorThemeVersion;
 
@@ -111,7 +111,9 @@ public partial class Node
         if (ParentNode is not null)
             throw new InvalidOperationException("Cannot render a node that has a parent or is not a root node.");
 
-        if (!_mustReflow && _hasComputedStyle && !forceSynchronousStyleComputation && UseThreadedStyleComputation) {
+        lock (_tagsList) InheritTagsFromParent();
+
+        if (!forceSynchronousStyleComputation && UseThreadedStyleComputation) {
             Task.Run(ComputeStyle);
         } else {
             ComputeStyle();
@@ -140,8 +142,9 @@ public partial class Node
     private void Draw(ImDrawListPtr drawList)
     {
         if (IsDisposed) return;
-        
+
         TrackNodeRef(this);
+        CheckDroppableNode();
 
         if (DrawTotalTime == 0) {
             DrawTotalTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -151,14 +154,13 @@ public partial class Node
             DrawDeltaTime = now - DrawTotalTime;
             DrawTotalTime = now;
         }
-        
+
         _metricStopwatch.Restart();
         BeforeDraw?.Invoke(this);
 
         if (Color.ThemeVersion != _colorThemeVersion) {
             _colorThemeVersion = Color.ThemeVersion;
-            _texture?.Dispose();
-            _texture = null;
+            SignalRepaint();
         }
 
         if (Style.IsVisible is false) {
@@ -207,7 +209,7 @@ public partial class Node
         lock (_childNodes) {
             if (!IsDisposed) {
                 OnDraw(childDrawList.Value);
-                
+
                 foreach (var childNode in _childNodes.ToImmutableArray()) {
                     childNode.Draw(childDrawList.Value);
                 }
@@ -219,6 +221,8 @@ public partial class Node
 
         AfterDraw?.Invoke(this);
         PopDrawList();
+
+        _previousRenderHash = RenderHash;
 
         DrawTime = _metricStopwatch.Elapsed.TotalMilliseconds;
         _metricStopwatch.Stop();
@@ -232,21 +236,19 @@ public partial class Node
             return false;
         }
 
-        NodeSnapshot snapshot     = CreateSnapshot();
-        bool         hasDrawables = ComputedStyle.HasDrawables() || NodeValue != null;
+        bool hasDrawables = ComputedStyle.HasDrawables() || NodeValue != null;
 
-        RenderHash = snapshot.GetHashCode();
-
-        if (hasDrawables && ((_texture is null || !snapshot.Equals(ref Snapshot)) && Width > 0 && Height > 0)) {
+        if (_mustRepaint && hasDrawables && Width > 0 && Height > 0) {
             Vector2 padding = new(64, 64); // Optimization point: Only add padding when needed.
-
+            
             _texture?.Dispose();
-            _texture  = Renderer.CreateTexture(this, padding);
-            Snapshot = snapshot;
+            _texture = Renderer.CreateTexture(this, padding);
             _consecutiveRedraws++;
         } else {
             _consecutiveRedraws = 0;
         }
+
+        _mustRepaint = false;
 
         if (_consecutiveRedraws > 3000) {
             DebugLogger.Log(
@@ -286,11 +288,11 @@ public partial class Node
         ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, ComputedStyle.ScrollbarThumbActiveColor.ToUInt());
         ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, ComputedStyle.ScrollbarThumbHoverColor.ToUInt());
 
-        ImGui.SetCursorScreenPos(Bounds.PaddingRect.TopLeft);
+        ImGui.SetCursorScreenPos(Bounds.ContentRect.TopLeft);
 
         ImGui.BeginChildFrame(
             InternalIdCrc32,
-            Bounds.PaddingSize.ToVector2(),
+            Bounds.PaddingSize.ToVector2() - new Vector2(0, ComputedStyle.Padding.VerticalSize),
             (HorizontalScrollbar ? ImGuiWindowFlags.HorizontalScrollbar : ImGuiWindowFlags.None)
         );
 
@@ -316,9 +318,9 @@ public partial class Node
             Layout.OverridePositionsOf(child, new Vector2(x, y));
 
             if (ComputedStyle.Flow == Flow.Vertical) {
-                y += child.Bounds.PaddingSize.Height + ComputedStyle.Gap;
+                y += child.Bounds.MarginSize.Height + ComputedStyle.Gap;
             } else {
-                x += child.Bounds.PaddingSize.Width + ComputedStyle.Gap;
+                x += child.Bounds.MarginSize.Width + ComputedStyle.Gap;
             }
         }
     }
@@ -472,7 +474,7 @@ public partial class Node
 
         lock (_childNodes) {
             foreach (var child in _childNodes) {
-                Size sz = child.Bounds.PaddingSize;
+                Size sz = child.Bounds.MarginSize;
 
                 totalWidth  += sz.Width;
                 totalHeight += sz.Height;
@@ -511,7 +513,7 @@ public partial class Node
     }
 }
 
-[StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal struct NodeSnapshot
 {
     internal float               Width;

@@ -101,6 +101,12 @@ public partial class Node
     /// </summary>
     public Vector2 DragDelta { get; private set; }
 
+    /// <summary>
+    /// The node that is currently being dragged by the user, or NULL if there
+    /// is no drag operation in progress.
+    /// </summary>
+    public static Node? DraggedNode { get; private set; }
+    
     private bool _isInWindowOrInteractiveParent;
     private bool _didStartInteractive;
     private bool _didStartDelayedMouseEnter;
@@ -111,13 +117,10 @@ public partial class Node
     {
         _didStartInteractive = false;
 
-        switch (IsDisabled) {
-            case true when !_tagsList.Contains("disabled"):
-                _tagsList.Add("disabled");
-                break;
-            case false when _tagsList.Contains("disabled"):
-                _tagsList.Remove("disabled");
-                break;
+        ToggleTag("disabled", IsDisabled);
+        
+        if (!InheritTags && HasTag("hover") && IsDisabled) {
+            RemoveTag("hover");
         }
 
         if (IsDisabled || !IsInteractive || !IsVisible) {
@@ -162,7 +165,7 @@ public partial class Node
 
         ImGui.SetCursorScreenPos(Bounds.PaddingRect.TopLeft);
         ImGui.InvisibleButton($"{imGuiId}##Button", Bounds.PaddingSize.ToVector2());
-        IsMouseOver = ImGui.IsItemHovered();
+        IsMouseOver = ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenOverlapped);
         IsFocused   = ImGui.IsItemFocused();
         IsDragging  = IsDragging || (IsMouseOver && ImGui.IsMouseDragging(ImGuiMouseButton.Left));
 
@@ -180,8 +183,10 @@ public partial class Node
                 IsMouseOver = false;
                 IsDragging  = true;
                 DragDelta   = ImGui.GetIO().MouseDelta;
+                DraggedNode = this;
             } else {
-                DragDelta += ImGui.GetIO().MouseDelta;
+                DragDelta   += ImGui.GetIO().MouseDelta;
+                DraggedNode =  this;
                 RaiseEvent(OnDragMove);
                 RenderDragGhost();
             }
@@ -190,34 +195,35 @@ public partial class Node
         if (ImGui.IsMouseReleased(ImGuiMouseButton.Left) && IsDragging) {
             RaiseEvent(OnDragEnd);
             ToggleTag("dragging", false);
-            IsDragging = false;
-            DragDelta  = Vector2.Zero;
+            DraggedNode = null;
+            IsDragging  = false;
+            DragDelta   = Vector2.Zero;
         }
 
         switch (!IsDragging && IsMouseOver && HasPrimaryInteraction && EnableHoverTag) {
-            case true when !_tagsList.Contains("hover"):
-                _tagsList.Add("hover");
+            case true when !HasTag("hover"):
+                AddTag("hover");
                 break;
-            case false when _tagsList.Contains("hover"):
-                _tagsList.Remove("hover");
+            case false when HasTag("hover"):
+                RemoveTag("hover");
                 break;
         }
 
         switch (IsFocused) {
-            case true when !_tagsList.Contains("focus"):
-                _tagsList.Add("focus");
+            case true when !HasTag("focus"):
+                AddTag("focus");
                 break;
-            case false when _tagsList.Contains("focus"):
-                _tagsList.Remove("focus");
+            case false when HasTag("focus"):
+                RemoveTag("focus");
                 break;
         }
 
         switch (IsMouseDown && !IsDragging) {
-            case true when !_tagsList.Contains("active"):
-                _tagsList.Add("active");
+            case true when !HasTag("active"):
+                AddTag("active");
                 break;
-            case false when _tagsList.Contains("active"):
-                _tagsList.Remove("active");
+            case false when HasTag("active"):
+                RemoveTag("active");
                 break;
         }
 

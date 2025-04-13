@@ -1,4 +1,6 @@
-﻿namespace ExamplePlugin.Tests.Animation;
+﻿using ImGuiNET;
+
+namespace ExamplePlugin.Tests.Animation;
 
 internal class AnimationPerformanceTest : SimpleUdtTest
 {
@@ -10,6 +12,15 @@ internal class AnimationPerformanceTest : SimpleUdtTest
     {
         foreach (var node in Document!.RootNode!.QuerySelectorAll(".box")) {
             node.OnClick += _ => { };
+        }
+    }
+
+    protected override void OnRenderConfig()
+    {
+        bool withLayout = Document!.RootNode!.ClassList.Contains("with-layout");
+        
+        if (ImGui.Checkbox("Affect box size", ref withLayout)) {
+            Document.RootNode.ToggleClass("with-layout", withLayout);
         }
     }
 }

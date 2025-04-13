@@ -11,6 +11,11 @@ internal class QuerySelector
     public string? Identifier;
 
     /// <summary>
+    /// True if this selector part must match all nodes.
+    /// </summary>
+    public bool MatchAll = false;
+    
+    /// <summary>
     /// A list of class-names that the current node must have.
     /// </summary>
     public readonly List<string> ClassList = [];
@@ -69,19 +74,19 @@ internal class QuerySelector
         if (node.CachedQuerySelectorResults.TryGetValue(this, out bool result)) return result;
 
         // 1. Check if the current node's properties match the current selector part's requirements.
-        if (Identifier != null && !Identifier.Equals(node.Id)) {
+        if (!MatchAll && Identifier != null && !Identifier.Equals(node.Id)) {
             node.CachedQuerySelectorResults.Add(this, false);
             return false;
         }
 
         // Check Classes (all must be present)
-        if (!ClassList.All(node.ClassList.Contains)) {
+        if (!MatchAll && !ClassList.All(node.ClassList.Contains)) {
             node.CachedQuerySelectorResults.Add(this, false);
             return false;
         }
 
         // Check Tags (all must be present)
-        if (!TagList.All(node.TagsList.Contains)) {
+        if (!MatchAll && !TagList.All(node.TagsList.Contains)) {
             node.CachedQuerySelectorResults.Add(this, false);
             return false;
         }

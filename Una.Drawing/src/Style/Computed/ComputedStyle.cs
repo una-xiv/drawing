@@ -219,17 +219,20 @@ public partial struct ComputedStyle
     internal PaintStyleSnapshot  PaintStyleSnapshot;
     internal LayoutStyleSnapshot LayoutStyleSnapshot;
 
-    /// <summary>
-    /// Returns a copy of this <see cref="ComputedStyle"/>.
-    /// </summary>
-    internal ComputedStyle Copy()
+    public int GetHash()
     {
-        ComputedStyle copy = new ComputedStyle();
+        var hc = new HashCode();
+
+        hc.AddBytes(MemoryMarshal.CreateReadOnlySpan(
+            ref Unsafe.As<PaintStyleSnapshot, byte>(ref this.PaintStyleSnapshot),
+            Unsafe.SizeOf<PaintStyleSnapshot>()
+        ));
         
-        Unsafe.CopyBlockUnaligned(ref Unsafe.As<ComputedStyle, byte>(ref copy),
-            ref Unsafe.As<ComputedStyle, byte>(ref this),
-            (uint)Unsafe.SizeOf<ComputedStyle>());
-        
-        return copy;
+        hc.AddBytes(MemoryMarshal.CreateReadOnlySpan(
+            ref Unsafe.As<LayoutStyleSnapshot, byte>(ref this.LayoutStyleSnapshot),
+            Unsafe.SizeOf<LayoutStyleSnapshot>()
+        ));
+
+        return hc.ToHashCode();
     }
 }

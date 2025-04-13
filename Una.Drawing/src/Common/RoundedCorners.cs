@@ -1,7 +1,7 @@
 ﻿namespace Una.Drawing;
 
 [Flags]
-public enum RoundedCorners
+public enum RoundedCorners : byte
 {
     None        = 0,
     TopLeft     = 1,

@@ -2,6 +2,7 @@
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Una.Drawing;
 using Node = Una.Drawing.Node;
@@ -26,7 +27,7 @@ public sealed partial class ExamplePlugin
         ImGui.PushStyleColor(ImGuiCol.ChildBg, 0xFF313031);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(8, 8));
-        ImGui.BeginChild("TestPanel", new Vector2(500, 0), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
+        ImGui.BeginChild("TestPanel", new Vector2(500, ImGui.GetWindowHeight() - 80), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
 
         try {
             _activeTest?.RenderConfig();
@@ -36,6 +37,30 @@ public sealed partial class ExamplePlugin
 
         ImGui.EndChild();
         ImGui.PopStyleVar(2);
+        ImGui.PopStyleColor(1);
+
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, 0xFF1F1F1F);
+        ImGui.SetCursorPos(new(ImGui.GetWindowWidth() - 500, ImGui.GetWindowHeight() - 80));
+        ImGui.BeginChild("GraphPanel", new Vector2(500, 80), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
+
+        Vector2 graphSize = new Vector2(ImGui.GetContentRegionAvail().X, 80);
+
+        float max = _frameTimeHistory.Max();
+        
+        ImGui.PushStyleColor(ImGuiCol.PlotLines, max <= 10.0f ? 0xFF4D8B4D : 0xFF8B4D4D);
+        ImGui.PlotLines(
+            "##FrameTime", // Unique ID
+            ref _frameTimeHistory[0],
+            HistorySize,
+            _dataIndex,
+            $"Frame time {max:F2} ms",
+            0.0f,
+            30.0f,
+            graphSize
+        );
+        ImGui.PopStyleColor(1);
+
+        ImGui.EndChild();
         ImGui.PopStyleColor(1);
     }
 
@@ -105,9 +130,7 @@ public sealed partial class ExamplePlugin
 
     #region Toolbar
 
-    private readonly Dictionary<string, string> _actionButtons = new() {
-        { "Console", "/xllog" }, { "Stats", "/xlstats" }, { "Data", "/xldata" },
-    };
+    private readonly Dictionary<string, string> _actionButtons = new() { { "Console", "/xllog" }, { "Stats", "/xlstats" }, { "Data", "/xldata" }, };
 
     private void RenderToolbar()
     {
@@ -172,7 +195,7 @@ public sealed partial class ExamplePlugin
         if (ImGui.Button(DrawingLib.ShowDebugWindow ? "Close Node Debugger" : "Open Node Debugger"))
             DrawingLib.ShowDebugWindow = !DrawingLib.ShowDebugWindow;
         ImGui.PopStyleColor(3);
-        
+
         ImGui.SameLine();
         ImGui.PushStyleColor(ImGuiCol.Button, Node.ScaleAffectsBorders ? aButtonColor : cButtonColor);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, Node.ScaleAffectsBorders ? aButtonColorH : cButtonColorH);
