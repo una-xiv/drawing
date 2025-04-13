@@ -2,22 +2,28 @@
 
 internal static class ComputedStyleFactory
 {
-    internal static ComputedStyle Create(Node node)
+    internal static (int, ComputedStyle) Create(Node node)
     {
         if (node.IsDisposed) return new();
 
         var computedStyle = CreateDefault();
+        var hashCode            = new HashCode();
 
         if (node.Stylesheet is not null) {
             foreach ((Stylesheet.Rule rule, Style style) in node.Stylesheet.Rules) {
-                if (rule.Matches(node)) { Apply(ref computedStyle, style); }
+                if (rule.Matches(node)) {
+                    Apply(ref computedStyle, style);
+                    hashCode.Add(rule.ToString());
+                }
             }
         }
 
         Apply(ref computedStyle, node.Style);
         ApplyScaleFactor(ref computedStyle);
 
-        return computedStyle;
+        hashCode.Add(node.Style);
+
+        return (hashCode.ToHashCode(), computedStyle);
     }
 
     /// <summary>
@@ -27,6 +33,8 @@ internal static class ComputedStyleFactory
     private static void Apply(ref ComputedStyle cs, in Style style)
     {
         cs.IsVisible                 = style.IsVisible ?? cs.IsVisible;
+        cs.TransitionDuration        = style.TransitionDuration ?? cs.TransitionDuration;
+        cs.TransitionType            = style.TransitionType ?? cs.TransitionType;
         cs.Anchor                    = style.Anchor ?? cs.Anchor;
         cs.Size                      = style.Size ?? cs.Size;
         cs.AutoSize                  = style.AutoSize ?? cs.AutoSize;

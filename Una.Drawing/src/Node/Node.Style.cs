@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using Dalamud.Utility;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 
@@ -43,7 +44,7 @@ public partial class Node
             SignalReflow();
         }
     }
-    
+
     /// <summary>
     /// A lookup table of query selectors of which the match result has been
     /// performed and cached. This is used to avoid re-evaluating the same
@@ -70,6 +71,9 @@ public partial class Node
 
     public static bool UseThreadedStyleComputation { get; set; }
 
+    private Animation? _animation;
+    private int        _lastStyleHash;
+
     /// <summary>
     /// Generates the computed style of this node and its descendants.
     /// </summary>
@@ -92,8 +96,28 @@ public partial class Node
 
             if (IsDisposed) return false;
 
-            var  style     = ComputedStyleFactory.Create(this);
-            int  result    = style.Commit(ref _intermediateStyle);
+            (int hash, ComputedStyle style) = ComputedStyleFactory.Create(this);
+            int result = style.Commit(ref _intermediateStyle);
+
+            if (_lastStyleHash != hash) {
+                _lastStyleHash = hash;
+
+                if (_animation is { IsPlaying: true }) {
+                    _intermediateStyle = _animation.SourceStyle;
+                    _animation         = null;
+                }
+
+                _animation ??= _intermediateStyle.TransitionDuration > 0
+                    ? new Animation(_intermediateStyle, style)
+                    : null;
+            }
+
+            if (_animation is { IsPlaying: true }) {
+                style = _animation.Update(DrawDeltaTime);
+            } else {
+                _animation = null;
+            }
+
             bool isUpdated = result > 0;
 
             _intermediateStyle = style;
@@ -163,7 +187,7 @@ public partial class Node
     {
         CachedQuerySelectorResults.Clear();
         SignalReflow();
-        
+
         lock (_childNodes) {
             foreach (var node in _childNodes) {
                 node.ClearCachedQuerySelectors();

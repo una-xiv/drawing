@@ -9,7 +9,7 @@ internal class GradientGenerator : IGenerator
         ComputedStyle style = node.ComputedStyle;
         Size          size  = node.Bounds.PaddingSize;
 
-        if (null == style.BackgroundGradient || style.BackgroundGradient.IsEmpty) return false;
+        if (null == style.BackgroundGradient || style.BackgroundGradient.Value.IsEmpty) return false;
 
         EdgeSize inset = style.BackgroundGradientInset;
 
@@ -18,7 +18,7 @@ internal class GradientGenerator : IGenerator
 
         paint.IsAntialias = true;
         paint.Style       = SKPaintStyle.Fill;
-        paint.Shader      = CreateShader(size, style.BackgroundGradient, inset);
+        paint.Shader      = CreateShader(size, style.BackgroundGradient.Value, inset);
 
         int saveCount = canvas.Save();
         try {

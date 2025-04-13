@@ -1,6 +1,6 @@
 ﻿namespace Una.Drawing;
 
-public class GradientColor(
+public struct GradientColor(
     Color?       color1 = null,
     Color?       color2 = null,
     GradientType type   = GradientType.Vertical

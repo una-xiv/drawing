@@ -87,6 +87,9 @@ public partial class Node
     /// Only applicable when <see cref="Overflow"/> is set to <c>false</c>.
     /// </remarks>
     public uint ScrollHeight { get; private set; }
+    
+    public double DrawDeltaTime { get; private set; }
+    public double DrawTotalTime { get; private set; }
 
     /// <summary>
     /// A deterministic hash code based on the node's value and layout.
@@ -139,6 +142,15 @@ public partial class Node
         if (IsDisposed) return;
         
         TrackNodeRef(this);
+
+        if (DrawTotalTime == 0) {
+            DrawTotalTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            DrawDeltaTime = 0;
+        } else {
+            var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            DrawDeltaTime = now - DrawTotalTime;
+            DrawTotalTime = now;
+        }
         
         _metricStopwatch.Restart();
         BeforeDraw?.Invoke(this);
@@ -236,7 +248,7 @@ public partial class Node
             _consecutiveRedraws = 0;
         }
 
-        if (_consecutiveRedraws > 30) {
+        if (_consecutiveRedraws > 3000) {
             DebugLogger.Log(
                 $"WARNING: Node {this} is redrawing on every frame (value={_nodeValue}). Please check for unnecessary state changes."
             );

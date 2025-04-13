@@ -6,6 +6,12 @@ public partial struct ComputedStyle
     /// <inheritdoc cref="Style.IsVisible"/>
     public bool IsVisible;
 
+    /// <inheritdoc cref="Style.TransitionDuration"/>
+    public uint TransitionDuration;
+    
+    /// <inheritdoc cref="Style.TransitionType"/>
+    public TransitionType TransitionType;
+    
     /// <inheritdoc cref="Style.Anchor"/>
     public Anchor Anchor;
 
@@ -212,4 +218,18 @@ public partial struct ComputedStyle
 
     internal PaintStyleSnapshot  PaintStyleSnapshot;
     internal LayoutStyleSnapshot LayoutStyleSnapshot;
+
+    /// <summary>
+    /// Returns a copy of this <see cref="ComputedStyle"/>.
+    /// </summary>
+    internal ComputedStyle Copy()
+    {
+        ComputedStyle copy = new ComputedStyle();
+        
+        Unsafe.CopyBlockUnaligned(ref Unsafe.As<ComputedStyle, byte>(ref copy),
+            ref Unsafe.As<ComputedStyle, byte>(ref this),
+            (uint)Unsafe.SizeOf<ComputedStyle>());
+        
+        return copy;
+    }
 }

@@ -9,6 +9,18 @@ namespace Una.Drawing;
 public sealed partial class Style
 {
     /// <summary>
+    /// The amount of time, in milliseconds, that a transition from one
+    /// style to another should take. Use the <see cref="TransitionType"/>
+    /// property to configure the easing function used for the transition.
+    /// </summary>
+    public uint? TransitionDuration { get; set; }
+    
+    /// <summary>
+    /// The type of transition to use when changing from one style to another.
+    /// </summary>
+    public TransitionType? TransitionType { get; set; }
+    
+    /// <summary>
     /// Specifies the opacity of the node. Must be a value between 0 and 1.
     /// </summary>
     public float? Opacity { get; set; }
