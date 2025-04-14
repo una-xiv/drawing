@@ -78,10 +78,10 @@ public partial class Node : IDisposable
             _textCachedNodeValue = null;
             _mustRepaint         = true;
             _mustReflow          = true;
+            
+            ClearTextCache();
 
             OnPropertyChanged?.Invoke("NodeValue", _nodeValue);
-
-            SignalReflow();
         }
     }
 
@@ -188,7 +188,9 @@ public partial class Node : IDisposable
         set {
             if (_sortIndex == value) return;
 
-            _sortIndex = value;
+            _sortIndex           = value;
+            RootNode._mustReflow = true;
+
             OnSortIndexChanged?.Invoke();
             OnPropertyChanged?.Invoke("SortIndex", _childNodes);
         }
@@ -261,8 +263,8 @@ public partial class Node : IDisposable
 
     private string? _id;
     private object? _nodeValue;
-    private int     _sortIndex;
     private bool    _inheritTags;
+    private int     _sortIndex = -1;
 
     private readonly ObservableHashSet<string>  _classList  = [];
     private readonly ObservableHashSet<string>  _tagsList   = [];

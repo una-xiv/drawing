@@ -129,6 +129,15 @@ public partial class Node
             MouseCursor.RemoveMouseOver(this);
             return;
         }
+        
+        // Only allow interaction if the window has focus.
+        // TODO: Maybe make an option toggle for this behavior.
+        if (IsInWindowDrawList(drawList) && !ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows)) {
+            MouseCursor.RemoveMouseOver(this);
+            IsMouseOver = false;
+            ToggleTag("hover", false);
+            return;
+        }
 
         if (_isVisibleSince == 0) _isVisibleSince = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
@@ -171,7 +180,9 @@ public partial class Node
         IsFocused   = ImGui.IsItemFocused();
         IsDragging  = IsDragging || (IsMouseOver && ImGui.IsMouseDragging(ImGuiMouseButton.Left));
 
-        if (IsMouseOver && HasPrimaryInteraction && EnableHoverTag) {
+        var isHovered = ImGui.IsItemHovered();
+        
+        if (isHovered && HasPrimaryInteraction && EnableHoverTag) {
             MouseCursor.RegisterMouseOver(this);
         } else {
             MouseCursor.RemoveMouseOver(this);
@@ -220,7 +231,7 @@ public partial class Node
                 break;
         }
 
-        switch (IsMouseDown && !IsDragging) {
+        switch (isHovered && !IsDragging) {
             case true when !HasTag("active"):
                 AddTag("active");
                 break;
@@ -229,7 +240,7 @@ public partial class Node
                 break;
         }
 
-        if (Tooltip != null && IsMouseOver && _mouseOverStartTime < DateTimeOffset.Now.ToUnixTimeMilliseconds() - 500) {
+        if (Tooltip != null && isHovered && _mouseOverStartTime < DateTimeOffset.Now.ToUnixTimeMilliseconds() - 500) {
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 6));
             ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 6);
             ImGui.PushStyleColor(ImGuiCol.Border, 0xFF3F3F3F);
@@ -257,7 +268,7 @@ public partial class Node
                 break;
         }
 
-        if (IsMouseOver) {
+        if (isHovered) {
             if (HasPrimaryInteraction) ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
 
             if (_mouseOverStartTime < DateTimeOffset.Now.ToUnixTimeMilliseconds() - 50) {

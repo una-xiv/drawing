@@ -35,6 +35,10 @@ public static class Easing
 
     private static float ApplyEase(float source, float target, double progress, Func<double, double> easingHelper)
     {
+        var clampedProgress = Math.Clamp(progress, 0.0, 1.0);
+        if (clampedProgress == 0.0) return source;
+        if (clampedProgress == 1.0) return target;
+        
         return source + (target - source) * (float)easingHelper(Math.Clamp(progress, 0.0, 1.0));
     }
 

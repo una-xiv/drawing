@@ -255,14 +255,14 @@ public partial class Node
             DalamudServices.PluginLog.Info($"Created new texture with node value: {NodeValue}");
             
             // Uncomment to draw a border around the node when the texture is updated.
-            ImGui.GetForegroundDrawList().AddRect(
-                Bounds.PaddingRect.TopLeft,
-                Bounds.PaddingRect.BottomRight,
-                0xFFFF00FF,
-                0f,
-                ImDrawFlags.RoundCornersNone,
-                3.0f
-            );
+            // ImGui.GetForegroundDrawList().AddRect(
+            //     Bounds.PaddingRect.TopLeft,
+            //     Bounds.PaddingRect.BottomRight,
+            //     0xFFFF00FF,
+            //     0f,
+            //     ImDrawFlags.RoundCornersNone,
+            //     3.0f
+            // );
         } else {
             _consecutiveRedraws = 0;
         }
@@ -403,7 +403,7 @@ public partial class Node
         uint color = GetRenderColor();
         if (color == 0) return;
 
-        var rect = Bounds.PaddingRect.Copy();
+        var rect = Bounds.MarginRect.Copy();
 
         if (ComputedStyle.ShadowInset > 0) rect.Shrink(new(ComputedStyle.ShadowInset));
 

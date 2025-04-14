@@ -78,7 +78,7 @@ public partial class Node
     {
         // Every child node must have a valid SortIndex.
         lock (_childNodes) {
-            if (child.SortIndex == 0) {
+            if (child.SortIndex == -1) {
                 child.SortIndex = _childNodes.Count - 1; // SortIndex is 0-based.
             }
         }

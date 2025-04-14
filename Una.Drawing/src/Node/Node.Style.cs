@@ -164,6 +164,10 @@ public partial class Node
     private void SignalReflow()
     {
         _mustReflow = true;
+
+        lock (_childNodes) {
+            foreach (var node in _childNodes.ToImmutableArray()) node.SignalReflow();
+        }
     }
 
     private void ClearCachedQuerySelectorsRecursively()
