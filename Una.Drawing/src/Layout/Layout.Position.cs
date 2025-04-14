@@ -53,6 +53,7 @@ internal static partial class Layout
 
         float center = 0f;
         float middle = 0f;
+        float right  = 0;
 
         if (flow == Flow.Horizontal) {
             if (anchor.IsCenter) {
@@ -63,6 +64,11 @@ internal static partial class Layout
             if (anchor.IsCenter) {
                 center = GetCenter(root);
                 x      = center - (children[firstIndex].OuterWidth / 2f);
+            } else if (anchor.IsRight) {
+                right = GetChildrenWidth(root, children);
+                x     = (originX + right) - children[firstIndex].OuterWidth;
+            } else if (anchor.IsLeft) {
+                x = originX;
             }
         }
 
@@ -132,7 +138,7 @@ internal static partial class Layout
                     } else if (anchor.IsCenter) {
                         x = center - (nextNode.OuterWidth / 2f);
                     } else if (anchor.IsRight) {
-                        x = originX - nextNode.OuterWidth;
+                        x = (originX + right) - nextNode.OuterWidth;
                     }
 
                     // Y-axis

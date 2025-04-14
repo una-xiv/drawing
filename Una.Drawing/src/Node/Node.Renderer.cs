@@ -252,8 +252,6 @@ public partial class Node
 
             _consecutiveRedraws++;
             
-            DalamudServices.PluginLog.Info($"Created new texture with node value: {NodeValue}");
-            
             // Uncomment to draw a border around the node when the texture is updated.
             // ImGui.GetForegroundDrawList().AddRect(
             //     Bounds.PaddingRect.TopLeft,

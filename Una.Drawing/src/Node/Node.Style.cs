@@ -96,24 +96,16 @@ public partial class Node
 
             if (_animation is { IsPlaying: true }) {
                 style = _animation.Update(DrawDeltaTime);
-            } else if (_animation != null) {
-                _animation = null;
-
-                if (style.TransitionAddClass != null) {
-                    ToggleClass(style.TransitionAddClass, true);
-                }
-
-                if (style.TransitionRemoveClass != null) {
-                    ToggleClass(style.TransitionRemoveClass, false);
-                }
             } else {
-                if (style.TransitionAddClass != null) {
-                    ToggleClass(style.TransitionAddClass, true);
-                }
+                _animation = null;
+            }
 
-                if (style.TransitionRemoveClass != null) {
-                    ToggleClass(style.TransitionRemoveClass, false);
-                }
+            if (style.TransitionAddClass != null) {
+                ToggleClass(style.TransitionAddClass, true);
+            }
+
+            if (style.TransitionRemoveClass != null) {
+                ToggleClass(style.TransitionRemoveClass, false);
             }
 
             int  nodeValueHash   = NodeValue?.GetHashCode() ?? 0;
@@ -163,11 +155,7 @@ public partial class Node
     /// </summary>
     private void SignalReflow()
     {
-        _mustReflow = true;
-
-        lock (_childNodes) {
-            foreach (var node in _childNodes.ToImmutableArray()) node.SignalReflow();
-        }
+        RootNode._mustReflow = true;
     }
 
     private void ClearCachedQuerySelectorsRecursively()

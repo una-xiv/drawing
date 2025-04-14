@@ -38,7 +38,7 @@ public static class Easing
         var clampedProgress = Math.Clamp(progress, 0.0, 1.0);
         if (clampedProgress == 0.0) return source;
         if (clampedProgress == 1.0) return target;
-        
+
         return source + (target - source) * (float)easingHelper(Math.Clamp(progress, 0.0, 1.0));
     }
 
@@ -203,8 +203,15 @@ public static class Easing
             : (Math.Sqrt(1.0 - Math.Pow(-2.0 * t + 2.0, 2)) + 1.0) / 2.0;
 
     // --- Back ---
-    private static double EaseInBackHelper(double  t) => C3 * t * t * t - C1 * t * t;
-    private static double EaseOutBackHelper(double t) => 1.0 + C3 * Math.Pow(t - 1.0, 3) + C1 * Math.Pow(t - 1.0, 2);
+    private static double EaseInBackHelper(double t) => C3 * t * t * t - C1 * t * t;
+
+    private static double EaseOutBackHelper(double t)
+    {
+        double tm1        = t - 1.0;
+        double tm1Squared = tm1 * tm1;
+
+        return 1.0 + tm1Squared * (C3 * tm1 + C1);
+    }
 
     private static double EaseInOutBackHelper(double t) =>
         t < 0.5
