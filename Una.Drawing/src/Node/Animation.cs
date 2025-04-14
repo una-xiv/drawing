@@ -2,7 +2,7 @@
 
 public class Animation(ComputedStyle source, ComputedStyle target)
 {
-    public bool IsPlaying  { get; private set; } = true;
+    public bool IsPlaying { get; private set; } = true;
 
     public ComputedStyle SourceStyle { get; } = source;
     public ComputedStyle TargetStyle { get; } = target;
@@ -17,7 +17,7 @@ public class Animation(ComputedStyle source, ComputedStyle target)
         _progress =  Math.Clamp(_time / TargetStyle.TransitionDuration, 0f, 1f);
 
         if (_progress >= 1f) {
-            IsPlaying  = false;
+            IsPlaying = false;
             return TargetStyle;
         }
 
@@ -30,6 +30,7 @@ public class Animation(ComputedStyle source, ComputedStyle target)
 
     private void UpdateStyle(ref ComputedStyle cs)
     {
+        cs.IsVisible                 = TargetStyle.IsVisible;
         cs.Size                      = Interpolate(SourceStyle.Size, TargetStyle.Size);
         cs.Padding                   = Interpolate(SourceStyle.Padding, TargetStyle.Padding) ?? cs.Padding;
         cs.Margin                    = Interpolate(SourceStyle.Margin, TargetStyle.Margin) ?? cs.Margin;

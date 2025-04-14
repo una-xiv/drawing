@@ -101,7 +101,7 @@ public partial class Node
                 if (style.TransitionAddClass != null) {
                     ToggleClass(style.TransitionAddClass, true);
                 }
-                
+
                 if (style.TransitionRemoveClass != null) {
                     ToggleClass(style.TransitionRemoveClass, false);
                 }
@@ -109,15 +109,13 @@ public partial class Node
                 if (style.TransitionAddClass != null) {
                     ToggleClass(style.TransitionAddClass, true);
                 }
-                
+
                 if (style.TransitionRemoveClass != null) {
                     ToggleClass(style.TransitionRemoveClass, false);
                 }
             }
 
-            _intermediateStyle = style;
-
-            bool isLayoutUpdated = false;
+            bool isLayoutUpdated = NodeValue != null && _textCachedNodeValue == null;
 
             lock (_childNodes) {
                 foreach (Node child in _childNodes.ToImmutableArray()) {
@@ -131,12 +129,12 @@ public partial class Node
             }
 
             // Update snapshot.
+            _intermediateStyle                     = style;
             _intermediateStyle.LayoutStyleSnapshot = LayoutStyleSnapshot.Create(ref _intermediateStyle);
             _intermediateStyle.PaintStyleSnapshot  = PaintStyleSnapshot.Create(ref _intermediateStyle);
-
-            ComputedStyle    = _intermediateStyle;
-            RenderHash       = _intermediateStyle.GetHash();
-            _isUpdatingStyle = false;
+            ComputedStyle                          = _intermediateStyle;
+            RenderHash                             = _intermediateStyle.GetHash();
+            _isUpdatingStyle                       = false;
 
             if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
                 SignalReflow();
@@ -145,7 +143,6 @@ public partial class Node
             }
 
             if (_previousRenderHash != RenderHash) {
-                // TODO: Replace with SignalRepaint() once whatever is causing that to spam is fixed.
                 _mustRepaint = true;
             }
 
@@ -165,14 +162,19 @@ public partial class Node
         _mustReflow = true;
     }
 
-    private void ClearCachedQuerySelectors()
+    private void ClearCachedQuerySelectorsRecursively()
     {
         CachedQuerySelectorResults.Clear();
 
         lock (_childNodes) {
             foreach (var node in _childNodes) {
-                node.ClearCachedQuerySelectors();
+                node.ClearCachedQuerySelectorsRecursively();
             }
         }
+    }
+
+    private void ClearCachedQuerySelectors()
+    {
+        RootNode.ClearCachedQuerySelectorsRecursively();
     }
 }

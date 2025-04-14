@@ -6,6 +6,7 @@ namespace Una.Drawing;
 public partial class Node
 {
     public event Action<Node>? OnClick;
+    public event Action<Node>? OnDoubleClick;
     public event Action<Node>? OnMiddleClick;
     public event Action<Node>? OnRightClick;
     public event Action<Node>? OnMouseEnter;
@@ -107,11 +108,12 @@ public partial class Node
     /// </summary>
     public static Node? DraggedNode { get; private set; }
     
-    private bool _isInWindowOrInteractiveParent;
-    private bool _didStartInteractive;
-    private bool _didStartDelayedMouseEnter;
-    private long _mouseOverStartTime;
-    private long _isVisibleSince;
+    private bool   _isInWindowOrInteractiveParent;
+    private bool   _didStartInteractive;
+    private bool   _didStartDelayedMouseEnter;
+    private double _mouseOverStartTime;
+    private double _isVisibleSince;
+    private double _lastClickTime;
 
     private void SetupInteractive(ImDrawListPtr drawList)
     {
@@ -283,6 +285,13 @@ public partial class Node
                     RaiseEvent(OnMouseUp);
                     RaiseEvent(OnClick);
                     IsMouseDown = false;
+                    
+                    var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    if (_lastClickTime > 0 && now - _lastClickTime < 250) {
+                        RaiseEvent(OnDoubleClick);
+                    }
+                    
+                    _lastClickTime = now;
                 }
 
                 if (IsMiddleMouseDown) {

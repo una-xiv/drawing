@@ -32,6 +32,7 @@ public partial class Node
     private bool      _mustReflow = true;
     private Vector2?  _lastPosition;
     private Stopwatch _metricStopwatch = new();
+    private Rect      _previousBounds  = new(0, 0, 0, 0);
 
     /// <summary>
     /// Computes the bounding size of this node and all its descendants. This method
@@ -57,7 +58,7 @@ public partial class Node
         _metricStopwatch.Restart();
         Layout.ComputeBounds(this);
         ReflowTime = _metricStopwatch.Elapsed.TotalMilliseconds;
-        
+
         InvokeReflowHook();
 
         _lastPosition = position;

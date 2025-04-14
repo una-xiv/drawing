@@ -2,6 +2,7 @@
 using ImGuiNET;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Una.Drawing.Texture;
 
@@ -100,6 +101,8 @@ public partial class Node
     private int  _previousRenderHash;
     private uint _colorThemeVersion;
     private bool _mustRepaint;
+    private int  _lastNodeValueHash;
+    private Lock _textureLock = new();
 
     private          IDalamudTextureWrap? _texture;
     private readonly List<ImDrawListPtr>  _drawLists = [];
@@ -142,6 +145,17 @@ public partial class Node
     private void Draw(ImDrawListPtr drawList)
     {
         if (IsDisposed) return;
+
+        if (!_previousBounds.Equals(Bounds.ContentRect)) {
+            _previousBounds = Bounds.ContentRect;
+            _mustRepaint    = true;
+        }
+        
+        int nodeValueHash = NodeValue?.GetHashCode() ?? 0;
+        if (_lastNodeValueHash != nodeValueHash) {
+            _lastNodeValueHash = nodeValueHash;
+            _mustRepaint       = true;
+        }
 
         TrackNodeRef(this);
         CheckDroppableNode();
@@ -189,14 +203,16 @@ public partial class Node
         Vector2 offset      = new(32, 32);
 
         if (null != _texture) {
-            drawList.AddImage(
-                _texture.ImGuiHandle,
-                topLeft - offset,
-                bottomRight + offset,
-                Vector2.Zero,
-                Vector2.One,
-                GetRenderColor()
-            );
+            lock (_textureLock) {
+                drawList.AddImage(
+                    _texture.ImGuiHandle,
+                    topLeft - offset,
+                    bottomRight + offset,
+                    Vector2.Zero,
+                    Vector2.One,
+                    GetRenderColor()
+                );
+            }
         }
 
         ImDrawListPtr? childDrawList = _drawLists.LastOrDefault();
@@ -241,13 +257,28 @@ public partial class Node
         if (_mustRepaint && hasDrawables && Width > 0 && Height > 0) {
             Vector2 padding = new(64, 64); // Optimization point: Only add padding when needed.
 
-            _texture?.Dispose();
-            _texture = Renderer.CreateTexture(this, padding);
+            lock (_textureLock) {
+                _texture?.Dispose();
+                _texture = Renderer.CreateTexture(this, padding);
+            }
+
             _consecutiveRedraws++;
+            
+            DalamudServices.PluginLog.Info($"Created new texture with node value: {NodeValue}");
+            
+            // Uncomment to draw a border around the node when the texture is updated.
+            ImGui.GetForegroundDrawList().AddRect(
+                Bounds.PaddingRect.TopLeft,
+                Bounds.PaddingRect.BottomRight,
+                0xFFFF00FF,
+                0f,
+                ImDrawFlags.RoundCornersNone,
+                3.0f
+            );
         } else {
             _consecutiveRedraws = 0;
         }
-
+        
         _mustRepaint = false;
 
         if (_consecutiveRedraws > 3000) {

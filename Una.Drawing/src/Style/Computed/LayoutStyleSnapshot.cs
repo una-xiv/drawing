@@ -1,6 +1,6 @@
 ﻿namespace Una.Drawing;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
+[StructLayout(LayoutKind.Sequential)]
 internal struct LayoutStyleSnapshot
 {
     internal bool                 IsVisible;

@@ -2,7 +2,7 @@
 
 namespace Una.Drawing;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
+[StructLayout(LayoutKind.Sequential)]
 internal struct PaintStyleSnapshot
 {
     internal Anchor.AnchorPoint TextAlign;

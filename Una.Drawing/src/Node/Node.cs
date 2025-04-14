@@ -77,8 +77,13 @@ public partial class Node : IDisposable
             _nodeValue           = value;
             _textCachedNodeValue = null;
 
-            OnPropertyChanged?.Invoke("NodeValue", _nodeValue);
+            _texture?.Dispose();
+            _texture     = null;
             _mustRepaint = true;
+            _mustReflow  = true;
+
+            OnPropertyChanged?.Invoke("NodeValue", _nodeValue);
+
             SignalReflow();
         }
     }
@@ -124,7 +129,7 @@ public partial class Node : IDisposable
 
             ClearCachedQuerySelectors();
             _tagsList.Clear();
-            
+
             foreach (string v in value) _tagsList.Add(v);
             OnPropertyChanged?.Invoke("TagsList", _tagsList);
         }
@@ -289,13 +294,13 @@ public partial class Node : IDisposable
         _tagsList.ItemAdded += t => {
             ClearCachedQuerySelectors();
             OnTagAdded?.Invoke(t);
-            // SignalReflow();
+            SignalReflow();
         };
 
         _tagsList.ItemRemoved += t => {
             ClearCachedQuerySelectors();
             OnTagRemoved?.Invoke(t);
-            // SignalReflow();
+            SignalReflow();
         };
 
         FontRegistry.FontChanged += OnFontConfigurationChanged;
@@ -322,6 +327,7 @@ public partial class Node : IDisposable
         Tooltip   = null;
 
         DisposeEventHandlersOf(OnClick);
+        DisposeEventHandlersOf(OnDoubleClick);
         DisposeEventHandlersOf(OnMouseDown);
         DisposeEventHandlersOf(OnMouseUp);
         DisposeEventHandlersOf(OnMouseEnter);
@@ -438,7 +444,7 @@ public partial class Node : IDisposable
     public void ToggleTag(string tag, bool? enabled = null)
     {
         if (InheritTags) return;
-        
+
         if (enabled == null) {
             if (_tagsList.Contains(tag)) {
                 RemoveTag(tag);
@@ -458,19 +464,19 @@ public partial class Node : IDisposable
     {
         return _tagsList.Contains(tag);
     }
-    
+
     public void AddTag(string tag)
     {
         if (InheritTags) return;
-        
+
         if (_tagsList.Contains(tag)) return;
         _tagsList.Add(tag);
     }
-    
+
     public void RemoveTag(string tag)
     {
         if (InheritTags) return;
-        
+
         if (!_tagsList.Contains(tag)) return;
         _tagsList.Remove(tag);
     }
@@ -498,8 +504,7 @@ public partial class Node : IDisposable
         _textCachedWordWrap  = null;
         _textCachedNodeValue = null;
         _mustReflow          = true;
-        
-        // SignalRepaint();
+        _mustRepaint         = true;
     }
 
     private void HandleChildListChanged(object? _, NotifyCollectionChangedEventArgs e)

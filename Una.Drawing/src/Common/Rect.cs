@@ -1,6 +1,6 @@
 ﻿namespace Una.Drawing;
 
-public class Rect(float x1, float y1, float x2, float y2)
+public class Rect(float x1, float y1, float x2, float y2) : IEquatable<Rect>
 {
     public float X1 { get; set; } = x1;
     public float Y1 { get; set; } = y1;
@@ -102,5 +102,15 @@ public class Rect(float x1, float y1, float x2, float y2)
     public override string ToString()
     {
         return $"({X1}x{Y1} - {X2}x{Y2})";
+    }
+
+    public bool Equals(Rect? other)
+    {
+        return (
+            Math.Abs((other?.X1 ?? 0) - X1) < 0.1f && 
+            Math.Abs((other?.Y1 ?? 0) - Y1) < 0.1f && 
+            Math.Abs((other?.X2 ?? 0) - X2) < 0.1f && 
+            Math.Abs((other?.Y2 ?? 0) - Y2) < 0.1f
+        );
     }
 }
