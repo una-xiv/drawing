@@ -57,6 +57,7 @@ public partial class Node
     private int           _computeStyleLock;
     private Animation?    _animation;
     private int           _lastStyleHash;
+    private int           _lastNodeValueHash;
 
     private readonly Lock _lockObject = new();
 
@@ -115,7 +116,8 @@ public partial class Node
                 }
             }
 
-            bool isLayoutUpdated = NodeValue != null && _textCachedNodeValue == null;
+            int  nodeValueHash   = NodeValue?.GetHashCode() ?? 0;
+            bool isLayoutUpdated = nodeValueHash != _lastNodeValueHash;
 
             lock (_childNodes) {
                 foreach (Node child in _childNodes.ToImmutableArray()) {
@@ -142,12 +144,14 @@ public partial class Node
                 isLayoutUpdated = true;
             }
 
-            if (_previousRenderHash != RenderHash) {
+            if (_previousRenderHash != RenderHash || _lastNodeValueHash != nodeValueHash) {
                 _mustRepaint = true;
             }
 
             // Release lock.
             Interlocked.Exchange(ref _computeStyleLock, 0);
+
+            _lastNodeValueHash = nodeValueHash;
 
             return isLayoutUpdated;
         }

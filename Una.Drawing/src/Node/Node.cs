@@ -76,11 +76,8 @@ public partial class Node : IDisposable
 
             _nodeValue           = value;
             _textCachedNodeValue = null;
-
-            _texture?.Dispose();
-            _texture     = null;
-            _mustRepaint = true;
-            _mustReflow  = true;
+            _mustRepaint         = true;
+            _mustReflow          = true;
 
             OnPropertyChanged?.Invoke("NodeValue", _nodeValue);
 
