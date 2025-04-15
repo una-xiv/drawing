@@ -80,7 +80,6 @@ public partial class Node
             if (IsDisposed) return false;
 
             (int hash, ComputedStyle style) = ComputedStyleFactory.Create(this);
-            ComputedStyle.CommitResult result = style.Commit(ref _intermediateStyle);
 
             if (_lastStyleHash != hash) {
                 _lastStyleHash = hash;
@@ -96,17 +95,16 @@ public partial class Node
 
             if (_animation is { IsPlaying: true }) {
                 style = _animation.Update(DrawDeltaTime);
-            } else {
-                _animation = null;
             }
 
-            if (style.TransitionAddClass != null) {
-                ToggleClass(style.TransitionAddClass, true);
+            if (_animation is { IsPlaying: false }) {
+                TransitionToConfiguredClass(ref style);
+                _animation = null;            
+            } else if (_animation is null) {
+                TransitionToConfiguredClass(ref style);
             }
-
-            if (style.TransitionRemoveClass != null) {
-                ToggleClass(style.TransitionRemoveClass, false);
-            }
+            
+            ComputedStyle.CommitResult result = style.Commit(ref _intermediateStyle);
 
             int  nodeValueHash   = NodeValue?.GetHashCode() ?? 0;
             bool isLayoutUpdated = nodeValueHash != _lastNodeValueHash;
@@ -148,6 +146,18 @@ public partial class Node
             return isLayoutUpdated;
         }
     }
+
+    private void TransitionToConfiguredClass(ref ComputedStyle style)
+    {
+        if (style.TransitionAddClass != null) {
+            ToggleClass(style.TransitionAddClass, true);
+        }
+
+        if (style.TransitionRemoveClass != null) {
+            ToggleClass(style.TransitionRemoveClass, false);
+        }
+    }
+    
 
     /// <summary>
     /// Invokes the reflow event, signaling that the layout of this element

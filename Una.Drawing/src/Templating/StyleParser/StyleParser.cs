@@ -112,7 +112,7 @@ public class StyleParser
         _stylesheet.AddRule(selector, style);
         if (_deferredRules.Count <= 0) return;
 
-        for (var i = _deferredRules.Count - 1; i >= 0; i--) {
+        for (var i = 0; i < _deferredRules.Count; i++) {
             (string qs, Style s) = _deferredRules[i];
             _stylesheet.AddRule(qs, s);
         }

@@ -9,12 +9,35 @@ internal static class ComputedStyleFactory
         var computedStyle = CreateDefault();
         var hashCode      = new HashCode();
 
+        // if (node.Stylesheet is not null) {
+        //     foreach ((Stylesheet.Rule rule, Style style) in node.Stylesheet.Rules) {
+        //         if (rule.Matches(node)) {
+        //             Apply(ref computedStyle, style);
+        //             hashCode.Add(rule.ToString());
+        //         }
+        //     }
+        // }
+
         if (node.Stylesheet is not null) {
-            foreach ((Stylesheet.Rule rule, Style style) in node.Stylesheet.Rules) {
+            List<Stylesheet.Rule> matchingRules = [];
+
+            foreach (var rule in node.Stylesheet.Rules.Keys) {
                 if (rule.Matches(node)) {
-                    Apply(ref computedStyle, style);
-                    hashCode.Add(rule.ToString());
+                    matchingRules.Add(rule);
                 }
+            }
+
+            matchingRules.Sort((a, b) => {
+                int specificityComparison = a.Specificity.CompareTo(b.Specificity);
+                
+                return specificityComparison != 0 
+                    ? specificityComparison
+                    : a.SourceOrderIndex.CompareTo(b.SourceOrderIndex);
+            });
+
+            foreach (var rule in matchingRules) {
+                Apply(ref computedStyle, node.Stylesheet.Rules[rule]);
+                hashCode.Add(rule.ToString());
             }
         }
 

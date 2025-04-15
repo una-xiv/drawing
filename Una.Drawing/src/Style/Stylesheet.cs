@@ -22,7 +22,7 @@ public class Stylesheet
         List<QuerySelector> results = QuerySelectorParser.Parse(query);
 
         foreach (var qs in results) {
-            Rules.Add(new(qs), style);
+            Rules.Add(new(qs, Rules.Count), style);
         }
     }
 
@@ -57,9 +57,13 @@ public class Stylesheet
 
         return rules;
     }
-    
-    internal class Rule(QuerySelector querySelector)
+
+    internal class Rule(QuerySelector querySelector, int sourceOrderIndex)
     {
+        public readonly int SourceOrderIndex = sourceOrderIndex;
+
+        public Specificity Specificity = Specificity.Calculate(querySelector.ToString());
+
         public override string ToString()
         {
             return querySelector.ToString();
@@ -68,6 +72,29 @@ public class Stylesheet
         public bool Matches(Node node)
         {
             return querySelector.Matches(node);
+        }
+    }
+
+    internal readonly struct Specificity(int idCount, int classTagCount) : IComparable<Specificity>
+    {
+        private readonly int _idCount       = idCount;
+        private readonly int _classTagCount = classTagCount;
+
+        public int CompareTo(Specificity other)
+        {
+            return _idCount != other._idCount 
+                ? _idCount.CompareTo(other._idCount) 
+                : _classTagCount.CompareTo(other._classTagCount);
+        }
+
+        public override string ToString() => $"({_idCount},{_classTagCount})";
+
+        public static Specificity Calculate(string selector)
+        {
+            var idCount       = selector.Split('#').Length - 1;
+            var classTagCount = (selector.Split('.').Length - 1) + (selector.Split(':').Length - 1);
+
+            return new Specificity(idCount, classTagCount);
         }
     }
 
