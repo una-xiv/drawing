@@ -23,8 +23,7 @@ public partial class Node
     /// </summary>
     public bool IsInteractive =>
         !IsDisabled && (
-            null != Tooltip
-            || null != OnClick
+            null != OnClick
             || null != OnMiddleClick
             || null != OnRightClick
             || null != OnMouseEnter
@@ -120,6 +119,7 @@ public partial class Node
         _didStartInteractive = false;
 
         ToggleTag("disabled", IsDisabled);
+        RenderTooltip();
         
         if (!InheritTags && HasTag("hover") && IsDisabled) {
             RemoveTag("hover");
@@ -238,20 +238,6 @@ public partial class Node
             case false when HasTag("active"):
                 RemoveTag("active");
                 break;
-        }
-
-        if (Tooltip != null && isHovered && _mouseOverStartTime < DateTimeOffset.Now.ToUnixTimeMilliseconds() - 500) {
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 6));
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 6);
-            ImGui.PushStyleColor(ImGuiCol.Border, 0xFF3F3F3F);
-            ImGui.PushStyleColor(ImGuiCol.WindowBg, 0xFF252525);
-            ImGui.PushStyleColor(ImGuiCol.Text, 0xFFCACACA);
-            ImGui.BeginTooltip();
-            ImGui.SetCursorPos(new(8, 4));
-            ImGui.TextUnformatted(Tooltip);
-            ImGui.EndTooltip();
-            ImGui.PopStyleColor(3);
-            ImGui.PopStyleVar(2);
         }
 
         switch (wasHovered) {
@@ -407,6 +393,37 @@ public partial class Node
 
         foreach (Delegate handler in action.GetInvocationList()) {
             if (handler is Action del) action -= del;
+        }
+    }
+
+    private double _tooltipHoverStartTime;
+    
+    private void RenderTooltip()
+    {
+        if (string.IsNullOrWhiteSpace(Tooltip)) return;
+        
+        if (!IsMouseInNodeBounds(this)) {
+            _tooltipHoverStartTime = 0;
+            return;
+        }
+        
+        var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        if (_tooltipHoverStartTime == 0) {
+            _tooltipHoverStartTime = now;
+        }
+        
+        if (_tooltipHoverStartTime < now - 500) {
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 6));
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 6);
+            ImGui.PushStyleColor(ImGuiCol.PopupBg, 0xFF353535);
+            ImGui.PushStyleColor(ImGuiCol.Text, 0xFFCACACA);
+            ImGui.BeginTooltip();
+            ImGui.PushTextWrapPos(420.0f);
+            ImGui.TextUnformatted(Tooltip);
+            ImGui.EndTooltip();
+            ImGui.PopStyleColor(2);
+            ImGui.PopStyleVar(2);
+            DebugLogger.Log($"Render tooltip now!");
         }
     }
 

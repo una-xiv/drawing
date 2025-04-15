@@ -12,7 +12,8 @@ internal partial class DynamicFont
     /// </summary>
     private float GetChunkWidth(Chunk chunk, int fontSize)
     {
-        return GetFont(chunk, fontSize).MeasureText(chunk.Text);
+        SKFont font = GetFont(chunk, fontSize);
+        return font.MeasureText(chunk.Text.Length > 2 ? (chunk.Text + " ") : chunk.Text);
     }
 
     /// <summary>
