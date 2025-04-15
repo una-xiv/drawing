@@ -24,7 +24,7 @@ public class SeStringGenerator : IGenerator
                                .Size.Width;
 
         float y = origin.X + (metrics.CapHeight) + outlineSize;
-        float x = origin.Y + node.ComputedStyle.TextOffset.X + 1;
+        float x = origin.Y + node.ComputedStyle.TextOffset.Y;
 
         if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
         if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;
@@ -69,7 +69,8 @@ public class SeStringGenerator : IGenerator
                     x += spaceWidth;
 
                     GfdIcon gfdIcon = GfdIconRepository.GetIcon(icon.Icon);
-
+                    // TODO: Handle icon size
+                    
                     using SKPaint gfdPaint = new();
 
                     canvas.DrawImage(

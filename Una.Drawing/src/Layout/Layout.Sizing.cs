@@ -72,7 +72,7 @@ internal static partial class Layout
         float outerH = node.ComputedStyle.Padding.VerticalSize + node.ComputedStyle.Margin.VerticalSize;
         
         var finalContentWidth = isAutoWidth
-            ? Math.Max(childrenCalculatedWidth, textSize.Width)
+            ? Math.Max(childrenCalculatedWidth, textSize.Width + 2)
             : node.ComputedStyle.Size.Width - outerW;
 
         var finalContentHeight = isAutoHeight
