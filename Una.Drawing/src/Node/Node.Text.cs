@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Una.Drawing.Font;
+using Una.Drawing.Texture;
 
 namespace Una.Drawing;
 
@@ -56,8 +57,6 @@ public partial class Node
             return NodeValueMeasurement?.Size ?? new();
         }
 
-        // SignalRepaint();
-
         _textCachedNodeValue = _nodeValue;
         _textCachedWordWrap  = ComputedStyle.WordWrap;
         _textCachedPadding   = ComputedStyle.Padding.Copy();
@@ -102,6 +101,12 @@ public partial class Node
         Size  charSize   = font.MeasureText("X", ComputedStyle.FontSize, ComputedStyle.OutlineSize).Size;
         float spaceWidth = charSize.Width;
 
+        var maxLineWidth = Math.Max(0, ComputedStyle.Size.Width);
+
+        if (maxLineWidth == 0 && ComputedStyle.AutoSize.Horizontal == AutoSize.Grow) {
+            maxLineWidth = Math.Max(0, Bounds.ContentSize.Width);
+        }
+        
         foreach (var payload in str.Payloads) {
             switch (payload) {
                 case TextPayload text:
@@ -110,25 +115,21 @@ public partial class Node
                     MeasuredText measurement = font.MeasureText(
                         text.Text,
                         ComputedStyle.FontSize,
-                        ComputedStyle.OutlineSize
+                        maxLineWidth,
+                        ComputedStyle.WordWrap,
+                        ComputedStyle.TextOverflow,
+                        ComputedStyle.LineHeight,
+                        ComputedStyle.MaxWidth
                     );
-
-                    if (ComputedStyle.MaxWidth > 0 && maxWidth + measurement.Size.Width > ComputedStyle.MaxWidth) {
-                        measurement = font.MeasureText(
-                            text.Text,
-                            ComputedStyle.FontSize,
-                            null,
-                            false,
-                            false,
-                            maxWidth: ComputedStyle.MaxWidth - maxWidth
-                        );
-                    }
+                    
+                    DebugLogger.Log($"Text width: {text.Text} = {measurement.Size.Width}");
 
                     maxWidth  += measurement.Size.Width;
                     maxHeight =  Math.Max(maxHeight, measurement.Size.Height);
                     continue;
-                case IconPayload:
-                    maxWidth += spaceWidth + 20 + spaceWidth;
+                case IconPayload icon:
+                    GfdIcon gfdIcon = GfdIconRepository.GetIcon(icon.Icon);
+                    maxWidth += gfdIcon.Size.X;
                     continue;
             }
         }

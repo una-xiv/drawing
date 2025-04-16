@@ -15,22 +15,25 @@ public class SeStringGenerator : IGenerator
     {
         if (node.NodeValue is not SeString seString || seString.Payloads.Count == 0) return false;
 
-        Size  size        = node.NodeValueMeasurement!.Value.Size;
-        IFont font        = FontRegistry.Fonts[node.ComputedStyle.Font];
-        float outlineSize = node.ComputedStyle.OutlineSize;
-        var   metrics     = font.GetMetrics(node.ComputedStyle.FontSize);
+        Size  size       = node.NodeValueMeasurement!.Value.Size;
+        IFont font       = FontRegistry.Fonts[node.ComputedStyle.Font];
+        int   fontSize   = node.ComputedStyle.FontSize;
+        float lineHeight = font.GetLineHeight(fontSize);
+        var   metrics    = font.GetMetrics(node.ComputedStyle.FontSize);
 
         float spaceWidth = font.MeasureText("X", node.ComputedStyle.FontSize, node.ComputedStyle.OutlineSize)
                                .Size.Width;
 
-        float y = origin.X + (metrics.CapHeight) + outlineSize;
-        float x = origin.Y + node.ComputedStyle.TextOffset.Y;
+        var y = origin.Y + (lineHeight + node.ComputedStyle.TextOffset.Y) - metrics.Descent - 1.5f;
+        var x = origin.X + node.ComputedStyle.TextOffset.X;
 
-        if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top + outlineSize;
-        if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left + outlineSize;
-        if (node.ComputedStyle.TextAlign.IsRight) x  += -(node.ComputedStyle.Padding.Right + outlineSize);
-        if (node.ComputedStyle.TextAlign.IsMiddle) y += (node.Height - size.Height) / 2 + outlineSize;
-        if (node.ComputedStyle.TextAlign.IsBottom) y =  node.Height - size.Height - outlineSize;
+        y = (int)Math.Ceiling(y);
+
+        if (node.ComputedStyle.TextAlign.IsTop) y    += node.ComputedStyle.Padding.Top;
+        if (node.ComputedStyle.TextAlign.IsLeft) x   += node.ComputedStyle.Padding.Left;
+        if (node.ComputedStyle.TextAlign.IsRight) x  -= node.ComputedStyle.Padding.Right;
+        if (node.ComputedStyle.TextAlign.IsMiddle) y += (node.Height - size.Height) / 2f;
+        if (node.ComputedStyle.TextAlign.IsBottom) y += node.Height - size.Height;
 
         SKColor  prevColor     = Color.ToSkColor(node.ComputedStyle.Color);
         SKColor  color         = prevColor;
@@ -69,7 +72,6 @@ public class SeStringGenerator : IGenerator
                     x += spaceWidth;
 
                     GfdIcon gfdIcon = GfdIconRepository.GetIcon(icon.Icon);
-                    // TODO: Handle icon size
                     
                     using SKPaint gfdPaint = new();
 
@@ -77,15 +79,15 @@ public class SeStringGenerator : IGenerator
                         gfdIcon.Texture,
                         new(gfdIcon.Uv0.X, gfdIcon.Uv0.Y, gfdIcon.Uv1.X, gfdIcon.Uv1.Y),
                         new SKRect(
-                            x - 4,
-                            y - (metrics.CapHeight) - 6,
-                            x + 22,
-                            y - (metrics.CapHeight) + 19
+                            x,
+                            y - (gfdIcon.Size.Y / 2f) - 4,
+                            x + gfdIcon.Size.X,
+                            y + (gfdIcon.Size.Y / 2f) - 4
                         ),
                         gfdPaint
                     );
 
-                    x += 20 + spaceWidth;
+                    x += gfdIcon.Size.X;
                     continue;
                 }
             }
@@ -101,8 +103,7 @@ public class SeStringGenerator : IGenerator
 
         IFont font = FontRegistry.Fonts[node.ComputedStyle.Font];
 
-        MeasuredText measurements = font.MeasureText(text, node.ComputedStyle.FontSize, node.ComputedStyle.OutlineSize,
-            maxWidth: maxWidth - currentWidth);
+        MeasuredText measurements = font.MeasureText(text, node.ComputedStyle.FontSize, maxWidth: maxWidth - currentWidth);
 
         if (measurements.Size.Width == 0) return 0;
         text = measurements.Lines[0];

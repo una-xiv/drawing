@@ -1,0 +1,17 @@
+﻿<udt>
+    <node id="main">
+        <node id="SeString" class="test"/>
+        <node id="String" class="test"/>
+    </node>
+    
+    <![CDATA[
+    #main {
+        gap: 10;
+    }
+    .test {
+        padding: 2;
+        background-color: 0xFF000000;
+        border-color: 0xA0FFFFFF;
+    }
+    ]]>
+</udt>
