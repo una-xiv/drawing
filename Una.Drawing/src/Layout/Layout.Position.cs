@@ -142,12 +142,12 @@ internal static partial class Layout
                     }
 
                     // Y-axis
-                    y += node.OuterHeight + gap;
+                    if (!anchor.IsNone) y += node.OuterHeight + gap;
                     break;
                 case Flow.Horizontal:
                 default:
                     // X-axis
-                    x += node.OuterWidth + gap;
+                    if (!anchor.IsNone) x += node.OuterWidth + gap;
 
                     // Y-axis
                     if (anchor.IsTop) {
@@ -168,6 +168,10 @@ internal static partial class Layout
 
     private static (float, float) GetNodeOrigin(Anchor anchor, Node root, List<Node> children)
     {
+        if (anchor.IsNone) {
+            return (root.Bounds.ContentRect.X1, root.Bounds.ContentRect.Y1);
+        }
+
         float x = 0;
         float y = 0;
 

@@ -92,8 +92,6 @@ public partial class Node
                 AnchorToChildNodes.Clear();
 
                 foreach (Node child in _childNodes) {
-                    if (child.ComputedStyle.Anchor == Anchor.AnchorPoint.None) continue;
-
                     if (!AnchorToChildNodes.ContainsKey(child.ComputedStyle.Anchor.Point)) {
                         AnchorToChildNodes[child.ComputedStyle.Anchor.Point] = [];
                     }

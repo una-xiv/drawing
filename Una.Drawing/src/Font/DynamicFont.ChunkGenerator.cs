@@ -35,7 +35,7 @@ internal partial class DynamicFont
             Chunk.Kind currentKind = CharIsGlyph(c) ? Chunk.Kind.Glyph : Chunk.Kind.Text;
             
             if (currentKind != lastKind) {
-                chunks.Add(new(lastKind, buffer.ToString(), color, edgeColor, font.MeasureText(buffer.ToString())));
+                chunks.Add(new(lastKind, buffer.ToString(), color, edgeColor, font.MeasureText(buffer.ToString()) + 1f));
                 buffer.Clear();
                 lastKind = currentKind;
             }
@@ -44,7 +44,9 @@ internal partial class DynamicFont
             buffer.Append(c);
         }
 
-        if (buffer.Length > 0) chunks.Add(new(lastKind, buffer.ToString(), color, edgeColor, font.MeasureText(buffer.ToString())));
+        if (buffer.Length > 0) {
+            chunks.Add(new(lastKind, buffer.ToString(), color, edgeColor, font.MeasureText(buffer.ToString()) + 1f));
+        }
 
         return chunks;
     }

@@ -12,19 +12,20 @@ public partial class Node
     private bool?    _textCachedWordWrap;
     private Size?    _textCachedNodeSize;
     private float?   _textCachedMaxWidth;
+    private bool     _mustRecomputeNodeValue = true;
 
     internal MeasuredText? NodeValueMeasurement { get; private set; }
 
     internal void ClearTextCache()
     {
-        _textCachedPadding   = new();
-        _textCachedNodeValue = null;
-        _textCachedFontId    = null;
-        _textCachedFontSize  = null;
-        _textCachedWordWrap  = null;
-        _textCachedNodeSize  = null;
-        _textCachedMaxWidth  = null;
-        NodeValueMeasurement = null;
+        _textCachedPadding      = new();
+        _textCachedNodeValue    = null;
+        _textCachedFontId       = null;
+        _textCachedFontSize     = null;
+        _textCachedWordWrap     = null;
+        _textCachedNodeSize     = null;
+        _textCachedMaxWidth     = null;
+        _mustRecomputeNodeValue = true;
     }
 
     /// <summary>
@@ -43,14 +44,18 @@ public partial class Node
     /// </summary>
     internal Size ComputeContentSizeFromText()
     {
-        if ((_nodeValue is not string str || string.IsNullOrEmpty(str)) && (_nodeValue is not SeString seStr || seStr.Payloads.Count == 0)) {
+        if (!_mustRecomputeNodeValue && (_nodeValue is not string str || string.IsNullOrEmpty(str)) && (_nodeValue is not SeString seStr || seStr.Payloads.Count == 0)) {
             return new(0, 0);
         }
 
-        if (false == MustRecomputeNodeValue()) {
+        if (!_mustRecomputeNodeValue && false == MustRecomputeNodeValue()) {
             return NodeValueMeasurement?.Size ?? new();
         }
 
+        if (_mustRecomputeNodeValue) {
+            _mustRecomputeNodeValue = false;
+        }
+        
         _textCachedNodeValue = _nodeValue;
         _textCachedWordWrap  = ComputedStyle.WordWrap;
         _textCachedPadding   = ComputedStyle.Padding.Copy();

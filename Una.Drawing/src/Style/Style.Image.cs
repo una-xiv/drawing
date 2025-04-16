@@ -1,10 +1,16 @@
-﻿namespace Una.Drawing;
+﻿using Dalamud.Game.Text.SeStringHandling;
+
+namespace Una.Drawing;
 
 public partial class Style
 {
     /// <summary>
     /// Draws a game icon in the node.
     /// </summary>
+    /// <remarks>
+    /// This value is mutually exclusive with <see cref="BitmapFontIcon"/>
+    /// and <see cref="UldResource"/> and its associated properties.
+    /// </remarks>
     public uint? IconId { get; set; }
 
     /// <summary>
@@ -81,23 +87,48 @@ public partial class Style
     public Vector2? ImageBlur { get; set; }
     
     /// <summary>
+    /// Defines the bitmap font icon to render.
+    /// </summary>
+    /// <remarks>
+    /// This value is mutually exclusive with <see cref="IconId"/> and
+    /// <see cref="UldResource"/> and its associated properties.
+    /// </remarks>
+    public BitmapFontIcon? BitmapFontIcon { get; set; }
+    
+    /// <summary>
     /// Defines the resource path of the ULD file to be displayed in the node.
     /// </summary>
+    /// <remarks>
+    /// This value is mutually exclusive with <see cref="IconId"/>
+    /// and <see cref="BitmapFontIcon"/>.
+    /// </remarks>
     public string? UldResource { get; set; }
 
     /// <summary>
     /// The ULD style to be displayed in the node.
     /// </summary>
+    /// <remarks>
+    /// This value is mutually exclusive with <see cref="IconId"/>
+    /// and <see cref="BitmapFontIcon"/>.
+    /// </remarks>
     public UldStyle? UldStyle { get; set; }
 
     /// <summary>
     /// Defines the ULD parts id to be displayed in the node.
     /// </summary>
+    /// <remarks>
+    /// This value is mutually exclusive with <see cref="IconId"/>
+    /// and <see cref="BitmapFontIcon"/>.
+    /// </remarks>
     public int? UldPartsId { get; set; }
 
     /// <summary>
     /// Defines the ULD part id to be displayed in the node.
     /// </summary>
+    /// <remarks>
+    /// This value is mutually exclusive with <see cref="IconId"/>
+    /// and <see cref="BitmapFontIcon"/>.
+    /// </remarks>
     public int? UldPartId { get; set; }
     
     /// <summary>

@@ -1,4 +1,6 @@
-﻿namespace Una.Drawing;
+﻿using Dalamud.Game.Text.SeStringHandling;
+
+namespace Una.Drawing;
 
 [StructLayout(LayoutKind.Sequential)]
 public partial struct ComputedStyle
@@ -138,6 +140,9 @@ public partial struct ComputedStyle
     /// <inheritdoc cref="Style.DropShadow"/>
     public Vector4 DropShadow;
 
+    /// <inheritdoc cref="Style.BitmapFontIcon"/>
+    public BitmapFontIcon? BitmapFontIcon;
+    
     /// <inheritdoc cref="Style.IconId"/>
     public uint? IconId;
 

@@ -187,6 +187,10 @@ internal class ImageGenerator : IGenerator
             return TextureLoader.LoadIcon(node.ComputedStyle.IconId.Value);
         }
 
+        if (node.ComputedStyle.BitmapFontIcon is not null) {
+            return TextureLoader.LoadGfdIcon(node.ComputedStyle.BitmapFontIcon.Value);
+        }
+
         if (!string.IsNullOrWhiteSpace(node.ComputedStyle.UldResource) && node.ComputedStyle is
             { UldPartsId: not null, UldPartId: not null }) {
             var uld = TextureLoader.LoadUld(

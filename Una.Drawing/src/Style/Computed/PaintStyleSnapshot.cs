@@ -1,4 +1,5 @@
-﻿using Lumina.Misc;
+﻿using Dalamud.Game.Text.SeStringHandling;
+using Lumina.Misc;
 
 namespace Una.Drawing;
 
@@ -49,6 +50,7 @@ internal struct PaintStyleSnapshot
     internal float              TextShadowSize;
     internal uint?              TextShadowColor;
     internal Vector4?           DropShadow;
+    internal BitmapFontIcon?    BitmapFontIcon;
     internal uint?              IconId;
     internal float?             ImageInsetTop;
     internal float?             ImageInsetRight;
@@ -120,6 +122,7 @@ internal struct PaintStyleSnapshot
             TextShadowSize                = style.TextShadowSize,
             TextShadowColor               = style.TextShadowColor?.ToUInt(),
             DropShadow                    = style.DropShadow,
+            BitmapFontIcon                = style.BitmapFontIcon,
             IconId                        = style.IconId,
             ImageInsetTop                 = style.ImageInset?.Top,
             ImageInsetRight               = style.ImageInset?.Right,
@@ -145,7 +148,7 @@ internal struct PaintStyleSnapshot
             UldStyle                      = style.UldStyle,
         };
     }
-    
+
     public override int GetHashCode()
     {
         HashCode hash = new();

@@ -19,11 +19,12 @@ public class Anchor(Anchor.AnchorPoint point)
     public Vector2 GetOffset(Vector2 size)
     {
         return Point switch {
+            AnchorPoint.None         => Vector2.Zero,
             AnchorPoint.TopLeft      => new(0, 0),
             AnchorPoint.TopCenter    => new(-size.X / 2, 0),
             AnchorPoint.TopRight     => new(-size.X, 0),
-            AnchorPoint.MiddleLeft   => new(0, -size.Y       / 2),
-            AnchorPoint.MiddleCenter => new(-size.X          / 2, -size.Y / 2),
+            AnchorPoint.MiddleLeft   => new(0, -size.Y / 2),
+            AnchorPoint.MiddleCenter => new(-size.X / 2, -size.Y / 2),
             AnchorPoint.MiddleRight  => new(-size.X, -size.Y / 2),
             AnchorPoint.BottomLeft   => new(0, -size.Y),
             AnchorPoint.BottomCenter => new(-size.X / 2, -size.Y),
@@ -86,8 +87,8 @@ public class Anchor(Anchor.AnchorPoint point)
     public static bool operator !=(Anchor      left, Anchor      right) => left.Point != right.Point;
     public static bool operator ==(Anchor      left, AnchorPoint right) => left.Point == right;
     public static bool operator !=(Anchor      left, AnchorPoint right) => left.Point != right;
-    public static bool operator ==(AnchorPoint left, Anchor      right) => left       == right.Point;
-    public static bool operator !=(AnchorPoint left, Anchor      right) => left       != right.Point;
+    public static bool operator ==(AnchorPoint left, Anchor      right) => left == right.Point;
+    public static bool operator !=(AnchorPoint left, Anchor      right) => left != right.Point;
 
     public override bool Equals(object? obj) =>
         (obj is Anchor a && a.Point == Point) || (obj is AnchorPoint p && p == Point);

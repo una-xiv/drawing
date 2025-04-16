@@ -39,8 +39,10 @@ internal static partial class Layout
         foreach (Node child in node.ChildNodes) {
             if (child.IsDisposed || !child.ComputedStyle.IsVisible) continue;
 
-            visibleChildCount++;            // Count only visible children for gap calculation.
-            ComputeFixedAndFitSizes(child); // Recurse reverse-breadth-first.
+            ComputeFixedAndFitSizes(child);
+
+            if (child.ComputedStyle.Anchor == Anchor.AnchorPoint.None) continue;
+            visibleChildCount++;
 
             float childOuterWidth  = child.OuterWidth;
             float childOuterHeight = child.OuterHeight;
@@ -70,7 +72,7 @@ internal static partial class Layout
 
         float outerW = node.ComputedStyle.Padding.HorizontalSize + node.ComputedStyle.Margin.HorizontalSize;
         float outerH = node.ComputedStyle.Padding.VerticalSize + node.ComputedStyle.Margin.VerticalSize;
-        
+
         var finalContentWidth = isAutoWidth
             ? Math.Max(childrenCalculatedWidth, textSize.Width + 2)
             : node.ComputedStyle.Size.Width - outerW;
@@ -82,8 +84,8 @@ internal static partial class Layout
         if (node.ComputedStyle.MaxWidth is > 0) {
             finalContentWidth = Math.Min(finalContentWidth, node.ComputedStyle.MaxWidth.Value);
         }
-        
-        finalContentWidth = MathF.Round(finalContentWidth);
+
+        finalContentWidth  = MathF.Round(finalContentWidth);
         finalContentHeight = MathF.Round(finalContentHeight);
 
         node.Bounds.ContentSize = new Size(
@@ -167,11 +169,10 @@ internal static partial class Layout
 
         // Calculate space used by non-growable items and gaps.
         float nonGrowableSize = children
-                             .Where(n => !growableChildren.Contains(n) &&
-                                         n is { IsDisposed: false, ComputedStyle.IsVisible: true })
-                             .Sum(n => getOuterSize(n));
+                               .Where(n => !growableChildren.Contains(n) && n is { IsDisposed: false, ComputedStyle.IsVisible: true })
+                               .Sum(n => getOuterSize(n));
 
-        float visibleChildCount = children.Count(n => n is { IsDisposed: false, ComputedStyle.IsVisible: true });
+        float visibleChildCount = children.Count(n => n is { IsDisposed: false, ComputedStyle.IsVisible: true } && n.ComputedStyle.Anchor != Anchor.AnchorPoint.None);
         float totalGapSize      = children.Count > 1 ? gap * (visibleChildCount - 1) : 0;
 
         // Total space the growable items should collectively occupy.
@@ -184,6 +185,22 @@ internal static partial class Layout
 
         foreach (Node child in growableChildren) {
             if (child.IsDisposed || !child.ComputedStyle.IsVisible) continue;
+            if (child.ComputedStyle.Anchor.IsNone) {
+                float to   = availableSizeForGrowableGroup;
+                float cps  = getPaddingSize(child.ComputedStyle);
+                float cms  = getMarginSize(child.ComputedStyle);
+                float from = to - (cps + cms);
+
+                if (from < 0) from = 0;
+
+                child.Bounds.ContentSize = axis == Flow.Horizontal
+                    ? new Size(from, child.Bounds.ContentSize.Height)
+                    : new Size(child.Bounds.ContentSize.Width, from);
+
+                child.Bounds.PaddingSize = child.Bounds.ContentSize + child.ComputedStyle.Padding.Size;
+                child.Bounds.MarginSize  = child.Bounds.PaddingSize + child.ComputedStyle.Margin.Size;
+                continue;
+            }
 
             float targetOuterSize  = baseTargetOuterSize + (remainderSize > 0 ? 1 : 0);
             float childPaddingSize = getPaddingSize(child.ComputedStyle);

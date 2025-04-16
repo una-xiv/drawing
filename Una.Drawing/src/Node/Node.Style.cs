@@ -142,7 +142,7 @@ public partial class Node
             Interlocked.Exchange(ref _computeStyleLock, 0);
 
             _lastNodeValueHash = nodeValueHash;
-
+            
             return isLayoutUpdated;
         }
     }

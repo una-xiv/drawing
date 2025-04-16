@@ -9,15 +9,6 @@ internal static class ComputedStyleFactory
         var computedStyle = CreateDefault();
         var hashCode      = new HashCode();
 
-        // if (node.Stylesheet is not null) {
-        //     foreach ((Stylesheet.Rule rule, Style style) in node.Stylesheet.Rules) {
-        //         if (rule.Matches(node)) {
-        //             Apply(ref computedStyle, style);
-        //             hashCode.Add(rule.ToString());
-        //         }
-        //     }
-        // }
-
         if (node.Stylesheet is not null) {
             List<Stylesheet.Rule> matchingRules = [];
 
@@ -29,8 +20,8 @@ internal static class ComputedStyleFactory
 
             matchingRules.Sort((a, b) => {
                 int specificityComparison = a.Specificity.CompareTo(b.Specificity);
-                
-                return specificityComparison != 0 
+
+                return specificityComparison != 0
                     ? specificityComparison
                     : a.SourceOrderIndex.CompareTo(b.SourceOrderIndex);
             });
@@ -100,6 +91,7 @@ internal static class ComputedStyleFactory
         cs.TextShadowSize            = style.TextShadowSize ?? cs.TextShadowSize;
         cs.TextShadowColor           = style.TextShadowColor ?? cs.TextShadowColor;
         cs.DropShadow                = style.DropShadow ?? cs.DropShadow;
+        cs.BitmapFontIcon            = style.BitmapFontIcon ?? cs.BitmapFontIcon;
         cs.IconId                    = style.IconId ?? cs.IconId;
         cs.ImageBytes                = style.ImageBytes ?? cs.ImageBytes;
         cs.ImageInset                = style.ImageInset ?? cs.ImageInset;
@@ -210,6 +202,7 @@ internal static class ComputedStyleFactory
             TextShadowSize            = 0,
             TextShadowColor           = null,
             DropShadow                = Vector4.Zero,
+            BitmapFontIcon            = null,
             IconId                    = null,
             ImageBytes                = null,
             ImageInset                = null,
