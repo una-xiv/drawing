@@ -1,17 +1,15 @@
-﻿using Una.Drawing.Font;
+﻿using Dalamud.Game.Text.SeStringHandling;
+using System.Linq;
+using Una.Drawing.Font;
 
 namespace Una.Drawing.Generator;
 
 internal class TextGenerator : IGenerator
 {
-    /// <inheritdoc/>
     public int RenderOrder => 999;
 
-    /// <inheritdoc/>
     public bool Generate(SKCanvas canvas, Node node, Vector2 origin)
     {
-        if (node.NodeValue is not string str || string.IsNullOrWhiteSpace(str)) return false;
-
         MeasuredText? measurement = node.NodeValueMeasurement;
         if (null == measurement || measurement.Value.LineCount == 0) return false;
 
@@ -32,7 +30,7 @@ internal class TextGenerator : IGenerator
         if (node.ComputedStyle.TextAlign.IsMiddle) y += (node.Height - size.Height) / 2f;
         if (node.ComputedStyle.TextAlign.IsBottom) y += node.Height - size.Height;
 
-        foreach (string line in node.NodeValueMeasurement!.Value.Lines) {
+        foreach (Chunk[] line in node.NodeValueMeasurement!.Value.Lines) {
             PrintLine(canvas, font, node, line, x, y);
             y += (lineHeight * node.ComputedStyle.LineHeight);
         }
@@ -40,24 +38,31 @@ internal class TextGenerator : IGenerator
         return true;
     }
 
-    private static void PrintLine(SKCanvas canvas, IFont font, Node node, string line, float x, float y)
+    private static void PrintLine(SKCanvas canvas, IFont font, Node node, Chunk[] line, float x, float y)
     {
-        MeasuredText measurement = font.MeasureText(line, node.ComputedStyle.FontSize);
-        float        lineWidth   = measurement.Size.Width;
+        float lineWidth = line.Sum(chunk => chunk.Width);
 
         if (node.ComputedStyle.TextAlign.IsCenter) x += (node.Bounds.PaddingSize.Width - lineWidth) / 2;
-        if (node.ComputedStyle.TextAlign.IsRight) x += (node.Bounds.PaddingSize.Width - lineWidth);
+        if (node.ComputedStyle.TextAlign.IsRight) x  += (node.Bounds.PaddingSize.Width - lineWidth);
 
-        using SKPaint paint = new();
-        SKPoint       point = new(x, y);
+        using SKPaint paint        = new();
+        SKPoint       point        = new(x, y);
+        Color         textColor    = node.ComputedStyle.Color;
+        Color         outlineColor = node.ComputedStyle.OutlineColor ?? new(0);
 
         if (node.ComputedStyle.OutlineSize > 0 && null != node.ComputedStyle.OutlineColor) {
             paint.ImageFilter = null;
             paint.Color       = Color.ToSkColor(node.ComputedStyle.OutlineColor);
             paint.Style       = SKPaintStyle.Stroke;
             paint.StrokeWidth = node.ComputedStyle.OutlineSize;
-            paint.MaskFilter  = SKMaskFilter.CreateBlur(SKBlurStyle.Solid, node.ComputedStyle.OutlineSize);
-            font.DrawText(canvas, paint, point, node.ComputedStyle.FontSize, line);
+
+            if (node.ComputedStyle.OutlineSize > 1) {
+                paint.MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Solid, node.ComputedStyle.OutlineSize);
+            } else {
+                paint.StrokeWidth = 3.0f; // 1.5f on each side.
+            }
+
+            font.DrawText(canvas, paint, point, node.ComputedStyle.FontSize, line, outlineColor, outlineColor);
         }
 
         if (node.ComputedStyle.TextShadowSize > 0) {
@@ -75,6 +80,6 @@ internal class TextGenerator : IGenerator
         paint.StrokeWidth = 0;
         paint.MaskFilter  = null;
 
-        font.DrawText(canvas, paint, point, node.ComputedStyle.FontSize, line);
+        font.DrawText(canvas, paint, point, node.ComputedStyle.FontSize, line, textColor, outlineColor);
     }
 }

@@ -8,15 +8,6 @@ internal partial class DynamicFont
     }
 
     /// <summary>
-    /// Returns the width of the given chunk based on the specified font size.
-    /// </summary>
-    private float GetChunkWidth(Chunk chunk, int fontSize)
-    {
-        SKFont font = GetFont(chunk, fontSize);
-        return font.MeasureText(chunk.Text);
-    }
-
-    /// <summary>
     /// Computes the width of the given chunk based on the specified font size
     /// and returns a new chunk with a cut-off text that fits within the
     /// specified maximum width.
@@ -28,7 +19,16 @@ internal partial class DynamicFont
         int bytes = font.BreakText(chunk.Text, maxWidth - x);
 
         if (bytes < chunk.Text.Length) {
-            result = new(chunk.Type, bytes > 2 ? (chunk.Text[..(bytes - 2)] + '…') : chunk.Text[..bytes]);
+            string str = bytes > 2 ? (chunk.Text[..(bytes - 2)] + '…') : chunk.Text[..bytes];
+            
+            result = new(
+                chunk.Type, 
+                str,
+                chunk.Color,
+                chunk.EdgeColor,
+                font.MeasureText(str)
+            );
+            
             return false;
         }
 

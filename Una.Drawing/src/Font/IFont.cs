@@ -12,8 +12,20 @@ public interface IFont
     /// <param name="textOverflow">Wether to allow text to be cut off without word-breaks or ellipsis.</param>
     /// <param name="lineHeight">A scale factor that determines the height of lines.</param>
     /// <param name="maxWidth">The maximum width of a single line of text.</param>
+    /// <param name="textColor"></param>
+    /// <param name="edgeColor"></param>
     /// <returns>A <see cref="MeasuredText"/> object containing wrapped text.</returns>
-    public MeasuredText MeasureText(string text, int fontSize = 14, float? maxLineWidth = null, bool wordWrap = false, bool textOverflow = true, float lineHeight = 1.2f, float? maxWidth = null);
+    internal MeasuredText MeasureText(
+        object text, 
+        int fontSize = 14, 
+        float? maxLineWidth = null, 
+        bool wordWrap = false, 
+        bool textOverflow = true, 
+        float lineHeight = 1.2f, 
+        float? maxWidth = null,
+        Color textColor = default,
+        Color edgeColor = default
+    );
 
     /// <summary>
     /// Draws the given text on the canvas using this font.
@@ -22,8 +34,10 @@ public interface IFont
     /// <param name="paint"></param>
     /// <param name="pos">The top-left position to draw the text.</param>
     /// <param name="fontSize">The font size of the text.</param>
-    /// <param name="text">The measured text to render.</param>
-    internal void DrawText(SKCanvas canvas, SKPaint paint, SKPoint pos, int fontSize, string text);
+    /// <param name="text">The measured text to render. Can be either a string or <see cref="SeString"/></param>
+    /// <param name="textColor">Color of the text.</param>
+    /// <param name="edgeColor">Color of the text outline.</param>
+    internal void DrawText(SKCanvas canvas, SKPaint paint, SKPoint pos, int fontSize, Chunk[] text, Color textColor, Color edgeColor);
 
     /// <summary>
     /// Returns a <see cref="SKFontMetrics"/> object for the given font size.
@@ -40,7 +54,7 @@ public interface IFont
     internal void Dispose();
 }
 
-public struct MeasuredText
+internal struct MeasuredText
 {
     /// <summary>
     /// The computed size of the text.
@@ -55,5 +69,5 @@ public struct MeasuredText
     /// <summary>
     /// A list of lines in the text.
     /// </summary>
-    public string[] Lines;
+    public Chunk[][] Lines;
 }

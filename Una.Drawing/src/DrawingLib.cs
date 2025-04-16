@@ -90,6 +90,7 @@ public class DrawingLib
         Renderer.Setup();
 
         UdtLoader.RegisterAttributeValueParser(new DefaultAttributeValueParser());
+        UdtLoader.RegisterDirectiveParser(new SeStringDirectiveParser());
     }
 
     /// <summary>

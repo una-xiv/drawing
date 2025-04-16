@@ -1,7 +1,5 @@
 ﻿using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Una.Drawing.Font;
-using Una.Drawing.Texture;
 
 namespace Una.Drawing;
 
@@ -45,11 +43,7 @@ public partial class Node
     /// </summary>
     internal Size ComputeContentSizeFromText()
     {
-        if (_nodeValue is SeString) {
-            return ComputeContentSizeFromSeString();
-        }
-
-        if (_nodeValue is not string str || string.IsNullOrEmpty(str)) {
+        if ((_nodeValue is not string str || string.IsNullOrEmpty(str)) && (_nodeValue is not SeString seStr || seStr.Payloads.Count == 0)) {
             return new(0, 0);
         }
 
@@ -68,83 +62,25 @@ public partial class Node
         var font         = FontRegistry.Fonts[ComputedStyle.Font];
         var maxLineWidth = Math.Max(0, ComputedStyle.Size.Width);
 
+        if (maxLineWidth > 0) maxLineWidth -= ComputedStyle.Padding.HorizontalSize;
+
         if (maxLineWidth == 0 && ComputedStyle.AutoSize.Horizontal == AutoSize.Grow) {
             maxLineWidth = Math.Max(0, Bounds.ContentSize.Width);
         }
 
         NodeValueMeasurement = font.MeasureText(
-            str,
+            NodeValue!,
             ComputedStyle.FontSize,
             maxLineWidth,
             ComputedStyle.WordWrap,
             ComputedStyle.TextOverflow,
             ComputedStyle.LineHeight,
-            ComputedStyle.MaxWidth
+            ComputedStyle.MaxWidth,
+            ComputedStyle.Color,
+            ComputedStyle.OutlineColor ?? new(0)
         );
 
         return NodeValueMeasurement.Value.Size;
-    }
-
-    private Size ComputeContentSizeFromSeString()
-    {
-        if (_nodeValue is not SeString str || str.Payloads.Count == 0) {
-            return new(0, 0);
-        }
-
-        if (false == MustRecomputeNodeValue()) {
-            return NodeValueMeasurement?.Size ?? new();
-        }
-
-        IFont font       = FontRegistry.Fonts[ComputedStyle.Font];
-        float maxWidth   = 0;
-        float maxHeight  = 0;
-        Size  charSize   = font.MeasureText("X", ComputedStyle.FontSize, ComputedStyle.OutlineSize).Size;
-        float spaceWidth = charSize.Width;
-
-        var maxLineWidth = Math.Max(0, ComputedStyle.Size.Width);
-
-        if (maxLineWidth == 0 && ComputedStyle.AutoSize.Horizontal == AutoSize.Grow) {
-            maxLineWidth = Math.Max(0, Bounds.ContentSize.Width);
-        }
-        
-        foreach (var payload in str.Payloads) {
-            switch (payload) {
-                case TextPayload text:
-                    if (string.IsNullOrEmpty(text.Text)) continue;
-
-                    MeasuredText measurement = font.MeasureText(
-                        text.Text,
-                        ComputedStyle.FontSize,
-                        maxLineWidth,
-                        ComputedStyle.WordWrap,
-                        ComputedStyle.TextOverflow,
-                        ComputedStyle.LineHeight,
-                        ComputedStyle.MaxWidth
-                    );
-                    
-                    DebugLogger.Log($"Text width: {text.Text} = {measurement.Size.Width}");
-
-                    maxWidth  += measurement.Size.Width;
-                    maxHeight =  Math.Max(maxHeight, measurement.Size.Height);
-                    continue;
-                case IconPayload icon:
-                    GfdIcon gfdIcon = GfdIconRepository.GetIcon(icon.Icon);
-                    maxWidth += gfdIcon.Size.X;
-                    continue;
-            }
-        }
-
-        _textCachedNodeValue = _nodeValue;
-        _textCachedWordWrap  = ComputedStyle.WordWrap;
-        _textCachedPadding   = ComputedStyle.Padding.Copy();
-        _textCachedFontId    = ComputedStyle.Font;
-        _textCachedFontSize  = ComputedStyle.FontSize;
-        _textCachedNodeSize  = ComputedStyle.Size.Copy();
-        _textCachedMaxWidth  = ComputedStyle.MaxWidth;
-
-        NodeValueMeasurement = new() { Lines = [], LineCount = 1, Size = new(maxWidth, maxHeight) };
-
-        return new(maxWidth, maxHeight);
     }
 
     /// <summary>

@@ -1,4 +1,7 @@
-﻿namespace Una.Drawing.Font;
+﻿using Dalamud.Game.Text.SeStringHandling;
+using Una.Drawing.Texture;
+
+namespace Una.Drawing.Font;
 
 internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphTypeface, float sizeOffset) : IFont
 {
@@ -6,15 +9,16 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
     private SKTypeface GlyphTypeface { get; } = glyphTypeface;
     private float      SizeOffset    { get; } = sizeOffset;
 
-    /// <inheritdoc/>
     public MeasuredText MeasureText(
-        string text,
+        object text,
         int    fontSize     = 14,
         float? maxLineWidth = null,
         bool   wordWrap     = false,
         bool   textOverflow = true,
         float  lineHeight   = 1.2f,
-        float? maxWidth     = null
+        float? maxWidth     = null,
+        Color  textColor    = default,
+        Color  edgeColor    = default
     )
     {
         if (maxWidth > 0) {
@@ -24,43 +28,60 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         }
 
         if (wordWrap == false || maxLineWidth is null or 0) {
-            return MeasureSingleLine(text, fontSize, maxLineWidth ?? 0, textOverflow);
+            return MeasureSingleLine(text, fontSize, maxLineWidth ?? 0, textOverflow, textColor, edgeColor);
         }
-
-        return MeasureMultiLine(text, fontSize, maxLineWidth.Value, lineHeight);
+        return MeasureMultiLine(text, fontSize, maxLineWidth.Value, lineHeight, textColor, edgeColor);
     }
 
-    /// <inheritdoc/>
-    public void DrawText(SKCanvas canvas, SKPaint paint, SKPoint pos, int fontSize, string text)
+    public void DrawText(SKCanvas canvas, SKPaint paint, SKPoint pos, int fontSize, Chunk[] chunks, Color textColor, Color edgeColor)
     {
-        if (text.Length == 0) return;
-
-        List<Chunk> chunks = GenerateChunks(text);
+        if (chunks.Length == 0) return;
 
         float x = pos.X;
+        float y = pos.Y;
 
         foreach (var chunk in chunks) {
-            SKFont font = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
+            switch (chunk.Type) {
+                case Chunk.Kind.Text:
+                case Chunk.Kind.Glyph:
+                    SKFont font = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
+                    canvas.DrawText(chunk.Text, x, pos.Y, font, paint);
+                    break;
+                case Chunk.Kind.BitmapIcon: {
+                    using SKPaint gfdPaint = new();
 
-            canvas.DrawText(chunk.Text, x, pos.Y, font, paint);
-            x += font.MeasureText(chunk.Text);
+                    GfdIcon icon = chunk.BitmapIcon!.Value;
+
+                    canvas.DrawImage(
+                        icon.Texture,
+                        new(icon.Uv0.X, icon.Uv0.Y, icon.Uv1.X, icon.Uv1.Y),
+                        new SKRect(
+                            x,
+                            y - (icon.Size.Y / 2f) - 4,
+                            x + icon.Size.X,
+                            y + (icon.Size.Y / 2f) - 4
+                        ),
+                        gfdPaint
+                    );
+                    break;
+                }
+            }
+            
+            x += chunk.Width;
         }
     }
 
-    /// <inheritdoc/>
     public SKFontMetrics GetMetrics(int fontSize)
     {
         return GetTextFont(fontSize).Metrics;
     }
 
-    /// <inheritdoc/>
     public float GetLineHeight(int fontSize)
     {
         SKFontMetrics metrics = GetTextFont(fontSize).Metrics;
         return metrics.Descent - metrics.Ascent + metrics.Leading;
     }
 
-    /// <inheritdoc/>
     public void Dispose()
     {
         foreach (SKFont font in TextFontCache.Values) font.Dispose();
