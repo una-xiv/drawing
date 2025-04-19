@@ -22,7 +22,7 @@
             border-radius: 150;
             background-color: 0xFF00FFA0;
             transition-duration: 500;
-            transition-type: EaseOutBounce;
+            transition-type: EaseOutBack;
             transition-add-class: "keyframe2";
             transition-remove-class: "keyframe1";
         }
@@ -31,7 +31,7 @@
             size: 150 100;
             background-color: 0xFFFF00A0;
             transition-duration: 500;
-            transition-type: EaseInSine;
+            transition-type: EaseOutBack;
             transition-add-class: "keyframe3";
             transition-remove-class: "keyframe2";
             drop-shadow: 0 0 0 0;
