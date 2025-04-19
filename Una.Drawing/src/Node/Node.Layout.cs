@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Una.Drawing;
 
@@ -73,11 +74,9 @@ public partial class Node
 
         var changed = false;
 
-        lock (_childNodes) {
-            foreach (Node child in _childNodes) {
-                bool result         = child.InvokeReflowHook();
-                if (result) changed = true;
-            }
+        foreach (Node child in _childNodes.ToImmutableArray()) {
+            bool result         = child.InvokeReflowHook();
+            if (result) changed = true;
         }
 
         if (changed) Layout.ComputeBounds(this);
@@ -87,18 +86,14 @@ public partial class Node
 
     private void ReassignAnchorNodes()
     {
-        lock (AnchorToChildNodes) {
-            lock (_childNodes) {
-                AnchorToChildNodes.Clear();
+        AnchorToChildNodes.Clear();
 
-                foreach (Node child in _childNodes) {
-                    if (!AnchorToChildNodes.ContainsKey(child.ComputedStyle.Anchor.Point)) {
-                        AnchorToChildNodes[child.ComputedStyle.Anchor.Point] = [];
-                    }
-
-                    AnchorToChildNodes[child.ComputedStyle.Anchor.Point].Add(child);
-                }
+        foreach (Node child in _childNodes.ToImmutableArray()) {
+            if (!AnchorToChildNodes.ContainsKey(child.ComputedStyle.Anchor.Point)) {
+                AnchorToChildNodes[child.ComputedStyle.Anchor.Point] = [];
             }
+
+            AnchorToChildNodes[child.ComputedStyle.Anchor.Point].Add(child);
         }
     }
 }

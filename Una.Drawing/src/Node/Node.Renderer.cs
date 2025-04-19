@@ -214,13 +214,11 @@ public partial class Node
             return;
         }
 
-        lock (_childNodes) {
-            if (!IsDisposed) {
-                OnDraw(childDrawList.Value);
+        if (!IsDisposed) {
+            OnDraw(childDrawList.Value);
 
-                foreach (var childNode in _childNodes.ToImmutableArray()) {
-                    childNode.Draw(childDrawList.Value);
-                }
+            foreach (var childNode in _childNodes.ToImmutableArray()) {
+                childNode.Draw(childDrawList.Value);
             }
         }
 

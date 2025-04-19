@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Immutable;
+using System.Linq;
 
 namespace Una.Drawing;
 
@@ -6,12 +7,10 @@ internal static partial class Layout
 {
     private static void ComputePositions(Node root)
     {
-        lock (root.AnchorToChildNodes) {
-            foreach (var anchorPoint in root.AnchorToChildNodes.Keys
-                                            .Where(anchorPoint => root.AnchorToChildNodes[anchorPoint].Count > 0)
-            ) {
-                PositionNodesWithSameAnchor(anchorPoint, root, root.AnchorToChildNodes[anchorPoint]);
-            }
+        foreach (var anchorPoint in root.AnchorToChildNodes.Keys.ToImmutableArray()
+                                        .Where(anchorPoint => root.AnchorToChildNodes[anchorPoint].Count > 0)
+        ) {
+            PositionNodesWithSameAnchor(anchorPoint, root, root.AnchorToChildNodes[anchorPoint]);
         }
     }
 

@@ -109,14 +109,12 @@ public partial class Node
             int  nodeValueHash   = NodeValue?.GetHashCode() ?? 0;
             bool isLayoutUpdated = nodeValueHash != _lastNodeValueHash;
 
-            lock (_childNodes) {
-                foreach (Node child in _childNodes.ToImmutableArray()) {
-                    if (child.IsDisposed) continue;
+            foreach (Node child in _childNodes.ToImmutableArray()) {
+                if (child.IsDisposed) continue;
 
-                    if (child.ComputeStyle()) {
-                        result          |= ComputedStyle.CommitResult.LayoutUpdated;
-                        isLayoutUpdated =  true;
-                    }
+                if (child.ComputeStyle()) {
+                    result          |= ComputedStyle.CommitResult.LayoutUpdated;
+                    isLayoutUpdated =  true;
                 }
             }
 

@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ImGuiNET;
+using System.Collections.Immutable;
 using System.Linq;
 using Task = System.Threading.Tasks.Task;
 
@@ -55,10 +56,8 @@ public partial class Node
         OnChildAdded   += OnSortableChildAdded;
         OnChildRemoved += OnSortableChildRemoved;
 
-        lock (_childNodes) {
-            foreach (Node child in _childNodes) {
-                OnSortableChildAdded(child);
-            }
+        foreach (Node child in _childNodes.ToImmutableArray()) {
+            OnSortableChildAdded(child);
         }
     }
 
@@ -67,20 +66,16 @@ public partial class Node
         OnChildAdded   -= OnSortableChildAdded;
         OnChildRemoved -= OnSortableChildRemoved;
 
-        lock (_childNodes) {
-            foreach (Node child in _childNodes) {
-                OnSortableChildRemoved(child);
-            }
+        foreach (Node child in _childNodes.ToImmutableArray()) {
+            OnSortableChildRemoved(child);
         }
     }
 
     private void OnSortableChildAdded(Node child)
     {
         // Every child node must have a valid SortIndex.
-        lock (_childNodes) {
-            if (child.SortIndex == -1) {
-                child.SortIndex = _childNodes.Count - 1; // SortIndex is 0-based.
-            }
+        if (child.SortIndex == -1) {
+            child.SortIndex = _childNodes.Count - 1; // SortIndex is 0-based.
         }
 
         child.OnDragStart += OnSortableChildDragStart;
@@ -91,10 +86,8 @@ public partial class Node
     private void OnSortableChildRemoved(Node child)
     {
         // Re-apply sort indices on all children to fill the gap.
-        lock (_childNodes) {
-            for (int i = 0; i < _childNodes.Count; i++) {
-                _childNodes[i].SortIndex = i;
-            }
+        for (int i = 0; i < _childNodes.Count; i++) {
+            _childNodes[i].SortIndex = i;
         }
 
         child.OnDragStart -= OnSortableChildDragStart;

@@ -553,26 +553,22 @@ public partial class Node : IDisposable
     /// <param name="node">The node to append.</param>
     public void AppendChild(Node node)
     {
-        lock (_childNodes) {
-            if (_childNodes.Contains(node)) return;
+        if (_childNodes.Contains(node)) return;
 
-            node.ParentNode?.RemoveChild(this);
+        node.ParentNode?.RemoveChild(this);
 
-            _childNodes.Add(node);
-            node.ParentNode = this;
-        }
+        _childNodes.Add(node);
+        node.ParentNode = this;
     }
 
     public void PrependChild(Node node)
     {
-        lock (_childNodes) {
-            if (_childNodes.Contains(node)) return;
+        if (_childNodes.Contains(node)) return;
 
-            node.ParentNode?.RemoveChild(this);
+        node.ParentNode?.RemoveChild(this);
 
-            _childNodes.Insert(0, node);
-            node.ParentNode = this;
-        }
+        _childNodes.Insert(0, node);
+        node.ParentNode = this;
     }
 
     /// <summary>
