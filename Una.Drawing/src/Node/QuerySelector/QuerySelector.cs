@@ -71,73 +71,76 @@ internal class QuerySelector
     /// <returns>True if the node matches the full selector chain ending at this part.</returns>
     public bool Matches(Node node)
     {
-        if (node.CachedQuerySelectorResults.TryGetValue(this, out bool result)) return result;
+        lock (node.CachedQuerySelectorResults) {
 
-        // 1. Check if the current node's properties match the current selector part's requirements.
-        if (!MatchAll && Identifier != null && !Identifier.Equals(node.Id)) {
-            node.CachedQuerySelectorResults.Add(this, false);
-            return false;
-        }
+            if (node.CachedQuerySelectorResults.TryGetValue(this, out bool result)) return result;
 
-        // Check Classes (all must be present)
-        if (!MatchAll && !ClassList.All(node.ClassList.Contains)) {
-            node.CachedQuerySelectorResults.Add(this, false);
-            return false;
-        }
-
-        // Check Tags (all must be present)
-        if (!MatchAll && !TagList.All(node.TagsList.Contains)) {
-            node.CachedQuerySelectorResults.Add(this, false);
-            return false;
-        }
-
-        // 2. If the current node matches this part, check the parent/ancestor constraints.
-        if (Parent == null) {
-            node.CachedQuerySelectorResults.Add(this, true);
-            return true;
-        }
-
-        // 3. Determine the relationship expected between the node and its parent/ancestor in the DOM tree.
-        // This depends on how *this* selector instance was linked from its Parent selector instance.
-        bool isDirectChildLink = Parent.DirectChild == this;
-        bool isNestedChildLink = Parent.NestedChild == this;
-
-        if (!isDirectChildLink && !isNestedChildLink) {
-            // This should never happen.
-            throw new InvalidOperationException(
-                "QuerySelector structure inconsistency: Parent is set, but this instance is neither its DirectChild nor NestedChild.");
-        }
-
-        // 4. Apply the hierarchical check based on the link type.
-        if (isDirectChildLink) // Represents the '>' child combinator
-        {
-            // The node's direct parent in the DOM must match the Parent selector.
-            if (node.ParentNode == null) {
+            // 1. Check if the current node's properties match the current selector part's requirements.
+            if (!MatchAll && Identifier != null && !Identifier.Equals(node.Id)) {
                 node.CachedQuerySelectorResults.Add(this, false);
-                return false; // Node has no parent, cannot satisfy child combinator.
+                return false;
             }
 
-            // Recursively call Matches on the Parent selector, checking against the node's actual parent.
-            bool res = Parent.Matches(node.ParentNode);
-            node.CachedQuerySelectorResults.Add(this, res);
-            return res;
-        }
+            // Check Classes (all must be present)
+            if (!MatchAll && !ClassList.All(node.ClassList.Contains)) {
+                node.CachedQuerySelectorResults.Add(this, false);
+                return false;
+            }
 
-        // Any ancestor in the DOM must match the Parent selector.
-        // Iterate upwards through the node's ancestors.
-        Node? ancestor = node.ParentNode;
-        while (ancestor != null) {
-            // Check if this ancestor satisfies the requirements of the Parent selector (and *its* parents).
-            if (Parent.Matches(ancestor)) {
+            // Check Tags (all must be present)
+            if (!MatchAll && !TagList.All(node.TagsList.Contains)) {
+                node.CachedQuerySelectorResults.Add(this, false);
+                return false;
+            }
+
+            // 2. If the current node matches this part, check the parent/ancestor constraints.
+            if (Parent == null) {
                 node.CachedQuerySelectorResults.Add(this, true);
-                return true; // Found a matching ancestor.
+                return true;
             }
 
-            ancestor = ancestor.ParentNode; // Move up to the next ancestor.
-        }
+            // 3. Determine the relationship expected between the node and its parent/ancestor in the DOM tree.
+            // This depends on how *this* selector instance was linked from its Parent selector instance.
+            bool isDirectChildLink = Parent.DirectChild == this;
+            bool isNestedChildLink = Parent.NestedChild == this;
 
-        // If the loop finishes without finding a matching ancestor, the constraint is not met.
-        node.CachedQuerySelectorResults.Add(this, false);
+            if (!isDirectChildLink && !isNestedChildLink) {
+                // This should never happen.
+                throw new InvalidOperationException(
+                    "QuerySelector structure inconsistency: Parent is set, but this instance is neither its DirectChild nor NestedChild.");
+            }
+
+            // 4. Apply the hierarchical check based on the link type.
+            if (isDirectChildLink) // Represents the '>' child combinator
+            {
+                // The node's direct parent in the DOM must match the Parent selector.
+                if (node.ParentNode == null) {
+                    node.CachedQuerySelectorResults.Add(this, false);
+                    return false; // Node has no parent, cannot satisfy child combinator.
+                }
+
+                // Recursively call Matches on the Parent selector, checking against the node's actual parent.
+                bool res = Parent.Matches(node.ParentNode);
+                node.CachedQuerySelectorResults.Add(this, res);
+                return res;
+            }
+
+            // Any ancestor in the DOM must match the Parent selector.
+            // Iterate upwards through the node's ancestors.
+            Node? ancestor = node.ParentNode;
+            while (ancestor != null) {
+                // Check if this ancestor satisfies the requirements of the Parent selector (and *its* parents).
+                if (Parent.Matches(ancestor)) {
+                    node.CachedQuerySelectorResults.Add(this, true);
+                    return true; // Found a matching ancestor.
+                }
+
+                ancestor = ancestor.ParentNode; // Move up to the next ancestor.
+            }
+
+            // If the loop finishes without finding a matching ancestor, the constraint is not met.
+            node.CachedQuerySelectorResults.Add(this, false);
+        }
 
         return false;
     }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 
 namespace Una.Drawing;
@@ -58,6 +57,7 @@ public partial class Node
     private Animation?    _animation;
     private int           _lastStyleHash;
     private int           _lastNodeValueHash;
+    private bool          _hasComputedStyle;
 
     private readonly Lock _lockObject = new();
 
@@ -99,11 +99,11 @@ public partial class Node
 
             if (_animation is { IsPlaying: false }) {
                 TransitionToConfiguredClass(ref style);
-                _animation = null;            
+                _animation = null;
             } else if (_animation is null) {
                 TransitionToConfiguredClass(ref style);
             }
-            
+
             ComputedStyle.CommitResult result = style.Commit(ref _intermediateStyle);
 
             int  nodeValueHash   = NodeValue?.GetHashCode() ?? 0;
@@ -136,13 +136,17 @@ public partial class Node
 
             if (_previousRenderHash != RenderHash || _lastNodeValueHash != nodeValueHash) {
                 _mustRepaint = true;
+
+                _texture?.Dispose();
+                _texture = null;
             }
 
             // Release lock.
             Interlocked.Exchange(ref _computeStyleLock, 0);
 
             _lastNodeValueHash = nodeValueHash;
-            
+            _hasComputedStyle  = true;
+
             return isLayoutUpdated;
         }
     }
@@ -157,7 +161,6 @@ public partial class Node
             ToggleClass(style.TransitionRemoveClass, false);
         }
     }
-    
 
     /// <summary>
     /// Invokes the reflow event, signaling that the layout of this element
@@ -170,7 +173,9 @@ public partial class Node
 
     private void ClearCachedQuerySelectorsRecursively()
     {
-        CachedQuerySelectorResults.Clear();
+        lock (CachedQuerySelectorResults) {
+            CachedQuerySelectorResults.Clear();
+        }
 
         lock (_childNodes) {
             foreach (var node in _childNodes) {

@@ -1,5 +1,6 @@
 ﻿using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
+using Lumina.Misc;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -176,7 +177,7 @@ public partial class Node
             return;
         }
 
-        if (!IsVisible) {
+        if (!IsVisible || !_hasComputedStyle) {
             _isVisibleSince = 0;
             DrawTime        = _metricStopwatch.Elapsed.TotalMilliseconds;
             _metricStopwatch.Stop();
@@ -308,8 +309,10 @@ public partial class Node
 
         ImGui.SetCursorScreenPos(Bounds.ContentRect.TopLeft);
 
+        uint frameId = Id != null ? Crc32.Get(Id) : InternalIdCrc32;
+        
         ImGui.BeginChildFrame(
-            InternalIdCrc32,
+            frameId,
             Bounds.PaddingSize.ToVector2() - new Vector2(0, ComputedStyle.Padding.VerticalSize),
             (HorizontalScrollbar ? ImGuiWindowFlags.HorizontalScrollbar : ImGuiWindowFlags.None)
         );

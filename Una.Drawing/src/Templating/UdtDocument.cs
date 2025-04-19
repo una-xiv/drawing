@@ -28,7 +28,7 @@ public class UdtDocument(
 
     internal Dictionary<string, XmlElement> Templates { get; } = templates;
 
-    public Node CreateNodeFromTemplate(string name, Dictionary<string, string> attributes)
+    public Node CreateNodeFromTemplate(string name, Dictionary<string, string>? attributes = null)
     {
         // Normalize name.
         name = name.ToLowerInvariant().Replace("-", "").Trim();
@@ -38,7 +38,7 @@ public class UdtDocument(
                 $"Template '{name}' not found in UDT document. Available templates: {string.Join(", ", Templates.Keys)}");
         }
 
-        Node node = UdtParser.CreateTemplateFromUdt(this, name, attributes);
+        Node node = UdtParser.CreateTemplateFromUdt(this, name, attributes ?? []);
         node.Stylesheet = Stylesheet;
 
         return node;

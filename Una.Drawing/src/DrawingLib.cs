@@ -13,7 +13,7 @@ namespace Una.Drawing;
 
 public class DrawingLib
 {
-    public static bool ShowDebugWindow { get; set; } = true;
+    public static bool ShowDebugWindow { get; set; }
 
     /// <summary>
     /// Set up the drawing library. Make sure to call this method in your

@@ -156,7 +156,7 @@ public partial class Node
     {
         _sortableDraggedNode = child;
         
-        if (!IsMouseInNodeBounds(this)) {
+        if (!IsMouseInNodeBounds(this, new(), false)) {
             UntrackDroppableNode();
             return;
         }

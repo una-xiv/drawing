@@ -480,6 +480,15 @@ public partial class Node : IDisposable
         _tagsList.Remove(tag);
     }
 
+    public void Clear()
+    {
+        lock (_childNodes) {
+            foreach (var node in _childNodes.ToImmutableArray()) {
+                node.Dispose();
+            }
+        }
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private void InheritTagsFromParent()
     {

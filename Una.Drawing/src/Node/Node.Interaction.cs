@@ -402,7 +402,7 @@ public partial class Node
     {
         if (string.IsNullOrWhiteSpace(Tooltip)) return;
         
-        if (!IsMouseInNodeBounds(this)) {
+        if (!IsMouseInNodeBounds(this, new(), false)) {
             _tooltipHoverStartTime = 0;
             return;
         }
