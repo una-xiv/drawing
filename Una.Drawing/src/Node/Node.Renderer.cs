@@ -333,7 +333,7 @@ public partial class Node
         var x = pos.X;
         var y = pos.Y;
 
-        foreach (var child in _childNodes) {
+        foreach (var child in _childNodes.ToImmutableArray()) {
             Layout.OverridePositionsOf(child, new Vector2(x, y));
 
             if (ComputedStyle.Flow == Flow.Vertical) {

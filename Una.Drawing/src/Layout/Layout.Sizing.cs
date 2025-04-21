@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Immutable;
+using System.Linq;
 
 namespace Una.Drawing;
 
@@ -36,7 +37,7 @@ internal static partial class Layout
 
         float visibleChildCount = 0; // Needed for correct gap calculation
 
-        foreach (Node child in node.ChildNodes) {
+        foreach (Node child in node.ChildNodes.ToImmutableArray()) {
             if (child.IsDisposed || !child.ComputedStyle.IsVisible) continue;
 
             ComputeFixedAndFitSizes(child);
@@ -110,12 +111,12 @@ internal static partial class Layout
         Flow crossAxis     = axis == Flow.Horizontal ? Flow.Vertical : Flow.Horizontal;
         bool mustStabilize = false;
 
-        foreach (List<Node> children in node.AnchorToChildNodes.Values) {
+        foreach (List<Node> children in node.AnchorToChildNodes.Values.ToImmutableArray()) {
             GrowChildrenAlongAxis(node, axis, children);
             GrowChildrenAlongCrossAxis(node, crossAxis, children);
         }
 
-        foreach (Node child in node.ChildNodes) {
+        foreach (Node child in node.ChildNodes.ToImmutableArray()) {
             if (ComputeGrowingSizes(child)) {
                 mustStabilize = true;
             }

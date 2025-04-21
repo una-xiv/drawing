@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Immutable;
+using System.Linq;
 
 namespace Una.Drawing;
 
@@ -44,7 +45,7 @@ public partial class Node
             return cachedNode;
         }
 
-        foreach (var child in _childNodes) {
+        foreach (var child in _childNodes.ToImmutableArray()) {
             var node = child.FindById(nodeId);
 
             if (node != null) {

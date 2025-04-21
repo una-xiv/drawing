@@ -24,7 +24,7 @@ public partial class Node
 
     public delegate bool ReflowDelegate(Node node);
 
-    internal Dictionary<Anchor.AnchorPoint, List<Node>> AnchorToChildNodes { get; } = [];
+    internal Dictionary<Anchor.AnchorPoint, List<Node>> AnchorToChildNodes { get; private set; } = [];
 
     internal double ReflowTime { get; private set; } = 0f;
     internal double LayoutTime { get; private set; } = 0f;
@@ -86,14 +86,22 @@ public partial class Node
 
     private void ReassignAnchorNodes()
     {
-        AnchorToChildNodes.Clear();
+        Dictionary<Anchor.AnchorPoint, List<Node>> anchorNodes = [];
 
-        foreach (Node child in _childNodes.ToImmutableArray()) {
-            if (!AnchorToChildNodes.ContainsKey(child.ComputedStyle.Anchor.Point)) {
-                AnchorToChildNodes[child.ComputedStyle.Anchor.Point] = [];
+        try {
+            foreach (Node child in _childNodes.ToImmutableArray()) {
+                if (!anchorNodes.TryGetValue(child.ComputedStyle.Anchor.Point, out var value)) {
+                    anchorNodes[child.ComputedStyle.Anchor.Point] = value = [];
+                }
+
+                value.Add(child);
             }
-
-            AnchorToChildNodes[child.ComputedStyle.Anchor.Point].Add(child);
+            
+            AnchorToChildNodes = anchorNodes;
+        } catch (ArgumentException) {
+            // This can happen if the child node is added or disposed while
+            // the ".ToImmutableArray()" method is being called, in which case
+            // we'll reflow on the next frame anyway.
         }
     }
 }

@@ -499,7 +499,7 @@ public partial class Node : IDisposable
             TagsList = ParentNode.TagsList;
         }
 
-        foreach (Node child in _childNodes) {
+        foreach (Node child in _childNodes.ToImmutableArray()) {
             child.InheritTagsFromParent();
         }
     }
@@ -540,7 +540,6 @@ public partial class Node : IDisposable
         }
 
         SignalReflow();
-        ReassignAnchorNodes();
     }
 
     /// <summary>
@@ -673,7 +672,6 @@ public partial class Node : IDisposable
         _childNodes                   =  new(_childNodes.OrderBy(n => n.SortIndex));
         _childNodes.CollectionChanged += HandleChildListChanged;
 
-        ReassignAnchorNodes();
         SignalReflow();
     }
 

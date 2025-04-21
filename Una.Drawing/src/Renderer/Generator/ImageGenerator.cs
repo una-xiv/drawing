@@ -136,16 +136,16 @@ internal class ImageGenerator : IGenerator
 
     private SKImage? GetImage(Node node)
     {
+        if (node.ComputedStyle.BitmapFontIcon is not null) {
+            return TextureLoader.LoadGfdIcon(node.ComputedStyle.BitmapFontIcon.Value);
+        }
+
         if (node.ComputedStyle.ImageBytes is not null) {
             return TextureLoader.LoadFromBytes(node.ComputedStyle.ImageBytes);
         }
 
         if (node.ComputedStyle.IconId is not null) {
             return TextureLoader.LoadIcon(node.ComputedStyle.IconId.Value);
-        }
-
-        if (node.ComputedStyle.BitmapFontIcon is not null) {
-            return TextureLoader.LoadGfdIcon(node.ComputedStyle.BitmapFontIcon.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(node.ComputedStyle.UldResource) && node.ComputedStyle is

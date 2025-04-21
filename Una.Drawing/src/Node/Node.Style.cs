@@ -128,7 +128,6 @@ public partial class Node
 
             if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
                 SignalReflow();
-                ReassignAnchorNodes();
                 isLayoutUpdated = true;
             }
 
@@ -167,6 +166,7 @@ public partial class Node
     private void SignalReflow()
     {
         RootNode._mustReflow = true;
+        ReassignAnchorNodes();
     }
 
     private void ClearCachedQuerySelectorsRecursively()
@@ -175,10 +175,8 @@ public partial class Node
             CachedQuerySelectorResults.Clear();
         }
 
-        lock (_childNodes) {
-            foreach (var node in _childNodes) {
-                node.ClearCachedQuerySelectorsRecursively();
-            }
+        foreach (var node in _childNodes.ToImmutableArray()) {
+            node.ClearCachedQuerySelectorsRecursively();
         }
     }
 
