@@ -164,24 +164,24 @@ public static class Easing
 
     // --- Cubic ---
     private static double EaseInCubicHelper(double  t) => t * t * t;
-    private static double EaseOutCubicHelper(double t) => 1.0 - Math.Pow(1.0 - t, 3);
+    private static double EaseOutCubicHelper(double t) => 1.0 - Pow3(1.0 - t);
 
     private static double EaseInOutCubicHelper(double t) =>
-        t < 0.5 ? 4.0 * t * t * t : 1.0 - Math.Pow(-2.0 * t + 2.0, 3) / 2.0;
+        t < 0.5 ? 4.0 * t * t * t : 1.0 - Pow3(-2.0 * t + 2.0) / 2.0;
 
     // --- Quart ---
     private static double EaseInQuartHelper(double  t) => t * t * t * t;
-    private static double EaseOutQuartHelper(double t) => 1.0 - Math.Pow(1.0 - t, 4);
+    private static double EaseOutQuartHelper(double t) => 1.0 - Pow4(1.0 - t);
 
     private static double EaseInOutQuartHelper(double t) =>
-        t < 0.5 ? 8.0 * t * t * t * t : 1.0 - Math.Pow(-2.0 * t + 2.0, 4) / 2.0;
+        t < 0.5 ? 8.0 * t * t * t * t : 1.0 - Pow4(-2.0 * t + 2.0) / 2.0;
 
     // --- Quint ---
     private static double EaseInQuintHelper(double  t) => t * t * t * t * t;
-    private static double EaseOutQuintHelper(double t) => 1.0 - Math.Pow(1.0 - t, 5);
+    private static double EaseOutQuintHelper(double t) => 1.0 - Pow5(1.0 - t);
 
     private static double EaseInOutQuintHelper(double t) =>
-        t < 0.5 ? 16.0 * t * t * t * t * t : 1.0 - Math.Pow(-2.0 * t + 2.0, 5) / 2.0;
+        t < 0.5 ? 16.0 * t * t * t * t * t : 1.0 - Pow5(-2.0 * t + 2.0) / 2.0;
 
     // --- Expo ---
     private static double EaseInExpoHelper(double  t) => t == 0 ? 0 : Math.Pow(2.0, 10.0 * t - 10.0);
@@ -194,13 +194,13 @@ public static class Easing
                      : (2.0 - Math.Pow(2.0, -20.0 * t + 10.0)) / 2.0;
 
     // --- Circ ---
-    private static double EaseInCircHelper(double  t) => 1.0 - Math.Sqrt(1.0 - Math.Pow(t, 2));
-    private static double EaseOutCircHelper(double t) => Math.Sqrt(1.0 - Math.Pow(t - 1.0, 2));
+    private static double EaseInCircHelper(double  t) => 1.0 - Math.Sqrt(1.0 - Pow2(t));
+    private static double EaseOutCircHelper(double t) => Math.Sqrt(1.0 - Pow2(t - 1.0));
 
     private static double EaseInOutCircHelper(double t) =>
         t < 0.5
-            ? (1.0 - Math.Sqrt(1.0 - Math.Pow(2.0 * t, 2))) / 2.0
-            : (Math.Sqrt(1.0 - Math.Pow(-2.0 * t + 2.0, 2)) + 1.0) / 2.0;
+            ? (1.0 - Math.Sqrt(1.0 - Pow2(2.0 * t))) / 2.0
+            : (Math.Sqrt(1.0 - Pow2(-2.0 * t + 2.0)) + 1.0) / 2.0;
 
     // --- Back ---
     private static double EaseInBackHelper(double t) => C3 * t * t * t - C1 * t * t;
@@ -215,8 +215,8 @@ public static class Easing
 
     private static double EaseInOutBackHelper(double t) =>
         t < 0.5
-            ? (Math.Pow(2.0 * t, 2) * ((C2 + 1.0) * 2.0 * t - C2)) / 2.0
-            : (Math.Pow(2.0 * t - 2.0, 2) * ((C2 + 1.0) * (t * 2.0 - 2.0) + C2) + 2.0) / 2.0;
+            ? (Pow2(2.0 * t) * ((C2 + 1.0) * 2.0 * t - C2)) / 2.0
+            : (Pow2(2.0 * t - 2.0) * ((C2 + 1.0) * (t * 2.0 - 2.0) + C2) + 2.0) / 2.0;
 
     // --- Elastic ---
     private static double EaseInElasticHelper(double t) =>
@@ -263,6 +263,16 @@ public static class Easing
             ? (1.0 - EaseOutBounceHelper(1.0 - 2.0 * t)) / 2.0
             : (1.0 + EaseOutBounceHelper(2.0 * t - 1.0)) / 2.0;
 
+    #endregion
+
+    #region Power Helpers
+    private static double Pow2(double t) => t * t;
+
+    private static double Pow3(double t) => t * t * t;
+
+    private static double Pow4(double t) => t * t * t * t;
+
+    private static double Pow5(double t) => t * t * t * t * t;
     #endregion
 
     # region Lookup Table
