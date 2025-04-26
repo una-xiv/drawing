@@ -175,8 +175,14 @@ public partial class Node
             CachedQuerySelectorResults.Clear();
         }
 
-        foreach (var node in _childNodes.ToImmutableArray()) {
-            node.ClearCachedQuerySelectorsRecursively();
+        try {
+            foreach (var node in _childNodes.ToImmutableArray()) {
+                node.ClearCachedQuerySelectorsRecursively();
+            }
+        } catch (InvalidOperationException) {
+            // Collection was modified exception caused by ToImmutableArray
+            // might _rarely_ happen here. Safe to ignore since we'll reflow
+            // anyway if this happens.
         }
     }
 
