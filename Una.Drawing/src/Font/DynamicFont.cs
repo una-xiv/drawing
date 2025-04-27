@@ -1,5 +1,4 @@
-﻿using Dalamud.Game.Text.SeStringHandling;
-using Una.Drawing.Texture;
+﻿using Una.Drawing.Texture;
 
 namespace Una.Drawing.Font;
 
@@ -30,10 +29,11 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         if (wordWrap == false || maxLineWidth is null or 0) {
             return MeasureSingleLine(text, fontSize, maxLineWidth ?? 0, textOverflow, textColor, edgeColor);
         }
+
         return MeasureMultiLine(text, fontSize, maxLineWidth.Value, lineHeight, textColor, edgeColor);
     }
 
-    public void DrawText(SKCanvas canvas, SKPaint paint, SKPoint pos, int fontSize, Chunk[] chunks, Color textColor, Color edgeColor)
+    public void DrawText(SKCanvas canvas, SKPaint paint, SKPoint pos, ComputedStyle style, Chunk[] chunks)
     {
         if (chunks.Length == 0) return;
 
@@ -41,33 +41,7 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         float y = pos.Y;
 
         foreach (var chunk in chunks) {
-            switch (chunk.Type) {
-                case Chunk.Kind.Text:
-                case Chunk.Kind.Glyph:
-                    SKFont font = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(fontSize) : GetTextFont(fontSize);
-                    canvas.DrawText(chunk.Text, x, pos.Y, font, paint);
-                    break;
-                case Chunk.Kind.BitmapIcon: {
-                    using SKPaint gfdPaint = new();
-
-                    GfdIcon icon = chunk.BitmapIcon!.Value;
-
-                    canvas.DrawImage(
-                        icon.Texture,
-                        new(icon.Uv0.X, icon.Uv0.Y, icon.Uv1.X, icon.Uv1.Y),
-                        new SKRect(
-                            x,
-                            y - (icon.Size.Y / 2f) - 4,
-                            x + icon.Size.X,
-                            y + (icon.Size.Y / 2f) - 4
-                        ),
-                        gfdPaint
-                    );
-                    break;
-                }
-            }
-            
-            x += chunk.Width;
+            (x, y) = DrawTextChunk(canvas, paint, x, y, style, chunk);
         }
     }
 
@@ -89,5 +63,67 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
 
         TextFontCache.Clear();
         GlyphFontCache.Clear();
+    }
+
+    private (float x, float y) DrawTextChunk(SKCanvas canvas, SKPaint paint, float x, float y, ComputedStyle style, Chunk chunk)
+    {
+        if (chunk.Type == Chunk.Kind.BitmapIcon) {
+            using SKPaint gfdPaint = new();
+
+            GfdIcon icon = chunk.BitmapIcon!.Value;
+
+            canvas.DrawImage(
+                icon.Texture,
+                new(icon.Uv0.X, icon.Uv0.Y, icon.Uv1.X, icon.Uv1.Y),
+                new SKRect(
+                    x,
+                    y - (icon.Size.Y / 2f) - 4,
+                    x + icon.Size.X,
+                    y + (icon.Size.Y / 2f) - 4
+                ),
+                gfdPaint
+            );
+
+            return (x + chunk.Width, y);
+        }
+
+        SKFont font = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(style.FontSize) : GetTextFont(style.FontSize);
+
+        Color textColor    = chunk.Color;
+        Color outlineColor = chunk.EdgeColor;
+
+        if (style.OutlineSize > 0 && null != outlineColor) {
+            paint.ImageFilter = null;
+            paint.Color       = Color.ToSkColor(outlineColor);
+            paint.Style       = SKPaintStyle.Stroke;
+            paint.StrokeWidth = style.OutlineSize;
+
+            if (style.OutlineSize > 1) {
+                paint.MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Solid, style.OutlineSize);
+            } else {
+                paint.StrokeWidth = 3.0f; // 1.5f on each side.
+            }
+
+            canvas.DrawText(chunk.Text, x, y, font, paint);
+        }
+
+        if (style.TextShadowSize > 0) {
+            paint.ImageFilter = paint.ImageFilter = SKImageFilter.CreateDropShadow(
+                0,
+                0,
+                style.TextShadowSize,
+                style.TextShadowSize,
+                Color.ToSkColor(style.TextShadowColor ?? new(0xFF000000))
+            );
+        }
+
+        paint.Color       = Color.ToSkColor(textColor);
+        paint.Style       = SKPaintStyle.Fill;
+        paint.StrokeWidth = 0;
+        paint.MaskFilter  = null;
+
+        canvas.DrawText(chunk.Text, x, y, font, paint);
+
+        return (chunk.Width, y);
     }
 }

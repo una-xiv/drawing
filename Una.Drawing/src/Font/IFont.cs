@@ -33,11 +33,9 @@ public interface IFont
     /// <param name="canvas"></param>
     /// <param name="paint"></param>
     /// <param name="pos">The top-left position to draw the text.</param>
-    /// <param name="fontSize">The font size of the text.</param>
+    /// <param name="style">The computed stylesheet.</param>
     /// <param name="text">The measured text to render. Can be either a string or <see cref="SeString"/></param>
-    /// <param name="textColor">Color of the text.</param>
-    /// <param name="edgeColor">Color of the text outline.</param>
-    internal void DrawText(SKCanvas canvas, SKPaint paint, SKPoint pos, int fontSize, Chunk[] text, Color textColor, Color edgeColor);
+    internal void DrawText(SKCanvas canvas, SKPaint paint, SKPoint pos, ComputedStyle style, Chunk[] text);
 
     /// <summary>
     /// Returns a <see cref="SKFontMetrics"/> object for the given font size.

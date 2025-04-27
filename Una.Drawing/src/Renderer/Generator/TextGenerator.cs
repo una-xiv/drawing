@@ -47,39 +47,7 @@ internal class TextGenerator : IGenerator
 
         using SKPaint paint        = new();
         SKPoint       point        = new(x, y);
-        Color         textColor    = node.ComputedStyle.Color;
-        Color         outlineColor = node.ComputedStyle.OutlineColor ?? new(0);
 
-        if (node.ComputedStyle.OutlineSize > 0 && null != node.ComputedStyle.OutlineColor) {
-            paint.ImageFilter = null;
-            paint.Color       = Color.ToSkColor(node.ComputedStyle.OutlineColor);
-            paint.Style       = SKPaintStyle.Stroke;
-            paint.StrokeWidth = node.ComputedStyle.OutlineSize;
-
-            if (node.ComputedStyle.OutlineSize > 1) {
-                paint.MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Solid, node.ComputedStyle.OutlineSize);
-            } else {
-                paint.StrokeWidth = 3.0f; // 1.5f on each side.
-            }
-
-            font.DrawText(canvas, paint, point, node.ComputedStyle.FontSize, line, outlineColor, outlineColor);
-        }
-
-        if (node.ComputedStyle.TextShadowSize > 0) {
-            paint.ImageFilter = paint.ImageFilter = SKImageFilter.CreateDropShadow(
-                0,
-                0,
-                node.ComputedStyle.TextShadowSize,
-                node.ComputedStyle.TextShadowSize,
-                Color.ToSkColor(node.ComputedStyle.TextShadowColor ?? new(0xFF000000))
-            );
-        }
-
-        paint.Color       = Color.ToSkColor(node.ComputedStyle.Color);
-        paint.Style       = SKPaintStyle.Fill;
-        paint.StrokeWidth = 0;
-        paint.MaskFilter  = null;
-
-        font.DrawText(canvas, paint, point, node.ComputedStyle.FontSize, line, textColor, outlineColor);
+        font.DrawText(canvas, paint, point, node.ComputedStyle, line);
     }
 }
