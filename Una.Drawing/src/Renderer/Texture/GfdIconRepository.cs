@@ -74,15 +74,12 @@ public static class GfdIconRepository
             ColorSpace = SkColorSpace,
         };
 
-        DalamudServices.PluginLog.Info($"Creating surface: {width}x{height}");
         using SKSurface? surface = SKSurface.Create(info);
 
         if (surface == null) {
             DalamudServices.PluginLog.Warning($"Failed to create surface of size {width}x{height}.");
             return null;
         }
-
-        DalamudServices.PluginLog.Info($"Surface created: {surface}");
 
         SKRect src = new(icon.Uv0.X, icon.Uv0.Y, icon.Uv1.X, icon.Uv1.Y);
         SKRect dest = new(0, 0, width, height);
