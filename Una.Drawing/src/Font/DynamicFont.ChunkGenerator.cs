@@ -71,7 +71,7 @@ internal partial class DynamicFont
         foreach (var payload in seString.Payloads) {
             switch (payload) {
                 case TextPayload { Text: not null } textPayload:
-                    chunks.Add(new(Chunk.Kind.Text, textPayload.Text, currentColor, currentEdgeColor, textFont.MeasureText(textPayload.Text)));
+                    chunks.AddRange(GenerateChunksFromString(textPayload.Text, fontSize, currentColor, currentEdgeColor));
                     break;
                 case IconPayload iconPayload:
                     GfdIcon icon = GfdIconRepository.GetIcon(iconPayload.Icon);
