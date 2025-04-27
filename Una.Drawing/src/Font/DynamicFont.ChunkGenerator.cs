@@ -7,16 +7,16 @@ namespace Una.Drawing.Font;
 
 internal partial class DynamicFont
 {
-    private List<Chunk> GenerateChunks(object text, int fontSize, Color color, Color edgeColor)
+    private List<Chunk> GenerateChunks(object text, int fontSize)
     {
         return text switch {
-            string str     => GenerateChunksFromString(str, fontSize, color, edgeColor),
-            SeString seStr => GenerateChunksFromSeString(seStr, fontSize, color, edgeColor),
+            string str     => GenerateChunksFromString(str, fontSize),
+            SeString seStr => GenerateChunksFromSeString(seStr, fontSize),
             _              => []
         };
     }
 
-    private List<Chunk> GenerateChunksFromString(string text, int fontSize, Color color, Color edgeColor)
+    private List<Chunk> GenerateChunksFromString(string text, int fontSize, Color? color = null, Color? edgeColor = null)
     {
         List<Chunk> chunks = [];
 
@@ -51,23 +51,21 @@ internal partial class DynamicFont
         return chunks;
     }
 
-    private List<Chunk> GenerateChunksFromSeString(SeString seString, int fontSize, Color initialColor, Color initialEdgeColor)
+    private List<Chunk> GenerateChunksFromSeString(SeString seString, int fontSize, Color? initialColor = null, Color? initialEdgeColor = null)
     {
         List<Chunk> chunks = [];
 
         if (seString.Payloads.Count == 0) return chunks;
 
-        Stack<Color> textColorStack = new();
-        Stack<Color> edgeColorStack = new();
+        Stack<Color?> textColorStack = new();
+        Stack<Color?> edgeColorStack = new();
 
         textColorStack.Push(initialColor);
         edgeColorStack.Push(initialEdgeColor);
 
-        Color currentColor     = initialColor;
-        Color currentEdgeColor = initialEdgeColor;
+        Color? currentColor     = initialColor;
+        Color? currentEdgeColor = initialEdgeColor;
 
-        SKFont textFont = GetTextFont(fontSize);
-        
         foreach (var payload in seString.Payloads) {
             switch (payload) {
                 case TextPayload { Text: not null } textPayload:

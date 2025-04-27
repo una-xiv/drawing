@@ -12,19 +12,15 @@ internal partial class DynamicFont
     /// <param name="fontSize">The font size.</param>
     /// <param name="maxWidth">The maximum allowed width for a line.</param>
     /// <param name="lineHeightFactor">Factor to multiply the default line height by.</param>
-    /// <param name="textColor"></param>
-    /// <param name="edgeColor"></param>
     /// <returns>A MeasuredText object containing the lines and dimensions.</returns>
     private MeasuredText MeasureMultiLine(
         object text,
         int    fontSize,
         float  maxWidth,
-        float  lineHeightFactor,
-        Color textColor,
-        Color edgeColor
+        float  lineHeightFactor
     )
     {
-        List<Chunk> chunks = GenerateChunks(text, fontSize, textColor, edgeColor);
+        List<Chunk> chunks = GenerateChunks(text, fontSize);
 
         // Handle null or empty input gracefully
         if (chunks.Count == 0) {

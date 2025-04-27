@@ -12,8 +12,6 @@ public interface IFont
     /// <param name="textOverflow">Wether to allow text to be cut off without word-breaks or ellipsis.</param>
     /// <param name="lineHeight">A scale factor that determines the height of lines.</param>
     /// <param name="maxWidth">The maximum width of a single line of text.</param>
-    /// <param name="textColor"></param>
-    /// <param name="edgeColor"></param>
     /// <returns>A <see cref="MeasuredText"/> object containing wrapped text.</returns>
     internal MeasuredText MeasureText(
         object text, 
@@ -22,9 +20,7 @@ public interface IFont
         bool wordWrap = false, 
         bool textOverflow = true, 
         float lineHeight = 1.2f, 
-        float? maxWidth = null,
-        Color textColor = default,
-        Color edgeColor = default
+        float? maxWidth = null
     );
 
     /// <summary>

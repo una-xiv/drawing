@@ -80,9 +80,7 @@ public partial class Node
             ComputedStyle.WordWrap,
             ComputedStyle.TextOverflow,
             ComputedStyle.LineHeight,
-            ComputedStyle.MaxWidth,
-            ComputedStyle.Color,
-            ComputedStyle.OutlineColor ?? new(0)
+            ComputedStyle.MaxWidth
         );
 
         return NodeValueMeasurement.Value.Size;

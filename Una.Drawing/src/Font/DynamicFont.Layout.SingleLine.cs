@@ -6,12 +6,10 @@ internal partial class DynamicFont
         object text,
         int    fontSize,
         float  maxWidth,
-        bool   textOverflow,
-        Color  textColor,
-        Color  edgeColor
+        bool   textOverflow
     )
     {
-        List<Chunk> chunks = GenerateChunks(text, fontSize, textColor, edgeColor);
+        List<Chunk> chunks = GenerateChunks(text, fontSize);
         List<Chunk> line   = [];
 
         float width  = 0;

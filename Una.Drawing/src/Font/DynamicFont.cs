@@ -15,9 +15,7 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         bool   wordWrap     = false,
         bool   textOverflow = true,
         float  lineHeight   = 1.2f,
-        float? maxWidth     = null,
-        Color  textColor    = default,
-        Color  edgeColor    = default
+        float? maxWidth     = null
     )
     {
         if (maxWidth > 0) {
@@ -27,10 +25,10 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         }
 
         if (wordWrap == false || maxLineWidth is null or 0) {
-            return MeasureSingleLine(text, fontSize, maxLineWidth ?? 0, textOverflow, textColor, edgeColor);
+            return MeasureSingleLine(text, fontSize, maxLineWidth ?? 0, textOverflow);
         }
 
-        return MeasureMultiLine(text, fontSize, maxLineWidth.Value, lineHeight, textColor, edgeColor);
+        return MeasureMultiLine(text, fontSize, maxLineWidth.Value, lineHeight);
     }
 
     public void DrawText(SKCanvas canvas, SKPaint paint, SKPoint pos, ComputedStyle style, Chunk[] chunks)
@@ -89,8 +87,8 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
 
         SKFont font = chunk.Type == Chunk.Kind.Glyph ? GetGlyphFont(style.FontSize) : GetTextFont(style.FontSize);
 
-        Color textColor    = chunk.Color;
-        Color outlineColor = chunk.EdgeColor;
+        Color  textColor    = chunk.Color ?? style.Color;
+        Color? outlineColor = chunk.EdgeColor ?? style.OutlineColor;
 
         if (style.OutlineSize > 0 && null != outlineColor) {
             paint.ImageFilter = null;
