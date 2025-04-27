@@ -124,6 +124,6 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
 
         canvas.DrawText(chunk.Text, x, y, font, paint);
 
-        return (chunk.Width, y);
+        return (x + chunk.Width, y);
     }
 }
