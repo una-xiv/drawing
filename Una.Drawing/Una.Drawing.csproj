@@ -24,6 +24,7 @@
 
     <ItemGroup>
         <EditorConfigFiles Remove="D:\source\repos\umbra\drawing\Una.Drawing\.editorconfig" />
+        <EditorConfigFiles Remove=".editorconfig" />
     </ItemGroup>
 
     <ItemGroup>
