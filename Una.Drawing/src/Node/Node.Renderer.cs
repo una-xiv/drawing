@@ -129,7 +129,7 @@ public partial class Node
         if (IsInWindowDrawList(drawList)) {
             position = ImGui.GetCursorScreenPos() + position;
         }
-        
+
         lock (_lockObject) {
             Reflow(position);
             Draw(drawList);
@@ -146,9 +146,9 @@ public partial class Node
     {
         if (IsDisposed) return;
 
-        if (!_previousBounds.Equals(Bounds.ContentRect)) {
-            _previousBounds = Bounds.ContentRect;
-            _mustRepaint    = true;
+        if (!_previousSize.Equals(Bounds.ContentSize)) {
+            _previousSize = Bounds.ContentSize;
+            _mustRepaint  = true;
         }
 
         TrackNodeRef(this);
@@ -251,7 +251,7 @@ public partial class Node
             _texture = Renderer.CreateTexture(this, padding);
 
             _consecutiveRedraws++;
-            
+
             // Uncomment to draw a border around the node when the texture is updated.
             // ImGui.GetForegroundDrawList().AddRect(
             //     Bounds.PaddingRect.TopLeft,
@@ -264,7 +264,7 @@ public partial class Node
         } else {
             _consecutiveRedraws = 0;
         }
-        
+
         _mustRepaint = false;
 
         if (_consecutiveRedraws > 3000) {
@@ -308,7 +308,7 @@ public partial class Node
         ImGui.SetCursorScreenPos(Bounds.ContentRect.TopLeft);
 
         uint frameId = Id != null ? Crc32.Get(Id) : InternalIdCrc32;
-        
+
         ImGui.BeginChildFrame(
             frameId,
             Bounds.PaddingSize.ToVector2() - new Vector2(0, ComputedStyle.Padding.VerticalSize),

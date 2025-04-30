@@ -33,7 +33,7 @@ public partial class Node
     private bool      _mustReflow = true;
     private Vector2?  _lastPosition;
     private Stopwatch _metricStopwatch = new();
-    private Rect      _previousBounds  = new(0, 0, 0, 0);
+    private Size      _previousSize    = new(0, 0);
 
     /// <summary>
     /// Computes the bounding size of this node and all its descendants. This method
@@ -53,6 +53,12 @@ public partial class Node
     {
         if (IsDisposed || !ComputedStyle.IsVisible) return;
         if (!_mustReflow && _lastPosition.Equals(position)) return;
+
+        if (!_mustReflow && null != position && !_lastPosition.Equals(position)) {
+            _lastPosition = position;
+            Layout.OverridePositionsOf(this, position.Value);
+            return;
+        }
 
         _mustReflow = false;
 
@@ -96,7 +102,7 @@ public partial class Node
 
                 value.Add(child);
             }
-            
+
             AnchorToChildNodes = anchorNodes;
         } catch (ArgumentException) {
             // This can happen if the child node is added or disposed while
