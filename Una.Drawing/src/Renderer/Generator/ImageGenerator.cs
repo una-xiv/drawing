@@ -22,7 +22,7 @@ internal class ImageGenerator : IGenerator
         SKImage? image = GetImage(node);
         if (image == null) return false;
 
-        float userScale = MathF.Max(0.1f, node.ComputedStyle.ImageScale) * Node.ScaleFactor;
+        float userScale = MathF.Max(0.1f, node.ComputedStyle.ImageScale);
 
         SKShaderTileMode tileMode = node.ComputedStyle.ImageTileMode switch {
             ImageTileMode.Clamp  => SKShaderTileMode.Clamp,
