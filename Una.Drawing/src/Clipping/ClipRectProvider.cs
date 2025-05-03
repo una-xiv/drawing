@@ -9,7 +9,7 @@ public static class ClipRectProvider
 {
     private static readonly List<ClipRect> RectList = [];
 
-    internal static unsafe void UpdateRects()
+    public static unsafe void UpdateRects()
     {
         RectList.Clear();
 
@@ -24,26 +24,8 @@ public static class ClipRectProvider
 
                 Vector2 scale = new(rootNode->ScaleX, rootNode->ScaleY);
 
-                // Main window rect.
                 ClipRect windowRect = GetWindowClipRect(windowNode, scale);
                 if (windowRect.IsValid()) RectList.Add(windowRect);
-
-                // Find remaining components that need to be rendered.
-                for (var i = 0; i < unitBase->UldManager.NodeListSize; i++) {
-                    var node = unitBase->UldManager.NodeList[i];
-                    if (node == null || !node->IsVisible()) continue;
-
-                    Vector2  pos      = new(node->ScreenX, node->ScreenY);
-                    Vector2  size     = new Vector2(node->Width, node->Height) * scale;
-                    ClipRect clipRect = new(pos, pos + size);
-
-                    if (windowRect.IsValid() &&
-                        (windowRect.Overlaps(clipRect) || clipRect.Overlaps(windowRect))) continue;
-
-                    if (!clipRect.IsValid()) continue;
-
-                    RectList.Add(clipRect);
-                }
             }
         );
     }
@@ -53,21 +35,26 @@ public static class ClipRectProvider
         var component = componentNode->Component;
         if (component == null) return new ClipRect();
 
+        ClipRect rect = new();
+        
         for (var i = 0; i < component->UldManager.NodeListSize; i++) {
             var node = component->UldManager.NodeList[i];
             if (node == null) continue;
-            if (node->Type != NodeType.Image || !node->IsVisible()) continue;
+            if (!node->IsVisible()) continue;
 
             Vector2  size     = new Vector2(node->Width, node->Height) * scale;
             Vector2  topLeft  = new(node->ScreenX, node->ScreenY);
             ClipRect clipRect = new ClipRect(topLeft, topLeft + size);
 
             if (clipRect.IsValid()) {
-                return clipRect;
+                rect.X1 = rect.X1 > 0 ? Math.Min(rect.X1, clipRect.X1) : clipRect.X1;
+                rect.Y1 = rect.Y1 > 0 ? Math.Min(rect.Y1, clipRect.Y1) : clipRect.Y1;
+                rect.X2 = Math.Max(rect.X2, clipRect.X2);
+                rect.Y2 = Math.Max(rect.Y2, clipRect.Y2);
             }
         }
 
-        return new ClipRect();
+        return rect;
     }
 
     public static List<ClipRect> FindClipRectsIntersectingWith(ClipRect clipRect)

@@ -2,7 +2,6 @@
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using Una.Drawing.Clipping;
 using Una.Drawing.Debugger;
 using Una.Drawing.Font;
 using Una.Drawing.NodeParser;
@@ -124,7 +123,6 @@ public class DrawingLib
     private static void OnDraw()
     {
         MouseCursor.Update();
-        ClipRectProvider.UpdateRects();
 
         if (ShowDebugWindow) {
             NodeDebugger.Render();
