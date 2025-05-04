@@ -5,17 +5,18 @@ namespace Una.Drawing;
 
 public partial class Node
 {
-    public static bool DrawDebugInfo { get; set; }
+    public static bool DrawDebugBoundingBoxes       { get; set; }
+    public static bool DrawDebugPaintAndReflowBoxes { get; set; }
 
     /// <summary>
     /// Returns a string representation of this node.
     /// </summary>
     public override string ToString()
     {
-        string type        = GetType().Name;
-        string id          = string.IsNullOrWhiteSpace(Id) ? "" : $"#{Id}";
-        string classes     = ClassList.Count == 0 ? "" : $".{string.Join(".", ClassList)}";
-        string tags        = TagsList.Count == 0 ? "" : $":{string.Join(":", TagsList)}";
+        string type    = GetType().Name;
+        string id      = string.IsNullOrWhiteSpace(Id) ? "" : $"#{Id}";
+        string classes = ClassList.Count == 0 ? "" : $".{string.Join(".", ClassList)}";
+        string tags    = TagsList.Count == 0 ? "" : $":{string.Join(":", TagsList)}";
 
         return $"{type} {id}{classes}{tags}".Trim();
     }
@@ -63,17 +64,17 @@ public partial class Node
     {
         if (node.ParentNode != null) return;
         if (InMemoryNodes.Contains(node)) return;
-        
+
         InMemoryNodes.Add(node);
         node.OnDispose += _ => InMemoryNodes.Remove(node);
     }
-    
+
     /// <summary>
     /// Draws debug information for this node.
     /// </summary>
     private void DrawDebugBounds(ImDrawListPtr drawList)
     {
-        if (!DrawDebugInfo) return;
+        if (!DrawDebugBoundingBoxes) return;
 
         if (Bounds.ContentRect.IsEmpty) return;
         if (Bounds.PaddingRect.IsEmpty) return;
@@ -93,10 +94,10 @@ public partial class Node
         drawList.AddRect(Bounds.PaddingRect.TopLeft, Bounds.PaddingRect.BottomRight, 0xC0FFFF00);
         drawList.AddRect(Bounds.ContentRect.TopLeft, Bounds.ContentRect.BottomRight, 0xFF00FF00);
 
-        ImDrawListPtr dl = ImGui.GetForegroundDrawList();
-        string text = $"Layer #{depth}: MR = {Bounds.MarginRect}\tPR = {Bounds.PaddingRect}\tCR = {Bounds.ContentRect}\tMS: {Bounds.MarginSize}\tPS: {Bounds.PaddingSize}\tCS: {Bounds.ContentSize}";
-        Vector2 textPos = mousePos + new Vector2(32f, 32f + (depth * 16f));
-        Vector2 textSize = ImGui.CalcTextSize(text);
+        ImDrawListPtr dl       = ImGui.GetForegroundDrawList();
+        string        text     = $"Layer #{depth}: MR = {Bounds.MarginRect}\tPR = {Bounds.PaddingRect}\tCR = {Bounds.ContentRect}\tMS: {Bounds.MarginSize}\tPS: {Bounds.PaddingSize}\tCS: {Bounds.ContentSize}";
+        Vector2       textPos  = mousePos + new Vector2(32f, 32f + (depth * 16f));
+        Vector2       textSize = ImGui.CalcTextSize(text);
 
         dl.AddRectFilled(textPos, textPos + textSize, 0xFF000000);
         dl.AddText(textPos + new Vector2(1, 1), 0xFF000000, text);

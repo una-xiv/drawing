@@ -256,7 +256,7 @@ internal static partial class Layout
                 : child.Bounds.ContentSize.Height;
 
             // Abort if the content size is already the same.
-            if (newContentSize == currentContentSize) continue;
+            if (Math.Abs(newContentSize - currentContentSize) < 0.1f) continue;
 
             child.Bounds.ContentSize = axisToStretch == Flow.Horizontal
                 ? new Size(newContentSize, child.Bounds.ContentSize.Height)

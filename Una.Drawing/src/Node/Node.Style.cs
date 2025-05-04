@@ -58,6 +58,7 @@ public partial class Node
     private int           _lastStyleHash;
     private int           _lastNodeValueHash;
     private bool          _hasComputedStyle;
+    private bool          _causedReflow;
 
     private readonly Lock _lockObject = new();
 
@@ -108,6 +109,10 @@ public partial class Node
 
             int  nodeValueHash   = NodeValue?.GetHashCode() ?? 0;
             bool isLayoutUpdated = nodeValueHash != _lastNodeValueHash;
+
+            if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
+                _causedReflow = true;
+            }
 
             foreach (Node child in _childNodes.ToImmutableArray()) {
                 if (child.IsDisposed) continue;

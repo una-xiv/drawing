@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using ImGuiNET;
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Una.Drawing;
@@ -71,6 +72,7 @@ public partial class Node
         _lastPosition = position;
         _metricStopwatch.Restart();
         Layout.ComputeLayout(this, position ?? new Vector2());
+
         LayoutTime = _metricStopwatch.Elapsed.TotalMilliseconds;
     }
 

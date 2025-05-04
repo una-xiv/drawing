@@ -10,7 +10,20 @@ internal static partial class Layout
 
         if (node.IsDisposed || !node.ComputedStyle.IsVisible) return;
 
-        ComputeSizes(node);
+        var lastWidth = node.Bounds.MarginSize.Width;
+        var lastHeight = node.Bounds.MarginSize.Height;
+
+        while(true) {
+            ComputeSizes(node);
+            
+            var newWidth = node.Bounds.MarginSize.Width;
+            var newHeight = node.Bounds.MarginSize.Height;
+            
+            if (Math.Abs(lastWidth - newWidth) < 0.1 && Math.Abs(lastHeight - newHeight) < 0.1) break;
+            
+            lastWidth  = newWidth;
+            lastHeight = newHeight;
+        }
     }
     
     public static void ComputeLayout(Node node, Vector2 origin)

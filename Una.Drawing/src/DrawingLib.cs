@@ -143,7 +143,7 @@ public class DrawingLib
                 ShowDebugWindow = !ShowDebugWindow;
                 break;
             case "bounds":
-                Node.DrawDebugInfo = !Node.DrawDebugInfo;
+                Node.DrawDebugBoundingBoxes = !Node.DrawDebugBoundingBoxes;
                 break;
             default:
                 Print($"Unknown command: {args}. Available commands: debug, bounds.");

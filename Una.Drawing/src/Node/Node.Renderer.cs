@@ -151,6 +151,13 @@ public partial class Node
             _mustRepaint  = true;
         }
 
+        if (_causedReflow) {
+            _causedReflow = false;
+            if (DrawDebugPaintAndReflowBoxes) {
+                ImGui.GetForegroundDrawList().AddRect(Bounds.MarginRect.TopLeft, Bounds.MarginRect.BottomRight, 0x80FF00FF, 0f, ImDrawFlags.None, 2.0f);
+            }
+        }
+        
         TrackNodeRef(this);
         CheckDroppableNode();
 
@@ -252,15 +259,16 @@ public partial class Node
 
             _consecutiveRedraws++;
 
-            // Uncomment to draw a border around the node when the texture is updated.
-            // ImGui.GetForegroundDrawList().AddRect(
-            //     Bounds.PaddingRect.TopLeft,
-            //     Bounds.PaddingRect.BottomRight,
-            //     0xFFFF00FF,
-            //     0f,
-            //     ImDrawFlags.RoundCornersNone,
-            //     3.0f
-            // );
+            if (DrawDebugPaintAndReflowBoxes) {
+                ImGui.GetForegroundDrawList().AddRect(
+                    Bounds.PaddingRect.TopLeft,
+                    Bounds.PaddingRect.BottomRight,
+                    0xA000FFFF,
+                    0f,
+                    ImDrawFlags.RoundCornersNone,
+                    3.0f
+                );
+            }
         } else {
             _consecutiveRedraws = 0;
         }
