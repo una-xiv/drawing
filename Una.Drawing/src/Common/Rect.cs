@@ -85,7 +85,7 @@ public class Rect(float x1, float y1, float x2, float y2) : IEquatable<Rect>
     /// <param name="rect">The other rectangle.</param>
     /// <returns>The intersection between this rectangle and the other one.</returns>
     public Rect Intersection(Rect rect) =>
-        new(Math.Max(X1, rect.X1), Math.Max(Y1, rect.Y1), Math.Min(X2, rect.X2), Math.Min(Y2, rect.Y2));
+        new(MathF.Max(X1, rect.X1), MathF.Max(Y1, rect.Y1), MathF.Min(X2, rect.X2), MathF.Min(Y2, rect.Y2));
 
     /// <summary>
     /// Returns a new rectangle that represents the union of this rectangle
@@ -94,7 +94,7 @@ public class Rect(float x1, float y1, float x2, float y2) : IEquatable<Rect>
     /// <param name="rect">The rectangle to form a union with.</param>
     /// <returns>The union of this and the other rectangle.</returns>
     public Rect Union(Rect rect) =>
-        new(Math.Min(X1, rect.X1), Math.Min(Y1, rect.Y1), Math.Max(X2, rect.X2), Math.Max(Y2, rect.Y2));
+        new(MathF.Min(X1, rect.X1), MathF.Min(Y1, rect.Y1), MathF.Max(X2, rect.X2), MathF.Max(Y2, rect.Y2));
 
     public static implicit operator SKRect(Rect rect) => new(rect.X1, rect.Y1, rect.X2, rect.Y2);
     public static implicit operator Rect(SKRect rect) => new(rect.Left, rect.Top, rect.Right, rect.Bottom);

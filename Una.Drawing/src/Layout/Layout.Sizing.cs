@@ -50,10 +50,10 @@ internal static partial class Layout
 
             if (isHorizontal) {
                 mainAxisAccumulatedSize += childOuterWidth;                              // Sum widths
-                crossAxisMaxSize        =  Math.Max(crossAxisMaxSize, childOuterHeight); // Max height
+                crossAxisMaxSize        =  MathF.Max(crossAxisMaxSize, childOuterHeight); // Max height
             } else {
                 mainAxisAccumulatedSize += childOuterHeight;                            // Sum heights
-                crossAxisMaxSize        =  Math.Max(crossAxisMaxSize, childOuterWidth); // Max width
+                crossAxisMaxSize        =  MathF.Max(crossAxisMaxSize, childOuterWidth); // Max width
             }
         }
 
@@ -75,23 +75,20 @@ internal static partial class Layout
         float outerH = node.ComputedStyle.Padding.VerticalSize + node.ComputedStyle.Margin.VerticalSize;
 
         var finalContentWidth = isAutoWidth
-            ? Math.Max(childrenCalculatedWidth, textSize.Width + 2)
+            ? MathF.Max(childrenCalculatedWidth, textSize.Width + 2)
             : node.ComputedStyle.Size.Width - outerW;
 
         var finalContentHeight = isAutoHeight
-            ? Math.Max(childrenCalculatedHeight, textSize.Height)
+            ? MathF.Max(childrenCalculatedHeight, textSize.Height)
             : node.ComputedStyle.Size.Height - outerH;
 
         if (node.ComputedStyle.MaxWidth is > 0) {
-            finalContentWidth = Math.Min(finalContentWidth, node.ComputedStyle.MaxWidth.Value);
+            finalContentWidth = MathF.Min(finalContentWidth, node.ComputedStyle.MaxWidth.Value);
         }
 
-        finalContentWidth  = MathF.Round(finalContentWidth);
-        finalContentHeight = MathF.Round(finalContentHeight);
-
         node.Bounds.ContentSize = new Size(
-            Math.Max(0, finalContentWidth),
-            Math.Max(0, finalContentHeight)
+            MathF.Max(0, finalContentWidth),
+            MathF.Max(0, finalContentHeight)
         );
 
         node.Bounds.PaddingSize = new Size(
@@ -178,7 +175,7 @@ internal static partial class Layout
 
         // Total space the growable items should collectively occupy.
         float availableSizeForGrowableGroup = parentContentSize - nonGrowableSize - totalGapSize;
-        availableSizeForGrowableGroup = Math.Max(0, availableSizeForGrowableGroup);
+        availableSizeForGrowableGroup = MathF.Max(0, availableSizeForGrowableGroup);
 
         // Distribute available size.
         float baseTargetOuterSize = availableSizeForGrowableGroup / growableChildren.Count;
@@ -208,7 +205,7 @@ internal static partial class Layout
             float childMarginSize  = getMarginSize(child.ComputedStyle);
             float newContentSize   = targetOuterSize - (childPaddingSize + childMarginSize);
 
-            newContentSize = Math.Max(0, newContentSize);
+            newContentSize = MathF.Max(0, newContentSize);
 
             child.Bounds.ContentSize = axis == Flow.Horizontal
                 ? new Size(newContentSize, child.Bounds.ContentSize.Height)
@@ -251,7 +248,7 @@ internal static partial class Layout
             float childMarginSize  = getMarginSize(child.ComputedStyle);
             float newContentSize   = parentContentSize - (childPaddingSize + childMarginSize);
 
-            newContentSize = Math.Max(0, newContentSize);
+            newContentSize = MathF.Max(0, newContentSize);
 
             // Get current content size on the axis to potentially update.
             float currentContentSize = (axisToStretch == Flow.Horizontal)
