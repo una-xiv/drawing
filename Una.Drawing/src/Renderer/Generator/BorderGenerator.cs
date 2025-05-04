@@ -36,10 +36,10 @@ internal class BorderGenerator : IGenerator
         float    bottomWidth = GetLineWidth(style.BorderWidth.Bottom, node.ComputedStyle);
         float    leftWidth   = GetLineWidth(style.BorderWidth.Left, node.ComputedStyle);
 
-        float topCornerRadius    = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Top));
-        float rightCornerRadius  = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Right));
-        float bottomCornerRadius = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Bottom));
-        float leftCornerRadius   = Math.Max(0, (style.BorderRadius) - (style.BorderInset.Left));
+        float topCornerRadius    = MathF.Max(0, (style.BorderRadius) - (style.BorderInset.Top));
+        float rightCornerRadius  = MathF.Max(0, (style.BorderRadius) - (style.BorderInset.Right));
+        float bottomCornerRadius = MathF.Max(0, (style.BorderRadius) - (style.BorderInset.Bottom));
+        float leftCornerRadius   = MathF.Max(0, (style.BorderRadius) - (style.BorderInset.Left));
 
         float alignmentOffset = style.IsAntialiased ? 0.5f : 0f;
         

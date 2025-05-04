@@ -100,10 +100,6 @@ internal static partial class Layout
                 continue;
             }
 
-            // Prohibit sub-pixel positioning to prevent blurry images.
-            x = MathF.Round(x);
-            y = MathF.Round(y);
-
             node.Bounds.MarginRect = new Rect(x, y, node.Bounds.MarginSize);
             node.Bounds.PaddingRect = new Rect(
                 x + node.ComputedStyle.Margin.Left,

@@ -65,12 +65,12 @@ public partial class Node
         _textCachedMaxWidth  = ComputedStyle.MaxWidth;
 
         var font         = FontRegistry.Fonts[ComputedStyle.Font];
-        var maxLineWidth = Math.Max(0, ComputedStyle.Size.Width);
+        var maxLineWidth = MathF.Max(0, ComputedStyle.Size.Width);
 
         if (maxLineWidth > 0) maxLineWidth -= ComputedStyle.Padding.HorizontalSize;
 
         if (maxLineWidth == 0 && ComputedStyle.AutoSize.Horizontal == AutoSize.Grow) {
-            maxLineWidth = Math.Max(0, Bounds.ContentSize.Width);
+            maxLineWidth = MathF.Max(0, Bounds.ContentSize.Width);
         }
 
         NodeValueMeasurement = font.MeasureText(

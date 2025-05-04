@@ -14,8 +14,8 @@ public struct ClipRect(Vector2 topLeft, Vector2 bottomRight) : IEquatable<ClipRe
 
     public static ClipRect FromRect(Rect rect) => new(rect.TopLeft, rect.BottomRight);
 
-    public readonly float   Width       => Math.Max(0, X2 - X1);
-    public readonly float   Height      => Math.Max(0, Y2 - Y1);
+    public readonly float   Width       => MathF.Max(0, X2 - X1);
+    public readonly float   Height      => MathF.Max(0, Y2 - Y1);
     public readonly float   Area        => Width * Height;
     public readonly Vector2 TopLeft     => new(X1, Y1);
     public readonly Vector2 BottomRight => new(X2, Y2);
@@ -46,8 +46,8 @@ public struct ClipRect(Vector2 topLeft, Vector2 bottomRight) : IEquatable<ClipRe
     /// </summary>
     public readonly ClipRect Clamp(ClipRect bounds) =>
         new(
-            Math.Max(X1, bounds.X1), Math.Max(Y1, bounds.Y1),
-            Math.Min(X2, bounds.X2), Math.Min(Y2, bounds.Y2)
+            MathF.Max(X1, bounds.X1), MathF.Max(Y1, bounds.Y1),
+            MathF.Min(X2, bounds.X2), MathF.Min(Y2, bounds.Y2)
         );
 
     /// <summary>
@@ -67,10 +67,10 @@ public struct ClipRect(Vector2 topLeft, Vector2 bottomRight) : IEquatable<ClipRe
         }
 
         // Clamp 'other' to the bounds of 'this' to find the actual intersection area
-        float intersectX1 = Math.Max(X1, other.X1);
-        float intersectY1 = Math.Max(Y1, other.Y1);
-        float intersectX2 = Math.Min(X2, other.X2);
-        float intersectY2 = Math.Min(Y2, other.Y2);
+        float intersectX1 = MathF.Max(X1, other.X1);
+        float intersectY1 = MathF.Max(Y1, other.Y1);
+        float intersectX2 = MathF.Min(X2, other.X2);
+        float intersectY2 = MathF.Min(Y2, other.Y2);
 
         // If 'other' completely covers 'this', result is empty.
         // Use a small epsilon for float comparison robustness

@@ -497,8 +497,8 @@ public partial class Node
 
                 totalWidth  += sz.Width;
                 totalHeight += sz.Height;
-                maxWidth    =  Math.Max(maxWidth, sz.Width);
-                maxHeight   =  Math.Max(maxHeight, sz.Height);
+                maxWidth    =  MathF.Max(maxWidth, sz.Width);
+                maxHeight   =  MathF.Max(maxHeight, sz.Height);
             }
 
             // Account for the gap between children.
