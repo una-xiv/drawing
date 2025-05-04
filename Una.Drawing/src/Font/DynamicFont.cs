@@ -90,6 +90,9 @@ internal partial class DynamicFont(SKTypeface textTypeface, SKTypeface glyphType
         Color  textColor    = chunk.Color ?? style.Color;
         Color? outlineColor = chunk.EdgeColor ?? style.OutlineColor;
 
+        x = MathF.Round(x);
+        y = MathF.Round(y);
+        
         if (style.OutlineSize > 0 && null != outlineColor) {
             paint.ImageFilter = null;
             paint.Color       = Color.ToSkColor(outlineColor);

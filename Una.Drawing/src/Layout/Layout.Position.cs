@@ -99,6 +99,9 @@ internal static partial class Layout
                 i += step;
                 continue;
             }
+            
+            x = MathF.Floor(x);
+            y = MathF.Floor(y);
 
             node.Bounds.MarginRect = new Rect(x, y, node.Bounds.MarginSize);
             node.Bounds.PaddingRect = new Rect(

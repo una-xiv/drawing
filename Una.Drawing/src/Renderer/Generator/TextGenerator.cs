@@ -46,7 +46,7 @@ internal class TextGenerator : IGenerator
         if (node.ComputedStyle.TextAlign.IsRight) x  += (node.Bounds.PaddingSize.Width - lineWidth);
 
         using SKPaint paint        = new();
-        SKPoint       point        = new(x, y);
+        SKPoint       point        = new(MathF.Round(x), MathF.Round(y));
 
         font.DrawText(canvas, paint, point, node.ComputedStyle, line);
     }
