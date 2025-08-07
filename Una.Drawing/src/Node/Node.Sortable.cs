@@ -1,6 +1,6 @@
 ﻿using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using ImGuiNET;
+
 using System.Collections.Immutable;
 using System.Linq;
 using Task = System.Threading.Tasks.Task;

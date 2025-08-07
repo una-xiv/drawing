@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿
 using System.Linq;
 
 namespace Una.Drawing;
@@ -352,8 +352,8 @@ public partial class Node
     private static unsafe bool IsInWindowDrawList(ImDrawListPtr drawList)
     {
         return
-            drawList.NativePtr != ImGui.GetForegroundDrawList().NativePtr
-            && drawList.NativePtr != ImGui.GetBackgroundDrawList().NativePtr;
+            drawList.Handle != ImGui.GetForegroundDrawList().Handle
+            && drawList.Handle != ImGui.GetBackgroundDrawList().Handle;
     }
 
     private void RaiseEvent(Action<Node>? action)
