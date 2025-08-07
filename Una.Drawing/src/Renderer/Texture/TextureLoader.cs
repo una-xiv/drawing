@@ -140,17 +140,24 @@ internal static class TextureLoader
         // just return null as well.
         if (iconFile.Header.Width <= 0 || iconFile.Header.Height <= 0) return null;
 
-        SKImageInfo info = new(iconFile.Header.Width, iconFile.Header.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
+        try {
+            SKImageInfo info = new(iconFile.Header.Width, iconFile.Header.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
 
-        IntPtr pixelPtr = Marshal.AllocHGlobal(iconFile.ImageData.Length);
-        Marshal.Copy(iconFile.ImageData, 0, pixelPtr, iconFile.ImageData.Length);
+            IntPtr pixelPtr = Marshal.AllocHGlobal(iconFile.ImageData.Length);
+            Marshal.Copy(iconFile.ImageData, 0, pixelPtr, iconFile.ImageData.Length);
 
-        using SKPixmap pixmap = new(info, pixelPtr);
-        SKImage?       image  = SKImage.FromPixels(pixmap);
+            using SKPixmap pixmap = new(info, pixelPtr);
+            SKImage?       image  = SKImage.FromPixels(pixmap);
 
-        IconToImageCache[iconId] = image;
+            IconToImageCache[iconId] = image;
 
-        return image;
+            return image;
+        } catch (Exception) {
+            // As of 07/08/2023, FFXIV introduced BC5/BC7 textures for some
+            // icons, which are currently unsupported by Lumia. This causes
+            // the ".imageData" getter on iconFile to throw an exception.
+            return null;
+        }
     }
 
     internal static SKImage? LoadGfdIcon(BitmapFontIcon fontIcon)
