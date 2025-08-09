@@ -167,7 +167,7 @@ public partial class Node : IDisposable
                 List<Node> toRemove = _childNodes.ToList();
 
                 foreach (var node in toRemove) node.Remove(true);
-                foreach (var node in value) AppendChild(node);
+                foreach (var node in value.ToImmutableArray()) AppendChild(node);
             }
 
             OnPropertyChanged?.Invoke("ChildNodes", _childNodes);
