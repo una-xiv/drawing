@@ -167,7 +167,7 @@ public partial class Node : IDisposable
                 List<Node> toRemove = _childNodes.ToList();
 
                 foreach (var node in toRemove) node.Remove(true);
-                foreach (var node in value.ToImmutableArray()) AppendChild(node);
+                foreach (var node in value) AppendChild(node);
             }
 
             OnPropertyChanged?.Invoke("ChildNodes", _childNodes);
@@ -319,7 +319,7 @@ public partial class Node : IDisposable
         OnDisposed();
 
         lock (_childNodes) {
-            foreach (var child in _childNodes.ToImmutableArray()) child.Dispose();
+            foreach (var child in _childNodes.ToArray()) child.Dispose();
         }
 
         NodeValue = null;
@@ -483,7 +483,7 @@ public partial class Node : IDisposable
     public void Clear()
     {
         lock (_childNodes) {
-            foreach (var node in _childNodes.ToImmutableArray()) {
+            foreach (var node in _childNodes.ToArray()) {
                 node.Dispose();
             }
         }
@@ -499,7 +499,7 @@ public partial class Node : IDisposable
             TagsList = ParentNode.TagsList;
         }
 
-        foreach (Node child in _childNodes.ToImmutableArray()) {
+        foreach (Node child in _childNodes.ToArray()) {
             child.InheritTagsFromParent();
         }
     }

@@ -423,7 +423,6 @@ public partial class Node
             ImGui.EndTooltip();
             ImGui.PopStyleColor(2);
             ImGui.PopStyleVar(2);
-            DebugLogger.Log($"Render tooltip now!");
         }
     }
 

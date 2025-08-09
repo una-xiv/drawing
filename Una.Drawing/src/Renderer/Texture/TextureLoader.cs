@@ -289,9 +289,9 @@ internal static class TextureLoader
             case TexFile.TextureFormat.BC5:
             case TexFile.TextureFormat.BC7:
                 if (!PathToByteArrayCache.TryGetValue(path, out var byteInfo)) {
-                    var wrap = DalamudServices.TextureProvider.GetFromGame(path).GetWrapOrDefault();
-                    if (wrap == null) return null;
+                    var wrap = DalamudServices.TextureProvider.GetFromGame(path).RentAsync().GetAwaiter().GetResult();
                     var (specs, data) = DalamudServices.TextureReadbackProvider.GetRawImageAsync(wrap, new TextureModificationArgs { DxgiFormat = (int)DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM }).GetAwaiter().GetResult();
+                    
                     unsafe {
                         fixed (byte* p = data) {
                             if (specs.Pitch != specs.Width * 4) {
@@ -302,12 +302,15 @@ internal static class TextureLoader
                             }
                         }
                     }
+                    
                     height = specs.Height;
                     width = specs.Width;
                     PathToByteArrayCache[path] = (data, width, height);
+                } else {
+                    width  = byteInfo.width;
+                    height = byteInfo.height;
                 }
-                width = byteInfo.width;
-                height = byteInfo.height;
+
                 if (!PathToBytePtrCache.TryGetValue(path, out pixelPtr)) {
                     pixelPtr = Marshal.AllocHGlobal(PathToByteArrayCache[path].bytes.Length);
                     Marshal.Copy(PathToByteArrayCache[path].bytes, 0, pixelPtr, PathToByteArrayCache[path].bytes.Length);

@@ -1,34 +1,27 @@
 <udt>
     <node id="main">
-        <node class="test text" value="Normal text."/>
-        <node class="test text outline" value="Outlined text."/>
-        <node class="test text outline thick" value="Thick outlined text."/>
-        <node class="test text outline red" value="Red outlined text."/>
-        <node class="test text outline thick red" value="Thick red outlined text."/>
+        <node class="icon" style="iconId: 82271;"/>
+        <node class="icon" style="iconId: 82272;"/>
+        <node class="icon" style="iconId: 82273;"/>
+        <node class="icon" style="iconId: 82274;"/>
+        <node class="icon" style="iconId: 82275;"/>
+        <node class="icon" style="iconId: 82276;"/>
     </node>
     
     <![CDATA[
     #main {
-        flow: vertical;
+        flow: horizontal;
         gap: 10;
-        
-        .test {
-            padding: 10;
-            background-color: 0xFF3a3c3c;
-            border-color: 0xA0FFFFFF;
+     
+        .icon {   
+            size: 64 64;
+            border-color: 0xffffffff;
             border-width: 1;
-            border-radius: 6;
+            border-radius: 3;
+            iconId: 82271;
             
-            &.text {
-                color: 0xFFFFFFFF;
-                
-                &.outline {
-                    outline-color: 0xFF000000;
-                    outline-size: 1;
-                    
-                    &.red { outline-color: 0xFF0000FF; }
-                    &.thick { outline-size: 3; }
-                }
+            &:hover {
+                border-color: 0xffaaeeff;
             }
         }
     }

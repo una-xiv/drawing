@@ -224,7 +224,7 @@ public partial class Node
         if (!IsDisposed) {
             OnDraw(childDrawList);
 
-            foreach (var childNode in _childNodes.ToImmutableArray()) {
+            foreach (var childNode in _childNodes.ToArray()) {
                 childNode.Draw(childDrawList);
             }
         }
@@ -341,7 +341,7 @@ public partial class Node
         var x = pos.X;
         var y = pos.Y;
 
-        foreach (var child in _childNodes.ToImmutableArray()) {
+        foreach (var child in _childNodes.ToArray()) {
             Layout.OverridePositionsOf(child, new Vector2(x, y));
 
             if (ComputedStyle.Flow == Flow.Vertical) {
