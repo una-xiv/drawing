@@ -195,6 +195,8 @@ internal static class TextureLoader
 
     internal static SKImage? LoadTexture(string path)
     {
+        if (PathToImageCache.TryGetValue(path, out SKImage? cachedImage)) return cachedImage;
+
         if (DalamudServices.DataManager == null || DalamudServices.TextureProvider == null)
             throw new InvalidOperationException("Una.Drawing.DrawingLib has not been set-up.");
 
@@ -221,7 +223,10 @@ internal static class TextureLoader
             PathToTexFileCache[path] = texFile;
         }
 
-        return LoadImageFromTexOrPath(texFile, path);
+        cachedImage = LoadImageFromTexOrPath(texFile, path);
+        if (cachedImage == null) return null;
+        PathToImageCache[path] = cachedImage;
+        return cachedImage;
     }
 
     /// <summary>
