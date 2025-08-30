@@ -106,6 +106,16 @@ public partial class Node
     /// is no drag operation in progress.
     /// </summary>
     public static Node? DraggedNode { get; private set; }
+
+    /// <summary>
+    /// The color that will be used as background when rendering a tooltip.
+    /// </summary>
+    public static uint TooltipBackgroundColor { get; set; } = 0xFF353535;
+
+    /// <summary>
+    /// The color that will be used as text color when rendering a tooltip.
+    /// </summary>
+    public static uint TooltipTextColor { get; set; } = 0xFFCACACA;
     
     private bool   _isInWindowOrInteractiveParent;
     private bool   _didStartInteractive;
@@ -415,8 +425,8 @@ public partial class Node
         if (_tooltipHoverStartTime < now - 500) {
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 6));
             ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 6);
-            ImGui.PushStyleColor(ImGuiCol.PopupBg, 0xFF353535);
-            ImGui.PushStyleColor(ImGuiCol.Text, 0xFFCACACA);
+            ImGui.PushStyleColor(ImGuiCol.PopupBg, TooltipBackgroundColor);
+            ImGui.PushStyleColor(ImGuiCol.Text, TooltipTextColor);
             ImGui.BeginTooltip();
             ImGui.PushTextWrapPos(420.0f);
             ImGui.TextUnformatted(Tooltip);
