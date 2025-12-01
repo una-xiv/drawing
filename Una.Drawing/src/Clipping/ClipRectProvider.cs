@@ -100,6 +100,7 @@ public static class ClipRectProvider
 
             string? name = unit->NameString;
             if (name is "_FocusTargetInfo" or "JobHudNotice") continue;
+            if (name != null && name.StartsWith("KTK_Overlay")) continue;
 
             iterator((IntPtr)unit, name ?? string.Empty);
         }
