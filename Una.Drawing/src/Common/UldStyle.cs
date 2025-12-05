@@ -5,5 +5,7 @@ public enum UldStyle
     Default,
     Light,
     Classic,
-    TransparentBlue
+    TransparentBlue,
+    //ClearGreen, // 7.4 new themes
+    //ClearWhite,
 }
