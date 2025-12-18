@@ -5,7 +5,7 @@ public enum UldStyle
     Default,
     Light,
     Classic,
-    TransparentBlue,
-    //ClearGreen, // 7.4 new themes
-    //ClearWhite,
+    TransparentBlue, // this is actually named Clear Blue but not sure if that should be fixed
+    ClearWhite,
+    ClearGreen,
 }
