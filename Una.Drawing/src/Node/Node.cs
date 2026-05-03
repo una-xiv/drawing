@@ -526,8 +526,10 @@ public partial class Node : IDisposable
             TagsList = ParentNode.TagsList;
         }
 
-        foreach (Node child in _childNodes.ToArray()) {
-            child.InheritTagsFromParent();
+        lock (_childNodes) {
+            foreach (var child in _childNodes) {
+                child.InheritTagsFromParent();
+            }
         }
     }
 
@@ -581,7 +583,7 @@ public partial class Node : IDisposable
     {
         if (_childNodes.Contains(node)) return;
 
-        node.ParentNode?.RemoveChild(this);
+        node.ParentNode?.RemoveChild(node);
 
         _childNodes.Add(node);
         node.ParentNode = this;
@@ -591,7 +593,7 @@ public partial class Node : IDisposable
     {
         if (_childNodes.Contains(node)) return;
 
-        node.ParentNode?.RemoveChild(this);
+        node.ParentNode?.RemoveChild(node);
 
         _childNodes.Insert(0, node);
         node.ParentNode = this;

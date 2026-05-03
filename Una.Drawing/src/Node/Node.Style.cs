@@ -75,82 +75,86 @@ public partial class Node
         _isUpdatingStyle = true;
 
         if (0 != Interlocked.Exchange(ref _computeStyleLock, 1)) {
+            _isUpdatingStyle = false;
             return false;
         }
 
-        lock (_lockObject) {
-            if (IsDisposed) return false;
+        try {
+            lock (_lockObject) {
+                if (IsDisposed) return false;
 
-            (int hash, ComputedStyle style) = ComputedStyleFactory.Create(this);
+                (int hash, ComputedStyle style) = ComputedStyleFactory.Create(this);
 
-            if (_lastStyleHash != hash) {
-                _lastStyleHash = hash;
+                if (_lastStyleHash != hash) {
+                    _lastStyleHash = hash;
+
+                    if (_animation is { IsPlaying: true }) {
+                        _animation = null;
+                    }
+
+                    _animation ??= _intermediateStyle.TransitionDuration > 0
+                        ? new Animation(_intermediateStyle, style)
+                        : null;
+                }
 
                 if (_animation is { IsPlaying: true }) {
+                    style = _animation.Update(DrawDeltaTime);
+                }
+
+                if (_animation is { IsPlaying: false }) {
+                    TransitionToConfiguredClass(ref style);
                     _animation = null;
+                } else if (_animation is null) {
+                    TransitionToConfiguredClass(ref style);
                 }
 
-                _animation ??= _intermediateStyle.TransitionDuration > 0
-                    ? new Animation(_intermediateStyle, style)
-                    : null;
-            }
+                ComputedStyle.CommitResult result = style.Commit(ref _intermediateStyle);
 
-            if (_animation is { IsPlaying: true }) {
-                style = _animation.Update(DrawDeltaTime);
-            }
+                int  nodeValueHash   = NodeValue?.GetHashCode() ?? 0;
+                bool isLayoutUpdated = nodeValueHash != _lastNodeValueHash;
 
-            if (_animation is { IsPlaying: false }) {
-                TransitionToConfiguredClass(ref style);
-                _animation = null;
-            } else if (_animation is null) {
-                TransitionToConfiguredClass(ref style);
-            }
-
-            ComputedStyle.CommitResult result = style.Commit(ref _intermediateStyle);
-
-            int  nodeValueHash   = NodeValue?.GetHashCode() ?? 0;
-            bool isLayoutUpdated = nodeValueHash != _lastNodeValueHash;
-
-            if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
-                _causedReflow = true;
-            }
-
-            foreach (Node child in _childNodes.ToArray()) {
-                if (child.IsDisposed) continue;
-
-                if (child.ComputeStyle()) {
-                    result          |= ComputedStyle.CommitResult.LayoutUpdated;
-                    isLayoutUpdated =  true;
+                if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
+                    _causedReflow = true;
                 }
+
+                lock (_childNodes) {
+                    foreach (Node child in _childNodes) {
+                        if (child.IsDisposed) continue;
+
+                        if (child.ComputeStyle()) {
+                            result          |= ComputedStyle.CommitResult.LayoutUpdated;
+                            isLayoutUpdated =  true;
+                        }
+                    }
+                }
+
+                // Update snapshot.
+                _intermediateStyle                     = style;
+                _intermediateStyle.LayoutStyleSnapshot = LayoutStyleSnapshot.Create(ref _intermediateStyle);
+                _intermediateStyle.PaintStyleSnapshot  = PaintStyleSnapshot.Create(ref _intermediateStyle);
+                ComputedStyle                          = _intermediateStyle;
+                RenderHash                             = _intermediateStyle.GetHash();
+
+                if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
+                    SignalReflow();
+                    isLayoutUpdated = true;
+                }
+
+                if (_previousRenderHash != RenderHash || _lastNodeValueHash != nodeValueHash) {
+                    _mustRepaint = true;
+
+                    _texture?.Dispose();
+                    _texture = null;
+                }
+
+                _lastNodeValueHash = nodeValueHash;
+                _hasComputedStyle  = true;
+
+                return isLayoutUpdated;
             }
-
-            // Update snapshot.
-            _intermediateStyle                     = style;
-            _intermediateStyle.LayoutStyleSnapshot = LayoutStyleSnapshot.Create(ref _intermediateStyle);
-            _intermediateStyle.PaintStyleSnapshot  = PaintStyleSnapshot.Create(ref _intermediateStyle);
-            ComputedStyle                          = _intermediateStyle;
-            RenderHash                             = _intermediateStyle.GetHash();
-            _isUpdatingStyle                       = false;
-
-            if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
-                SignalReflow();
-                isLayoutUpdated = true;
-            }
-
-            if (_previousRenderHash != RenderHash || _lastNodeValueHash != nodeValueHash) {
-                _mustRepaint = true;
-
-                _texture?.Dispose();
-                _texture = null;
-            }
-
-            // Release lock.
+        } finally {
+            _isUpdatingStyle = false;
             Interlocked.Exchange(ref _computeStyleLock, 0);
-
-            _lastNodeValueHash = nodeValueHash;
-            _hasComputedStyle  = true;
-
-            return isLayoutUpdated;
         }
     }
 
@@ -181,14 +185,13 @@ public partial class Node
             CachedQuerySelectorResults.Clear();
         }
 
-        try {
-            foreach (var node in _childNodes.ToArray()) {
-                node.ClearCachedQuerySelectorsRecursively();
-            }
-        } catch (InvalidOperationException) {
-            // Collection was modified exception caused by ToImmutableArray
-            // might _rarely_ happen here. Safe to ignore since we'll reflow
-            // anyway if this happens.
+        Node[] snapshot;
+        lock (_childNodes) {
+            snapshot = [.._childNodes];
+        }
+
+        foreach (var node in snapshot) {
+            node.ClearCachedQuerySelectorsRecursively();
         }
     }
 

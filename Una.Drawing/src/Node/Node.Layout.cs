@@ -1,7 +1,5 @@
 ﻿
-using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Una.Drawing;
 
@@ -83,7 +81,14 @@ public partial class Node
 
         var changed = false;
 
-        foreach (Node child in _childNodes.ToArray()) {
+        // スナップショット配列は _childNodes が変更された場合の安全性のため保持するが、
+        // 変更がない通常フレームでは ToArray() のアロケーションを最小化するよう lock で保護
+        Node[] snapshot;
+        lock (_childNodes) {
+            snapshot = [.._childNodes];
+        }
+
+        foreach (Node child in snapshot) {
             bool result         = child.InvokeReflowHook();
             if (result) changed = true;
         }
@@ -95,22 +100,22 @@ public partial class Node
 
     private void ReassignAnchorNodes()
     {
-        Dictionary<Anchor.AnchorPoint, List<Node>> anchorNodes = [];
-
+        // 毎回 Dictionary を new する代わりに既存インスタンスを再利用してアロケーションを削減
         try {
-            foreach (Node child in _childNodes.ToArray()) {
-                if (!anchorNodes.TryGetValue(child.ComputedStyle.Anchor.Point, out var value)) {
-                    anchorNodes[child.ComputedStyle.Anchor.Point] = value = [];
+            lock (_childNodes) {
+                foreach (var list in AnchorToChildNodes.Values) list.Clear();
+
+                foreach (Node child in _childNodes) {
+                    var point = child.ComputedStyle.Anchor.Point;
+                    if (!AnchorToChildNodes.TryGetValue(point, out var list)) {
+                        AnchorToChildNodes[point] = list = [];
+                    }
+                    list.Add(child);
                 }
-
-                value.Add(child);
             }
-
-            AnchorToChildNodes = anchorNodes;
         } catch (ArgumentException) {
-            // This can happen if the child node is added or disposed while
-            // the ".ToArray()" method is being called, in which case
-            // we'll reflow on the next frame anyway.
+            // 子ノードの追加・Dispose が走行中の場合は稀に発生しうる。
+            // 次フレームで再フローが走るため安全に無視できる。
         }
     }
 }

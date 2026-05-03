@@ -1,16 +1,13 @@
-﻿using System.Collections.Immutable;
-using System.Linq;
-
-namespace Una.Drawing;
+﻿namespace Una.Drawing;
 
 internal static partial class Layout
 {
     private static void ComputePositions(Node root)
     {
-        foreach (var anchorPoint in root.AnchorToChildNodes.Keys.ToArray()
-                                        .Where(anchorPoint => root.AnchorToChildNodes[anchorPoint].Count > 0)
-        ) {
-            PositionNodesWithSameAnchor(anchorPoint, root, root.AnchorToChildNodes[anchorPoint]);
+        foreach (var (anchorPoint, children) in root.AnchorToChildNodes) {
+            if (children.Count > 0) {
+                PositionNodesWithSameAnchor(anchorPoint, root, children);
+            }
         }
     }
 
@@ -210,18 +207,17 @@ internal static partial class Layout
 
     private static float GetChildrenWidth(Node root, List<Node> children)
     {
-        var visibleChildren = new List<Node>();
-        foreach (var _n in children)
-            if (_n is { IsDisposed: false, ComputedStyle.IsVisible: true })
-                visibleChildren.Add(_n);
+        float width = 0f;
+        int visibleCount = 0;
+        foreach (var n in children) {
+            if (n is { IsDisposed: false, ComputedStyle.IsVisible: true }) {
+                width += n.OuterWidth;
+                visibleCount++;
+            }
+        }
 
-        var enumerable = visibleChildren.ToArray();
-
-        float width                           = 0f;
-        foreach (var _n2 in enumerable) width += _n2.OuterWidth;
-
-        if (root.ComputedStyle.Flow == Flow.Horizontal) {
-            width += root.ComputedStyle.Gap > 0 ? (enumerable.Length - 1) * root.ComputedStyle.Gap : 0;
+        if (root.ComputedStyle.Flow == Flow.Horizontal && visibleCount > 1) {
+            width += (visibleCount - 1) * root.ComputedStyle.Gap;
         }
 
         return width;
@@ -229,18 +225,17 @@ internal static partial class Layout
 
     private static float GetChildrenHeight(Node root, List<Node> children)
     {
-        var visibleChildren = new System.Collections.Generic.List<Node>();
-        foreach (var _n in children)
-            if (_n is { IsDisposed: false, ComputedStyle.IsVisible: true })
-                visibleChildren.Add(_n);
+        float height = 0f;
+        int visibleCount = 0;
+        foreach (var n in children) {
+            if (n is { IsDisposed: false, ComputedStyle.IsVisible: true }) {
+                height += n.OuterHeight;
+                visibleCount++;
+            }
+        }
 
-        var enumerable = visibleChildren.ToArray();
-
-        float height                           = 0f;
-        foreach (var _n2 in enumerable) height += _n2.OuterHeight;
-
-        if (root.ComputedStyle.Flow == Flow.Vertical) {
-            height += root.ComputedStyle.Gap > 0 ? (enumerable.Length - 1) * root.ComputedStyle.Gap : 0;
+        if (root.ComputedStyle.Flow == Flow.Vertical && visibleCount > 1) {
+            height += (visibleCount - 1) * root.ComputedStyle.Gap;
         }
 
         return height;

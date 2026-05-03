@@ -91,8 +91,9 @@ public partial class Node
     /// </remarks>
     public float ScrollHeight { get; private set; }
 
-    public double DrawDeltaTime { get; private set; }
-    public double DrawTotalTime { get; private set; }
+    // ルートノードのみが更新し、全ノードで共有するフレーム時間
+    public static double DrawDeltaTime { get; private set; }
+    public static double DrawTotalTime { get; private set; }
 
     /// <summary>
     /// A deterministic hash code based on the node's value and layout.
@@ -161,13 +162,16 @@ public partial class Node
         TrackNodeRef(this);
         CheckDroppableNode();
 
-        if (DrawTotalTime == 0) {
-            DrawTotalTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            DrawDeltaTime = 0;
-        } else {
-            var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            DrawDeltaTime = now - DrawTotalTime;
-            DrawTotalTime = now;
+        // ルートノードのみフレーム時間を更新してコストを1フレーム1回に削減
+        if (ParentNode == null) {
+            if (DrawTotalTime == 0) {
+                DrawTotalTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                DrawDeltaTime = 0;
+            } else {
+                var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                DrawDeltaTime = now - DrawTotalTime;
+                DrawTotalTime = now;
+            }
         }
 
         _metricStopwatch.Restart();
@@ -224,8 +228,12 @@ public partial class Node
         if (!IsDisposed) {
             OnDraw(childDrawList);
 
-            foreach (var childNode in _childNodes.ToArray()) {
-                childNode.Draw(childDrawList);
+            // ToArray() によるフレームごとのアロケーションを避けるため
+            // lock 保護下で直接イテレーション
+            lock (_childNodes) {
+                foreach (var childNode in _childNodes) {
+                    childNode.Draw(childDrawList);
+                }
             }
         }
 
@@ -341,13 +349,15 @@ public partial class Node
         var x = pos.X;
         var y = pos.Y;
 
-        foreach (var child in _childNodes.ToArray()) {
-            Layout.OverridePositionsOf(child, new Vector2(x, y));
+        lock (_childNodes) {
+            foreach (var child in _childNodes) {
+                Layout.OverridePositionsOf(child, new Vector2(x, y));
 
-            if (ComputedStyle.Flow == Flow.Vertical) {
-                y += child.Bounds.MarginSize.Height + ComputedStyle.Gap;
-            } else {
-                x += child.Bounds.MarginSize.Width + ComputedStyle.Gap;
+                if (ComputedStyle.Flow == Flow.Vertical) {
+                    y += child.Bounds.MarginSize.Height + ComputedStyle.Gap;
+                } else {
+                    x += child.Bounds.MarginSize.Width + ComputedStyle.Gap;
+                }
             }
         }
     }

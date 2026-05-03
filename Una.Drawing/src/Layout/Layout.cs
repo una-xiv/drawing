@@ -39,8 +39,8 @@ internal static partial class Layout
         );
         
         node.Bounds.ContentRect = new Rect(
-            (int)Math.Ceiling(origin.X) + node.ComputedStyle.Padding.Left,
-            (int)Math.Ceiling(origin.Y) + node.ComputedStyle.Padding.Top,
+            (int)Math.Ceiling(origin.X) + node.ComputedStyle.Margin.Left + node.ComputedStyle.Padding.Left,
+            (int)Math.Ceiling(origin.Y) + node.ComputedStyle.Margin.Top + node.ComputedStyle.Padding.Top,
             node.Bounds.ContentSize
         );
 
