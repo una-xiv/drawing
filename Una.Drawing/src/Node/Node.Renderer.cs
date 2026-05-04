@@ -228,12 +228,14 @@ public partial class Node
         if (!IsDisposed) {
             OnDraw(childDrawList);
 
-            // ToArray() によるフレームごとのアロケーションを避けるため
-            // lock 保護下で直接イテレーション
+            // スナップショットを取ってから描画: Draw() 内で AppendChild/RemoveChild が
+            // 呼ばれても同一スレッドから _childNodes を変更できるため直接イテレーションは不可。
+            Node[] childSnapshot;
             lock (_childNodes) {
-                foreach (var childNode in _childNodes) {
-                    childNode.Draw(childDrawList);
-                }
+                childSnapshot = [.._childNodes];
+            }
+            foreach (var childNode in childSnapshot) {
+                childNode.Draw(childDrawList);
             }
         }
 
