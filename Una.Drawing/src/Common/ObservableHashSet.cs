@@ -7,8 +7,9 @@ public class ObservableHashSet<T> : HashSet<T>
 
     public new void Add(T item)
     {
-        base.Add(item);
-        ItemAdded?.Invoke(item);
+        if (base.Add(item)) {
+            ItemAdded?.Invoke(item);
+        }
     }
 
     public new void Remove(T item)
