@@ -10,11 +10,18 @@ internal static class ComputedStyleFactory
         var hashCode      = new HashCode();
 
         if (node.Stylesheet is not null) {
+            hashCode.Add(node.Stylesheet);
+
             List<Stylesheet.Rule> matchingRules = [];
 
             foreach (var rule in node.Stylesheet.Rules.Keys) {
-                if (rule.Matches(node)) {
-                    matchingRules.Add(rule);
+                try {
+                    if (rule.Matches(node)) {
+                        matchingRules.Add(rule);
+                    }
+                } catch (InvalidOperationException) {
+                    // The node may change while a selector is being evaluated.
+                    // Skipping this rule is safe; the next reflow will retry it.
                 }
             }
 
@@ -28,7 +35,8 @@ internal static class ComputedStyleFactory
 
             foreach (var rule in matchingRules) {
                 Apply(ref computedStyle, node.Stylesheet.Rules[rule]);
-                hashCode.Add(rule.ToString());
+                // Source order identifies a rule without traversing its selector chain.
+                hashCode.Add(rule.SourceOrderIndex);
             }
         }
 
