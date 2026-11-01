@@ -2,17 +2,85 @@
 
 internal static class ComputedStyleFactory
 {
-    internal static (int, ComputedStyle) Create(Node node)
+    /// <summary>
+    /// Brings the computed style in the given cache up-to-date with the
+    /// current state of the node.
+    /// </summary>
+    /// <returns>True if the cached result was regenerated.</returns>
+    internal static bool Update(Node node, ComputedStyleCache cache)
     {
-        if (node.IsDisposed) return (0, new());
+        if (node.IsDisposed) return false;
+
+        // These must be read before the style is generated. A value that is
+        // changed from another thread during generation will then simply
+        // cause the result to be regenerated on the next pass.
+        Style   style               = node.Style;
+        Style[] matchedStyles       = GetMatchedStyles(node, cache);
+        float   scaleFactor         = Node.ScaleFactor;
+        bool    scaleAffectsBorders = Node.ScaleAffectsBorders;
+        int     styleVersions       = style.Version;
+
+        foreach (var matchedStyle in matchedStyles) {
+            styleVersions += matchedStyle.Version;
+        }
+
+        if (cache.HasResult
+            && ReferenceEquals(cache.Style, style)
+            && ReferenceEquals(cache.MatchedStyles, matchedStyles)
+            && cache.StyleVersions == styleVersions
+            && cache.ScaleFactor.Equals(scaleFactor)
+            && cache.ScaleAffectsBorders == scaleAffectsBorders) {
+            return false;
+        }
 
         var computedStyle = CreateDefault();
-        var hashCode      = new HashCode();
 
-        if (node.Stylesheet is not null) {
+        foreach (var matchedStyle in matchedStyles) {
+            Apply(ref computedStyle, matchedStyle);
+        }
+
+        Apply(ref computedStyle, style);
+        ApplyScaleFactor(ref computedStyle);
+
+        // The inline style is hashed by reference on purpose. Modifying its
+        // properties must not cause a transition to start.
+        cache.Hash                = HashCode.Combine(cache.MatchedRulesHash, style);
+        cache.Result              = computedStyle;
+        cache.Style               = style;
+        cache.StyleVersions       = styleVersions;
+        cache.ScaleFactor         = scaleFactor;
+        cache.ScaleAffectsBorders = scaleAffectsBorders;
+        cache.HasResult           = true;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Returns the styles of the stylesheet rules that match the given node
+    /// in the order in which they should be applied. The returned array is
+    /// the same instance for as long as the matched rules remain unchanged.
+    /// </summary>
+    private static Style[] GetMatchedStyles(Node node, ComputedStyleCache cache)
+    {
+        Stylesheet? stylesheet        = node.Stylesheet;
+        int         stylesheetVersion = stylesheet?.Version ?? 0;
+        int         generation        = cache.MatchedRulesGeneration;
+        Style[]?    previousStyles    = cache.MatchedStyles;
+
+        if (previousStyles is not null
+            && cache.MatchedRulesCachedGeneration == generation
+            && ReferenceEquals(cache.Stylesheet, stylesheet)
+            && cache.StylesheetVersion == stylesheetVersion) {
+            return previousStyles;
+        }
+
+        Style[] matchedStyles = [];
+        var     hashCode      = new HashCode();
+
+        if (stylesheet is not null) {
             List<Stylesheet.Rule> matchingRules = [];
 
-            foreach (var rule in node.Stylesheet.Rules.Keys) {
+            foreach (var rule in stylesheet.Rules.Keys) {
                 if (rule.Matches(node)) {
                     matchingRules.Add(rule);
                 }
@@ -26,18 +94,31 @@ internal static class ComputedStyleFactory
                     : a.SourceOrderIndex.CompareTo(b.SourceOrderIndex);
             });
 
-            foreach (var rule in matchingRules) {
-                Apply(ref computedStyle, node.Stylesheet.Rules[rule]);
-                hashCode.Add(rule.ToString());
+            matchedStyles = new Style[matchingRules.Count];
+
+            for (var i = 0; i < matchingRules.Count; i++) {
+                matchedStyles[i] = stylesheet.Rules[matchingRules[i]];
+                hashCode.Add(matchingRules[i].SelectorHash);
             }
         }
 
-        Apply(ref computedStyle, node.Style);
-        ApplyScaleFactor(ref computedStyle);
+        int matchedRulesHash = hashCode.ToHashCode();
 
-        hashCode.Add(node.Style);
+        // Invalidation happens for the entire node tree, so most nodes still
+        // match the same rules. Those don't need to regenerate their style.
+        if (previousStyles is not null
+            && cache.MatchedRulesHash == matchedRulesHash
+            && previousStyles.AsSpan().SequenceEqual(matchedStyles)) {
+            matchedStyles = previousStyles;
+        }
 
-        return (hashCode.ToHashCode(), computedStyle);
+        cache.MatchedStyles                = matchedStyles;
+        cache.MatchedRulesHash             = matchedRulesHash;
+        cache.MatchedRulesCachedGeneration = generation;
+        cache.Stylesheet                   = stylesheet;
+        cache.StylesheetVersion            = stylesheetVersion;
+
+        return matchedStyles;
     }
 
     /// <summary>

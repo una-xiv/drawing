@@ -8,7 +8,8 @@ public partial class Style
     /// </para>
     /// This property has no effect if <see cref="BorderWidth"/> is left at 0.
     /// </summary>
-    public BorderColor? BorderColor { get; set; }
+    public BorderColor? BorderColor { get => _borderColor; set => SetBorderColor(ref _borderColor, value); }
+    private BorderColor? _borderColor;
 
     /// <summary>
     /// Defines the thickness of the border around the node.
@@ -17,18 +18,21 @@ public partial class Style
     /// This property has no effect if <see cref="BorderColor"/> is left
     /// undefined.
     /// </remarks>
-    public EdgeSize? BorderWidth { get; set; }
+    public EdgeSize? BorderWidth { get => _borderWidth; set => Set(ref _borderWidth, value); }
+    private EdgeSize? _borderWidth;
 
     /// <summary>
     /// Defines the roundness of the corners of the node.
     /// </summary>
-    public float? BorderRadius { get; set; }
+    public float? BorderRadius { get => _borderRadius; set => Set(ref _borderRadius, value); }
+    private float? _borderRadius;
 
     /// <summary>
     /// Defines the inset of the border around the node, allowing the border to
     /// be drawn inside the node's bounds.
     /// </summary>
-    public EdgeSize? BorderInset { get; set; }
+    public EdgeSize? BorderInset { get => _borderInset; set => Set(ref _borderInset, value); }
+    private EdgeSize? _borderInset;
 
     /// <summary>
     /// <para>
@@ -42,7 +46,8 @@ public partial class Style
     /// value.
     /// </para>
     /// </summary>
-    public Color? StrokeColor { get; set; }
+    public Color? StrokeColor { get => _strokeColor; set => SetColor(ref _strokeColor, value); }
+    private Color? _strokeColor;
 
     /// <summary>
     /// <para>
@@ -55,24 +60,28 @@ public partial class Style
     /// inset value.
     /// </para>
     /// </summary>
-    public float? StrokeWidth { get; set; }
+    public float? StrokeWidth { get => _strokeWidth; set => Set(ref _strokeWidth, value); }
+    private float? _strokeWidth;
 
     /// <summary>
     /// Similar to <see cref="BorderInset"/>, this property defines the inset
     /// distance of the stroke around the node, allowing the stroke to be drawn
     /// inside the node's bounds.
     /// </summary>
-    public float? StrokeInset { get; set; }
+    public float? StrokeInset { get => _strokeInset; set => Set(ref _strokeInset, value); }
+    private float? _strokeInset;
 
     /// <summary>
     /// Similar to <see cref="BorderRadius"/>, this property defines an override
     /// of the stroke the corner radius if it needs to be different from the
     /// border radius.
     /// </summary>
-    public float? StrokeRadius { get; set; }
+    public float? StrokeRadius { get => _strokeRadius; set => Set(ref _strokeRadius, value); }
+    private float? _strokeRadius;
 
     /// <summary>
     /// Specifies which corners of the node should be rounded.
     /// </summary>
-    public RoundedCorners? RoundedCorners { get; set; }
+    public RoundedCorners? RoundedCorners { get => _roundedCorners; set => Set(ref _roundedCorners, value); }
+    private RoundedCorners? _roundedCorners;
 }

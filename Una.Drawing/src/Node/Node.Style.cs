@@ -60,8 +60,11 @@ public partial class Node
     private int           _lastNodeValueHash;
     private bool          _hasComputedStyle;
     private bool          _causedReflow;
+    private bool          _isCachedStyleCommitted;
+    private uint          _committedThemeVersion;
 
-    private readonly Lock _lockObject = new();
+    private readonly ComputedStyleCache _styleCache = new();
+    private readonly Lock               _lockObject = new();
 
     public static bool UseThreadedStyleComputation { get; set; }
 
@@ -81,32 +84,54 @@ public partial class Node
         lock (_lockObject) {
             if (IsDisposed) return false;
 
-            (int hash, ComputedStyle style) = ComputedStyleFactory.Create(this);
+            bool isRegenerated = ComputedStyleFactory.Update(this, _styleCache);
 
-            if (_lastStyleHash != hash) {
-                _lastStyleHash = hash;
+            // The previous pass already committed this exact style, so all
+            // that's left to do is to process the child nodes.
+            bool isCommitted = !isRegenerated
+                               && _isCachedStyleCommitted
+                               && _animation is null
+                               && _lastStyleHash == _styleCache.Hash
+                               && _committedThemeVersion == Color.ThemeVersion;
 
-                if (_animation is { IsPlaying: true }) {
-                    _animation = null;
+            ComputedStyle.CommitResult result = ComputedStyle.CommitResult.None;
+            ComputedStyle              style  = default;
+
+            if (isCommitted) {
+                TransitionToConfiguredClass(ref _intermediateStyle);
+            } else {
+                style = _styleCache.Result;
+
+                if (_lastStyleHash != _styleCache.Hash) {
+                    _lastStyleHash = _styleCache.Hash;
+
+                    if (_animation is { IsPlaying: true }) {
+                        _animation = null;
+                    }
+
+                    _animation ??= _intermediateStyle.TransitionDuration > 0
+                        ? new Animation(_intermediateStyle, style)
+                        : null;
                 }
 
-                _animation ??= _intermediateStyle.TransitionDuration > 0
-                    ? new Animation(_intermediateStyle, style)
-                    : null;
-            }
+                if (_animation is { IsPlaying: true }) {
+                    style = _animation.Update(DrawDeltaTime);
+                }
 
-            if (_animation is { IsPlaying: true }) {
-                style = _animation.Update(DrawDeltaTime);
-            }
+                // A style produced by a transition is not the cached result,
+                // even if the transition has finished on this pass.
+                _isCachedStyleCommitted = _animation is null;
+                _committedThemeVersion  = Color.ThemeVersion;
 
-            if (_animation is { IsPlaying: false }) {
-                TransitionToConfiguredClass(ref style);
-                _animation = null;
-            } else if (_animation is null) {
-                TransitionToConfiguredClass(ref style);
-            }
+                if (_animation is { IsPlaying: false }) {
+                    TransitionToConfiguredClass(ref style);
+                    _animation = null;
+                } else if (_animation is null) {
+                    TransitionToConfiguredClass(ref style);
+                }
 
-            ComputedStyle.CommitResult result = style.Commit(ref _intermediateStyle);
+                result = style.Commit(ref _intermediateStyle);
+            }
 
             int  nodeValueHash   = NodeValue.GetHashCode();
             bool isLayoutUpdated = nodeValueHash != _lastNodeValueHash;
@@ -125,12 +150,13 @@ public partial class Node
             }
 
             // Update snapshot.
-            _intermediateStyle                     = style;
-            _intermediateStyle.LayoutStyleSnapshot = LayoutStyleSnapshot.Create(ref _intermediateStyle);
-            _intermediateStyle.PaintStyleSnapshot  = PaintStyleSnapshot.Create(ref _intermediateStyle);
-            ComputedStyle                          = _intermediateStyle;
-            RenderHash                             = _intermediateStyle.GetHash();
-            _isUpdatingStyle                       = false;
+            if (!isCommitted) {
+                _intermediateStyle = style;
+                ComputedStyle      = _intermediateStyle;
+                RenderHash         = _intermediateStyle.GetHash();
+            }
+
+            _isUpdatingStyle = false;
 
             if (result.HasFlag(ComputedStyle.CommitResult.LayoutUpdated)) {
                 SignalReflow();
@@ -171,7 +197,10 @@ public partial class Node
     /// </summary>
     private void SignalReflow()
     {
-        RootNode._mustReflow = true;
+        Node root = RootNode;
+
+        root._mustReflow        = true;
+        root._mustComputeBounds = true;
         ReassignAnchorNodes();
     }
 
@@ -180,6 +209,8 @@ public partial class Node
         lock (CachedQuerySelectorResults) {
             CachedQuerySelectorResults.Clear();
         }
+
+        _styleCache.InvalidateMatchedRules();
 
         try {
             foreach (var node in _childNodes.ToArray()) {
