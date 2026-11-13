@@ -1,4 +1,4 @@
-﻿namespace Una.Drawing;
+namespace Una.Drawing;
 
 public partial struct ComputedStyle
 {
@@ -12,6 +12,7 @@ public partial struct ComputedStyle
                || OutlineColor is not null
                || TextShadowColor is not null
                || IconId is not null
+               || BitmapFontIcon is not null
                || ImageBytes is not null
                || DropShadow != Vector4.Zero
                || (!string.IsNullOrWhiteSpace(UldResource) && UldPartsId.HasValue && UldPartId.HasValue);
