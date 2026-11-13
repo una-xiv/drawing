@@ -149,6 +149,18 @@ public struct Color(byte r, byte g, byte b, byte a = 255)
     public static bool operator ==(Color? left, Color? right) => left is not null && left.Equals(right);
     public static bool operator !=(Color? left, Color? right) => !(left == right);
 
+    /// <summary>
+    /// Returns true if both colors are defined identically. Unlike
+    /// <see cref="Equals(object?)"/>, this does not resolve named colors, as
+    /// two differently named colors may diverge when the theme changes.
+    /// </summary>
+    internal static bool AreIdentical(Color? left, Color? right)
+    {
+        if (left is not { } a || right is not { } b) return left is null && right is null;
+
+        return a.Name == b.Name && a._r == b._r && a._g == b._g && a._b == b._b && a._a == b._a;
+    }
+
     public Color Copy() => new(R, G, B, A);
     
     internal static SKColor ToSkColor(Color? color)

@@ -33,6 +33,7 @@ public partial class Node
     internal double DrawTime   { get; private set; } = 0f;
 
     private bool      _mustReflow = true;
+    private bool      _mustComputeBounds = true;
     private Vector2?  _lastPosition;
     private Stopwatch _metricStopwatch = new();
     private Size      _previousSize    = new(0, 0);
@@ -44,11 +45,20 @@ public partial class Node
     /// is being drawn.
     /// </summary>
     /// <remarks>
-    /// Only the bounding sizes are computed. The bounding rects are not.
+    /// Only the bounding sizes are computed. The bounding rects are not. This
+    /// method does nothing if the sizes are already up-to-date, so it is safe
+    /// to call this on every frame.
     /// </remarks>
     public void ComputeBoundingSize()
     {
-        Layout.ComputeBounds(this);
+        Node root = RootNode;
+
+        if (!root._mustComputeBounds) return;
+
+        // Cleared before computing, so that a change that is made from another
+        // thread during the computation is picked up by the next call.
+        root._mustComputeBounds = false;
+        Layout.ComputeBounds(root);
     }
 
     public void Reflow(Vector2? position = null)
@@ -62,7 +72,8 @@ public partial class Node
             return;
         }
 
-        _mustReflow = false;
+        _mustReflow        = false;
+        _mustComputeBounds = false;
 
         _metricStopwatch.Restart();
         Layout.ComputeBounds(this);

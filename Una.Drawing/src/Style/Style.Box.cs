@@ -27,7 +27,8 @@ public partial class Style
     /// Modifying this property will trigger a reflow of the layout. This is a
     /// computationally expensive operation and should be done sparingly.
     /// </remarks>
-    public EdgeSize? Padding { get; set; }
+    public EdgeSize? Padding { get => _padding; set => Set(ref _padding, value); }
+    private EdgeSize? _padding;
 
     /// <summary>
     /// Margins are inserted between the margin edge and the padding edge of an
@@ -37,7 +38,8 @@ public partial class Style
     /// Modifying this property will trigger a reflow of the layout. This is a
     /// computationally expensive operation and should be done sparingly.
     /// </remarks>
-    public EdgeSize? Margin { get; set; }
+    public EdgeSize? Margin { get => _margin; set => Set(ref _margin, value); }
+    private EdgeSize? _margin;
     
     /// <summary>
     /// <para>
@@ -59,7 +61,8 @@ public partial class Style
     /// Modifying this property will trigger a reflow of the layout. This is a
     /// computationally expensive operation and should be done sparingly.
     /// </remarks>
-    public Size? Size { get; set; }
+    public Size? Size { get => _size; set => Set(ref _size, value); }
+    private Size? _size;
     
     /// <summary>
     /// <para>
@@ -81,5 +84,6 @@ public partial class Style
     /// equally among them.
     /// </para>
     /// </summary>
-    public (AutoSize Horizontal, AutoSize Vertical)? AutoSize { get; set; }
+    public (AutoSize Horizontal, AutoSize Vertical)? AutoSize { get => _autoSize; set => Set(ref _autoSize, value); }
+    private (AutoSize Horizontal, AutoSize Vertical)? _autoSize;
 }

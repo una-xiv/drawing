@@ -6,6 +6,11 @@ public class Stylesheet
 {
     internal Dictionary<Rule, Style> Rules = [];
 
+    /// <summary>
+    /// Increases every time rules are added to this stylesheet.
+    /// </summary>
+    internal int Version { get; private set; }
+
     public Stylesheet(List<StyleDefinition> rules)
     {
         foreach (var rule in rules) AddRule(rule.Query, rule.Style);
@@ -24,6 +29,8 @@ public class Stylesheet
         foreach (var qs in results) {
             Rules.Add(new(qs, Rules.Count), style);
         }
+
+        Version++;
     }
 
     /// <summary>
@@ -34,6 +41,8 @@ public class Stylesheet
         foreach (var rule in other.Rules) {
             Rules.Add(rule.Key, rule.Value);
         }
+
+        Version++;
     }
 
     /// <summary>
@@ -63,6 +72,8 @@ public class Stylesheet
         public readonly int SourceOrderIndex = sourceOrderIndex;
 
         public Specificity Specificity = Specificity.Calculate(querySelector.ToString());
+
+        public readonly int SelectorHash = querySelector.ToString().GetHashCode();
 
         public override string ToString()
         {

@@ -65,7 +65,9 @@ public partial class Node : IDisposable
             _textCachedNodeValue = null;
             _mustRepaint         = true;
             _mustReflow          = true;
-            
+
+            RootNode._mustComputeBounds = true;
+
             ClearTextCache();
 
             OnPropertyChanged?.Invoke("NodeValue", _nodeValue);
@@ -177,6 +179,8 @@ public partial class Node : IDisposable
 
             _sortIndex           = value;
             RootNode._mustReflow = true;
+
+            RootNode._mustComputeBounds = true;
 
             OnSortIndexChanged?.Invoke();
             OnPropertyChanged?.Invoke("SortIndex", _childNodes);
@@ -526,6 +530,7 @@ public partial class Node : IDisposable
         _textCachedWordWrap  = null;
         _textCachedNodeValue = null;
         _mustReflow          = true;
+        _mustComputeBounds   = true;
         _mustRepaint         = true;
     }
 
@@ -669,6 +674,10 @@ public partial class Node : IDisposable
 
         node.ParentNode         =  null;
         node.OnSortIndexChanged -= SortChildren;
+
+        // Changes made while this node was attached were signaled to its
+        // previous root, so its own subtree can't be assumed up-to-date.
+        node._mustComputeBounds = true;
 
         SortChildren();
         OnChildRemoved?.Invoke(node);
